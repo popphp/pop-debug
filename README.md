@@ -1,8 +1,8 @@
 pop-debug
 =========
 
-[![Build Status](https://travis-ci.org/popphp/pop-acl.svg?branch=master)](https://travis-ci.org/popphp/pop-debug)
-[![Coverage Status](http://cc.popphp.org/coverage.php?comp=pop-acl)](http://cc.popphp.org/pop-debug/)
+[![Build Status](https://travis-ci.org/popphp/pop-debug.svg?branch=master)](https://travis-ci.org/popphp/pop-debug)
+[![Coverage Status](http://cc.popphp.org/coverage.php?comp=pop-debug)](http://cc.popphp.org/pop-debug/)
 
 OVERVIEW
 --------
