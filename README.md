@@ -7,3 +7,21 @@ pop-debug
 OVERVIEW
 --------
 `pop-debug` is a simple debugging component that hooks into a Pop PHP application's lifecycle.
+
+
+### NOTES
+
+Time
+Messages
+Memory
+Exceptions
+Database/Query
+Request
+ - Route
+ - Headers
+ - $_SERVER
+ - $_GET
+ - $_POST
+ - $_FILES
+ - $_COOKIE
+ - $_SESSION
