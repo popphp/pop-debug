@@ -27,6 +27,12 @@ class MemoryHandler extends AbstractHandler
 {
 
     /**
+     * Memory limit
+     * @var int
+     */
+    protected $limit = 0;
+
+    /**
      * Memory usage snapshots
      * @var array
      */
@@ -45,7 +51,17 @@ class MemoryHandler extends AbstractHandler
      */
     public function __construct()
     {
+        $this->limit = ini_get('memory_limit');
+    }
 
+    /**
+     * Get memory limit
+     *
+     * @return int
+     */
+    public function getLimit()
+    {
+        return $this->usages;
     }
 
     /**
@@ -116,19 +132,44 @@ class MemoryHandler extends AbstractHandler
      * Format memory amount into readable string
      *
      * @param  int $memory
+     * @param  int $bytes
      * @return string
      */
-    public function formatMemory($memory)
+    public function formatMemoryToString($memory, $bytes = 1024)
     {
-        if ($memory >= 1000000) {
-            $memory = round(($memory / 1000000), 2) . ' MB';
-        } else if (($memory < 1000000) && ($memory >= 1000)) {
-            $memory = round(($memory / 1000), 2) . ' KB';
-        } else if ($memory < 1000) {
-            $memory = $memory . ' B';
+        if ($memory >= pow($bytes, 3)) {
+            $memory = round(($memory / pow($bytes, 3)), 2) . 'GB';
+        } else if ($memory >= pow($bytes, 2)) {
+            $memory = round(($memory / pow($bytes, 2)), 2) . 'MB';
+        } else if (($memory < pow($bytes, 2)) && ($memory >= $bytes)) {
+            $memory = round(($memory / $bytes), 2) . 'KB';
+        } else if ($memory < $bytes) {
+            $memory = $memory . 'B';
         }
 
         return $memory;
+    }
+
+    /**
+     * Format memory amount into integer
+     *
+     * @param  int $memory
+     * @param  int $bytes
+     * @return int
+     */
+    public function formatMemoryToInt($memory, $bytes = 1024)
+    {
+        $factor = 1;
+
+        if (stripos($memory, 'G') !== false) {
+            $factor = pow($bytes, 3);
+        } else if (stripos($memory, 'M') !== false) {
+            $factor = pow($bytes, 2);
+        } else if (stripos($memory, 'K') !== false) {
+            $factor = $bytes;
+        }
+
+        return (int)$memory * $factor;
     }
 
 }
