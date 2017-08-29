@@ -34,7 +34,7 @@ class Debug
 
     /**
      * Debug storage
-     * @var []
+     * @var array
      */
     protected $storage = [];
 
