@@ -82,7 +82,16 @@ class Debug implements \ArrayAccess, \Countable, \IteratorAggregate
      */
     public function dump($message)
     {
-        $this->dumps[time()] = $message;
+        $memory = memory_get_usage();
+
+        if ($memory >= 1000000) {
+            $memory = round(($memory / 1000000), 2) . ' MB';
+        } else if (($memory < 1000000) && ($memory >= 1000)) {
+            $memory = round(($memory / 1000), 2) . ' KB';
+        } else if ($memory < 1000) {
+            $memory = $memory . ' B';
+        }
+        $this->dumps[time()] = $message . ' [ . ' . $memory . ' . ]';
         return $this;
     }
 
@@ -125,6 +134,52 @@ class Debug implements \ArrayAccess, \Countable, \IteratorAggregate
         }
 
         return $dumps;
+    }
+
+    /**
+     * Output dumps to HTML
+     *
+     * @param  string $separator
+     * @return string
+     */
+    public function outputToHTML($separator = '<br />')
+    {
+        $dumps = '';
+
+        foreach ($this->dumps as $time => $dump) {
+            switch ($separator) {
+                case '<div>':
+                    $dumps .= '<div class="pop-debug-dump"><strong>' . date($this->timestampFormat, $time) . '</strong> ' . $dump . '</div>' . PHP_EOL;
+                    break;
+                case '<th>':
+                    $dumps .= '<tr class="pop-debug-dump"><th>' . date($this->timestampFormat, $time) . '</th><th>' . $dump . '</td></tr>' . PHP_EOL;
+                    break;
+                case '<td>':
+                    $dumps .= '<tr class="pop-debug-dump"><td>' . date($this->timestampFormat, $time) . '</td><td>' . $dump . '</td></tr>' . PHP_EOL;
+                    break;
+                default:
+                    $dumps .= date($this->timestampFormat, $time) . ":\t" . $dump . '<br />' . PHP_EOL;
+            }
+
+        }
+
+        return $dumps;
+    }
+
+    /**
+     * Output dumps to a file
+     *
+     * @param  string  $file
+     * @param  boolean $append
+     * @return void
+     */
+    public function outputToFile($file, $append = true)
+    {
+        if ($append) {
+            file_put_contents($file, $this->output(), FILE_APPEND);
+        } else {
+            file_put_contents($file, $this->output());
+        }
     }
 
     /**
