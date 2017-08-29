@@ -26,4 +26,14 @@ namespace Pop\Debug\Handler;
 class TimeHandler extends AbstractHandler
 {
 
+    /**
+     * Constructor
+     *
+     * Instantiate a time handler object
+     */
+    public function __construct()
+    {
+
+    }
+
 }

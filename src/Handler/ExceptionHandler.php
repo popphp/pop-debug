@@ -26,4 +26,52 @@ namespace Pop\Debug\Handler;
 class ExceptionHandler extends AbstractHandler
 {
 
+    /**
+     * Exceptions
+     * @var array
+     */
+    protected $exceptions = [];
+
+    /**
+     * Constructor
+     *
+     * Instantiate an exception handler object
+     */
+    public function __construct()
+    {
+
+    }
+
+    /**
+     * Add exception
+     *
+     * @param  \Exception $exception
+     * @return self
+     */
+    public function addException(\Exception $exception)
+    {
+        $this->exceptions[microtime(true)] = $exception;
+        return $this;
+    }
+
+    /**
+     * Determine if the handler has exceptions
+     *
+     * @return boolean
+     */
+    public function hasExceptions()
+    {
+        return (count($this->exceptions) > 0);
+    }
+
+    /**
+     * Get exceptions
+     *
+     * @return array
+     */
+    public function getExceptions()
+    {
+        return $this->exceptions;
+    }
+
 }

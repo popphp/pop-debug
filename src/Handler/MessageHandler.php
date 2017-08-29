@@ -26,4 +26,52 @@ namespace Pop\Debug\Handler;
 class MessageHandler extends AbstractHandler
 {
 
+    /**
+     * Messages
+     * @var array
+     */
+    protected $messages = [];
+
+    /**
+     * Constructor
+     *
+     * Instantiate a message handler object
+     */
+    public function __construct()
+    {
+
+    }
+
+    /**
+     * Add message
+     *
+     * @param  string $message
+     * @return self
+     */
+    public function addMessage($message)
+    {
+        $this->messages[microtime(true)] = $message;
+        return $this;
+    }
+
+    /**
+     * Determine if the handler has messages
+     *
+     * @return boolean
+     */
+    public function hasMessages()
+    {
+        return (count($this->messages) > 0);
+    }
+
+    /**
+     * Get messages
+     *
+     * @return array
+     */
+    public function getMessages()
+    {
+        return $this->messages;
+    }
+
 }

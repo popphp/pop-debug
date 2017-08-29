@@ -13,6 +13,8 @@
  */
 namespace Pop\Debug\Handler;
 
+use Pop\Db\Adapter\Profiler\Profiler;
+
 /**
  * Debug query handler class
  *
@@ -25,5 +27,84 @@ namespace Pop\Debug\Handler;
  */
 class QueryHandler extends AbstractHandler
 {
+
+    /**
+     * Profiler
+     * @var Profiler
+     */
+    protected $profiler = null;
+
+    /**
+     * Constructor
+     *
+     * Instantiate a query handler object
+     *
+     * @param  Profiler $profiler
+     */
+    public function __construct(Profiler $profiler = null)
+    {
+        if (null !== $profiler) {
+            $this->setProfiler($profiler);
+        }
+    }
+
+    /**
+     * Set profiler
+     *
+     * @param  Profiler $profiler
+     * @return self
+     */
+    public function setProfiler(Profiler $profiler)
+    {
+        $this->profiler = $profiler;
+        return $this;
+    }
+
+    /**
+     * Determine if the handler has a profiler
+     *
+     * @return boolean
+     */
+    public function hasProfiler()
+    {
+        return (null !== $this->profiler);
+    }
+
+    /**
+     * Get profiler
+     *
+     * @return Profiler
+     */
+    public function getProfiler()
+    {
+        return $this->profiler;
+    }
+
+    /**
+     * Get profiler (alias method)
+     *
+     * @return Profiler
+     */
+    public function profiler()
+    {
+        return $this->profiler;
+    }
+
+    /**
+     * Magic get method to return the profiler.
+     *
+     * @param  string $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        switch ($name) {
+            case 'profiler':
+                return $this->profiler;
+                break;
+            default:
+                return null;
+        }
+    }
 
 }

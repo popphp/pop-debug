@@ -32,12 +32,11 @@ class Debug
      */
     protected $handlers = [];
 
-
     /**
      * Debug storage
-     * @var Storage\StorageInterface
+     * @var []
      */
-    protected $storage = null;
+    protected $storage = [];
 
     /**
      * Constructor
@@ -100,14 +99,14 @@ class Debug
     }
 
     /**
-     * Set the storage object
+     * Add a storage object
      *
      * @param Storage\StorageInterface $storage
      * @return Debug
      */
-    public function setStorage(Storage\StorageInterface $storage = null)
+    public function addStorage(Storage\StorageInterface $storage = null)
     {
-        $this->storage = $storage;
+        $this->storage[] = $storage;
         return $this;
     }
 
@@ -118,13 +117,13 @@ class Debug
      */
     public function hasStorage()
     {
-        return (null !== $this->storage);
+        return (count($this->storage) > 0);
     }
 
     /**
-     * Get the storage object
+     * Get the storage objects
      *
-     * @return Storage\StorageInterface
+     * @return array
      */
     public function getStorage()
     {
