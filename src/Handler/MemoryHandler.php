@@ -51,7 +51,7 @@ class MemoryHandler extends AbstractHandler
      */
     public function __construct()
     {
-        $this->limit = ini_get('memory_limit');
+        $this->limit = $this->formatMemoryToInt(ini_get('memory_limit'));
     }
 
     /**
@@ -61,7 +61,7 @@ class MemoryHandler extends AbstractHandler
      */
     public function getLimit()
     {
-        return $this->usages;
+        return $this->limit;
     }
 
     /**
