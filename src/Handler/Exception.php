@@ -11,10 +11,10 @@
 /**
  * @namespace
  */
-namespace Pop\Debug;
+namespace Pop\Debug\Handler;
 
 /**
- * Debug class
+ * Debug handler exception class
  *
  * @category   Pop
  * @package    Pop\Debug
@@ -23,17 +23,4 @@ namespace Pop\Debug;
  * @license    http://www.popphp.org/license     New BSD License
  * @version    1.0.0
  */
-class Debug
-{
-
-    /**
-     * Constructor
-     *
-     * Instantiate a debug object
-     */
-    public function __construct()
-    {
-
-    }
-
-}
+class Exception extends \Exception {}

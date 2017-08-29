@@ -11,10 +11,10 @@
 /**
  * @namespace
  */
-namespace Pop\Debug;
+namespace Pop\Debug\Storage;
 
 /**
- * Debug class
+ * Debug sqlite storage class
  *
  * @category   Pop
  * @package    Pop\Debug
@@ -23,17 +23,7 @@ namespace Pop\Debug;
  * @license    http://www.popphp.org/license     New BSD License
  * @version    1.0.0
  */
-class Debug
+class Sqlite extends AbstractStorage
 {
-
-    /**
-     * Constructor
-     *
-     * Instantiate a debug object
-     */
-    public function __construct()
-    {
-
-    }
 
 }

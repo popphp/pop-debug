@@ -11,10 +11,10 @@
 /**
  * @namespace
  */
-namespace Pop\Debug;
+namespace Pop\Debug\Handler;
 
 /**
- * Debug class
+ * Debug query handler class
  *
  * @category   Pop
  * @package    Pop\Debug
@@ -23,17 +23,7 @@ namespace Pop\Debug;
  * @license    http://www.popphp.org/license     New BSD License
  * @version    1.0.0
  */
-class Debug
+class QueryHandler extends AbstractHandler
 {
-
-    /**
-     * Constructor
-     *
-     * Instantiate a debug object
-     */
-    public function __construct()
-    {
-
-    }
 
 }
