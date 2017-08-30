@@ -33,16 +33,6 @@ class ExceptionHandler extends AbstractHandler
     protected $exceptions = [];
 
     /**
-     * Constructor
-     *
-     * Instantiate an exception handler object
-     */
-    public function __construct()
-    {
-
-    }
-
-    /**
      * Add exception
      *
      * @param  \Exception $exception
@@ -72,6 +62,17 @@ class ExceptionHandler extends AbstractHandler
     public function getExceptions()
     {
         return $this->exceptions;
+    }
+
+    /**
+     * Prepare handler data for storage
+     *
+     * @return array
+     */
+    public function prepare()
+    {
+        $data = [];
+        return $data;
     }
 
 }

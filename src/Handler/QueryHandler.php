@@ -91,6 +91,17 @@ class QueryHandler extends AbstractHandler
     }
 
     /**
+     * Prepare handler data for storage
+     *
+     * @return array
+     */
+    public function prepare()
+    {
+        $data = [];
+        return $data;
+    }
+
+    /**
      * Magic get method to return the profiler.
      *
      * @param  string $name

@@ -33,16 +33,6 @@ class MessageHandler extends AbstractHandler
     protected $messages = [];
 
     /**
-     * Constructor
-     *
-     * Instantiate a message handler object
-     */
-    public function __construct()
-    {
-
-    }
-
-    /**
      * Add message
      *
      * @param  string $message
@@ -72,6 +62,17 @@ class MessageHandler extends AbstractHandler
     public function getMessages()
     {
         return $this->messages;
+    }
+
+    /**
+     * Prepare handler data for storage
+     *
+     * @return array
+     */
+    public function prepare()
+    {
+        $data = [];
+        return $data;
     }
 
 }

@@ -26,4 +26,11 @@ namespace Pop\Debug\Handler;
 abstract class AbstractHandler implements HandlerInterface
 {
 
+    /**
+     * Prepare handler data for storage
+     *
+     * @return array
+     */
+    abstract public function prepare();
+
 }

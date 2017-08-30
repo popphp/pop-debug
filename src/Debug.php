@@ -13,6 +13,9 @@
  */
 namespace Pop\Debug;
 
+use Pop\Debug\Handler;
+use Pop\Debug\Storage;
+
 /**
  * Debug class
  *
@@ -45,7 +48,23 @@ class Debug
      */
     public function __construct()
     {
+        $args = func_get_args();
 
+        foreach ($args as $arg) {
+            if (is_array($arg)) {
+                foreach ($arg as $a) {
+                    if ($a instanceof Handler\HandlerInterface) {
+                        $this->addHandler($a);
+                    } else if ($a instanceof Storage\StorageInterface) {
+                        $this->setStorage($a);
+                    }
+                }
+            } else if ($arg instanceof Handler\HandlerInterface) {
+                $this->addHandler($arg);
+            } else if ($arg instanceof Storage\StorageInterface) {
+                $this->setStorage($arg);
+            }
+        }
     }
 
     /**

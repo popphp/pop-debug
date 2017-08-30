@@ -144,6 +144,17 @@ class RequestHandler extends AbstractHandler
     }
 
     /**
+     * Prepare handler data for storage
+     *
+     * @return array
+     */
+    public function prepare()
+    {
+        $data = [];
+        return $data;
+    }
+
+    /**
      * Return whether or not the request has FILES
      *
      * @return boolean

@@ -129,6 +129,17 @@ class MemoryHandler extends AbstractHandler
     }
 
     /**
+     * Prepare handler data for storage
+     *
+     * @return array
+     */
+    public function prepare()
+    {
+        $data = [];
+        return $data;
+    }
+
+    /**
      * Format memory amount into readable string
      *
      * @param  int $memory

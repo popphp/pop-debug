@@ -26,4 +26,11 @@ namespace Pop\Debug\Handler;
 interface HandlerInterface
 {
 
+    /**
+     * Prepare handler data for storage
+     *
+     * @return array
+     */
+    public function prepare();
+
 }
