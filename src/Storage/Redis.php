@@ -37,15 +37,18 @@ class Redis extends AbstractStorage
      *
      * Instantiate the Redis storage object
      *
+     * @param  string $format
      * @param  string $host
      * @param  int    $port
      * @throws Exception
      */
-    public function __construct($host = 'localhost', $port = 6379)
+    public function __construct($format = 'text', $host = 'localhost', $port = 6379)
     {
         if (!class_exists('Redis', false)) {
             throw new Exception('Error: Redis is not available.');
         }
+
+        parent::__construct($format);
 
         $this->redis = new \Redis();
         if (!$this->redis->connect($host, (int)$port)) {
@@ -82,7 +85,7 @@ class Redis extends AbstractStorage
      */
     public function save($id, $value)
     {
-        $this->redis->set($id, serialize($value));
+        $this->redis->set($id, $this->encodeValue($value));
         return $this;
     }
 
@@ -96,7 +99,11 @@ class Redis extends AbstractStorage
     {
         $value = $this->redis->get($id);
         if ($value !== false) {
-            $value = unserialize($value);
+            if ($this->format == 'json') {
+                $value = json_decode($value, true);
+            } else if ($this->format == 'php') {
+                $value = unserialize($value);
+            }
         }
         return $value;
     }
@@ -133,6 +140,26 @@ class Redis extends AbstractStorage
     {
         $this->redis->flushDb();
         return $this;
+    }
+
+    /**
+     * Encode the value based on the format
+     *
+     * @param  mixed  $value
+     * @throws Exception
+     * @return string
+     */
+    public function encodeValue($value)
+    {
+        if ($this->format == 'json') {
+            $value = json_encode($value, JSON_PRETTY_PRINT);
+        } else if ($this->format == 'php') {
+            $value = serialize($value);
+        } else if (!is_string($value)) {
+            throw new Exception('Error: The value must be a string if storing as a text file.');
+        }
+
+        return $value;
     }
 
 }

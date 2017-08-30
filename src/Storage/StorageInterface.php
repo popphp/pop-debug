@@ -27,6 +27,42 @@ interface StorageInterface
 {
 
     /**
+     * Set the storage format
+     *
+     * @param  string $format
+     * @return StorageInterface
+     */
+    public function setFormat($format);
+
+    /**
+     * Determine if the format is text
+     *
+     * @return boolean
+     */
+    public function isText();
+
+    /**
+     * Determine if the format is PHP
+     *
+     * @return boolean
+     */
+    public function isPhp();
+
+    /**
+     * Determine if the format is JSON
+     *
+     * @return boolean
+     */
+    public function isJson();
+
+    /**
+     * Get the storage format
+     *
+     * @return string
+     */
+    public function getFormat();
+
+    /**
      * Save debug data
      *
      * @param  string $id
@@ -65,5 +101,14 @@ interface StorageInterface
      * @return void
      */
     public function clear();
+
+    /**
+     * Encode the value based on the format
+     *
+     * @param  mixed  $value
+     * @throws Exception
+     * @return string
+     */
+    public function encodeValue($value);
 
 }

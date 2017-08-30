@@ -33,12 +33,6 @@ class File extends AbstractStorage
     protected $dir = null;
 
     /**
-     * Storage format
-     * @var string
-     */
-    protected $format = 'text';
-
-    /**
      * Constructor
      *
      * Instantiate the file storage object
@@ -48,8 +42,8 @@ class File extends AbstractStorage
      */
     public function __construct($dir, $format = 'text')
     {
+        parent::__construct($format);
         $this->setDir($dir);
-        $this->setFormat($format);
     }
 
     /**
@@ -83,35 +77,6 @@ class File extends AbstractStorage
     }
 
     /**
-     * Set the storage format
-     *
-     * @param  string $format
-     * @return File
-     */
-    public function setFormat($format)
-    {
-        if (stripos($format, 'json') !== false) {
-            $this->format = 'json';
-        } else if (stripos($format, 'php') !== false) {
-            $this->format = 'php';
-        } else {
-            $this->format = 'text';
-        }
-
-        return $this;
-    }
-
-    /**
-     * Get the storage format
-     *
-     * @return string
-     */
-    public function getFormat()
-    {
-        return $this->format;
-    }
-
-    /**
      * Save debug data
      *
      * @param  string $id
@@ -123,15 +88,15 @@ class File extends AbstractStorage
         $filename = sha1($id);
 
         if ($this->format == 'json') {
-            $value = json_encode($value, JSON_PRETTY_PRINT);
             $filename .= '.json';
         } else if ($this->format == 'php') {
-            $value = "return unserialize('" . serialize($value) . "');'";
             $filename .= '.php';
         } else {
             $filename .= '.log';
         }
-        file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename, $value);
+
+        file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename, $this->encodeValue($value));
+
         return $this;
     }
 
@@ -226,6 +191,26 @@ class File extends AbstractStorage
         closedir($dh);
 
         return $this;
+    }
+
+    /**
+     * Encode the value based on the format
+     *
+     * @param  mixed  $value
+     * @throws Exception
+     * @return string
+     */
+    public function encodeValue($value)
+    {
+        if ($this->format == 'json') {
+            $value = json_encode($value, JSON_PRETTY_PRINT);
+        } else if ($this->format == 'php') {
+            $value = "<?php" . PHP_EOL . "return unserialize(base64_decode('" . base64_encode(serialize($value)) . "'));" . PHP_EOL;
+        } else if (!is_string($value)) {
+            throw new Exception('Error: The value must be a string if storing as a text file.');
+        }
+
+        return $value;
     }
 
 }

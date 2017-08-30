@@ -68,12 +68,15 @@ class Sqlite extends AbstractStorage
      * Instantiate the debug db object
      *
      * @param  string  $db
+     * @param  string  $format
      * @param  string  $table
      * @param  boolean $pdo
      * @throws Exception
      */
-    public function __construct($db, $table = 'pop_debug', $pdo = false)
+    public function __construct($db, $format = 'text', $table = 'pop_debug', $pdo = false)
     {
+        parent::__construct($format);
+        
         $this->setDb($db);
 
         $pdoDrivers = (class_exists('Pdo', false)) ? \PDO::getAvailableDrivers() : [];
@@ -125,19 +128,17 @@ class Sqlite extends AbstractStorage
         // If the value doesn't exist, save the new value.
         if (count($rows) == 0) {
             $sql = 'INSERT INTO "' . $this->table .
-                '" ("id", "value", "time") VALUES (:id, :value, :time)';
+                '" ("id", "value") VALUES (:id, :value)';
             $params = [
                 'id'    => sha1($id),
-                'value' => serialize($value),
-                'time'  => time(),
+                'value' => $this->encodeValue($value)
             ];
         // Else, update it.
         } else {
             $sql = 'UPDATE "' . $this->table .
-                '" SET "value" = :value, "time" = :time WHERE "id" = :id';
+                '" SET "value" = :value WHERE "id" = :id';
             $params = [
-                'value' => serialize($value),
-                'time'  => time(),
+                'value' => $this->encodeValue($value),
                 'id'    => sha1($id)
             ];
         }
@@ -177,7 +178,11 @@ class Sqlite extends AbstractStorage
 
         // If the value is found, return.
         if (isset($rows[0]) && isset($rows[0]['value'])) {
-            $value = unserialize($rows[0]['value']);
+            if ($this->format == 'json') {
+                $value = json_decode($rows[0]['value'], true);
+            } else if ($this->format == 'php') {
+                $value = unserialize($rows[0]['value']);
+            }
         }
 
         return $value;
@@ -233,6 +238,26 @@ class Sqlite extends AbstractStorage
     {
         $this->query('DELETE FROM "' . $this->table . '"');
         return $this;
+    }
+
+    /**
+     * Encode the value based on the format
+     *
+     * @param  mixed  $value
+     * @throws Exception
+     * @return string
+     */
+    public function encodeValue($value)
+    {
+        if ($this->format == 'json') {
+            $value = json_encode($value, JSON_PRETTY_PRINT);
+        } else if ($this->format == 'php') {
+            $value = serialize($value);
+        } else if (!is_string($value)) {
+            throw new Exception('Error: The value must be a string if storing as a text file.');
+        }
+
+        return $value;
     }
 
     /**
@@ -398,7 +423,7 @@ class Sqlite extends AbstractStorage
         // If the debug table doesn't exist, create it.
         if (!in_array($this->table, $tables)) {
             $sql = 'CREATE TABLE IF NOT EXISTS "' . $this->table .
-                '" ("id" VARCHAR PRIMARY KEY NOT NULL UNIQUE, "value" BLOB, "time" INTEGER)';
+                '" ("id" VARCHAR PRIMARY KEY NOT NULL UNIQUE, "value" BLOB)';
 
             if ($this->isPdo) {
                 $sth = $this->sqlite->prepare($sql);
