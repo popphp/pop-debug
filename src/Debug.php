@@ -26,7 +26,7 @@ use Pop\Debug\Storage;
  * @license    http://www.popphp.org/license     New BSD License
  * @version    1.0.0
  */
-class Debug
+class Debug implements \ArrayAccess
 {
 
     /**
@@ -78,6 +78,9 @@ class Debug
         $type = strtolower(str_replace('Handler', '', get_class($handler)));
         if (strrpos($type, '\\') !== false) {
             $type = substr($type, (strrpos($type, '\\') + 1));
+            if (!empty($handler->getName())) {
+                $type .= '-' . str_replace(' ', '-', strtolower($handler->getName()));
+            }
         }
 
         $this->handlers[$type] = $handler;
@@ -147,6 +150,54 @@ class Debug
     public function getStorage()
     {
         return $this->storage;
+    }
+
+    /**
+     * ArrayAccess offsetExists
+     *
+     * @param  mixed $offset
+     * @return boolean
+     */
+    public function offsetExists($offset)
+    {
+        return isset($this->handlers[$offset]);
+    }
+    /**
+     * ArrayAccess offsetGet
+     *
+     * @param  mixed $offset
+     * @return mixed
+     */
+    public function offsetGet($offset)
+    {
+        return (isset($this->handlers[$offset])) ? $this->handlers[$offset] : null;
+    }
+    /**
+     * ArrayAccess offsetSet
+     *
+     * @param  mixed $offset
+     * @param  mixed $value
+     * @throws Exception
+     * @return void
+     */
+    public function offsetSet($offset, $value)
+    {
+        if (!($value instanceof Handler\HandlerInterface)) {
+            throw new Exception('Error: The value passed must be an instance of HandlerInterface');
+        }
+        $this->handlers[$offset] = $value;
+    }
+    /**
+     * ArrayAccess offsetUnset
+     *
+     * @param  mixed $offset
+     * @return void
+     */
+    public function offsetUnset($offset)
+    {
+        if (isset($this->handlers[$offset])) {
+            unset($this->handlers[$offset]);
+        }
     }
 
 }

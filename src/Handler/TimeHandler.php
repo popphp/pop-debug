@@ -27,12 +27,6 @@ class TimeHandler extends AbstractHandler
 {
 
     /**
-     * Name of time measurement
-     * @var string
-     */
-    protected $name = null;
-
-    /**
      * Start time
      * @var float
      */
@@ -52,22 +46,12 @@ class TimeHandler extends AbstractHandler
      * @param string  $name
      * @param boolean $start
      */
-    public function __construct($name, $start = false)
+    public function __construct($name = null, $start = false)
     {
-        $this->name = $name;
+        parent::__construct($name);
         if ($start) {
             $this->start();
         }
-    }
-
-    /**
-     * Get name
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
     }
 
     /**
@@ -136,7 +120,12 @@ class TimeHandler extends AbstractHandler
             $this->stop();
         }
 
-        $data = [];
+        $data = [
+            'start'   => number_format($this->start, 5),
+            'stop'    => number_format($this->stop, 5),
+            'elapsed' => $this->getElapsed()
+        ];
+
         return $data;
     }
 

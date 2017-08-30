@@ -27,6 +27,21 @@ interface HandlerInterface
 {
 
     /**
+     * Set name
+     *
+     * @param  string  $name
+     * @return AbstractHandler
+     */
+    public function setName($name);
+
+    /**
+     * Get name
+     *
+     * @return string
+     */
+    public function getName();
+
+    /**
      * Prepare handler data for storage
      *
      * @return array

@@ -48,9 +48,12 @@ class MemoryHandler extends AbstractHandler
      * Constructor
      *
      * Instantiate a memory handler object
+     *
+     * @param  string   $name
      */
-    public function __construct()
+    public function __construct($name = null)
     {
+        parent::__construct($name);
         $this->limit = $this->formatMemoryToInt(ini_get('memory_limit'));
     }
 
@@ -135,7 +138,20 @@ class MemoryHandler extends AbstractHandler
      */
     public function prepare()
     {
-        $data = [];
+        $data = [
+            'limit'  => $this->formatMemoryToString($this->limit),
+            'usages' => [],
+            'peaks'  => []
+        ];
+
+        foreach ($this->usages as $time => $usage) {
+            $data['usages'][number_format($time, 5)] = $this->formatMemoryToString($usage);
+        }
+
+        foreach ($this->peaks as $time => $peak) {
+            $data['peaks'][number_format($time, 5)] = $this->formatMemoryToString($peak);
+        }
+
         return $data;
     }
 

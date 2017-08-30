@@ -104,9 +104,13 @@ class RequestHandler extends AbstractHandler
      * Constructor
      *
      * Instantiate a request handler object
+     *
+     * @param string  $name
      */
-    public function __construct()
+    public function __construct($name = null)
     {
+        parent::__construct($name);
+
         $this->server  = (isset($_SERVER))  ? $_SERVER  : [];
         $this->env     = (isset($_ENV))     ? $_ENV     : [];
         $this->get     = (isset($_GET))     ? $_GET     : [];
@@ -150,7 +154,23 @@ class RequestHandler extends AbstractHandler
      */
     public function prepare()
     {
-        $data = [];
+        $data = [
+            'uri'     => $this->requestUri,
+            'headers' => $this->headers,
+            'server'  => $this->server,
+            'env'     => $this->env,
+            'get'     => $this->get,
+            'post'    => $this->post,
+            'put'     => $this->put,
+            'patch'   => $this->patch,
+            'delete'  => $this->delete,
+            'files'   => $this->files,
+            'cookie'  => $this->cookie,
+            'session' => $this->session,
+            'raw'     => $this->rawData,
+            'parsed'  => $this->parsedData,
+        ];
+
         return $data;
     }
 

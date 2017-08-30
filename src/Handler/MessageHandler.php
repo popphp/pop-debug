@@ -72,6 +72,11 @@ class MessageHandler extends AbstractHandler
     public function prepare()
     {
         $data = [];
+
+        foreach ($this->messages as $time => $message) {
+            $data[number_format($time, 5)] = $message;
+        }
+
         return $data;
     }
 

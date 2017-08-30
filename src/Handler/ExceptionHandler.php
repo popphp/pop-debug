@@ -72,6 +72,11 @@ class ExceptionHandler extends AbstractHandler
     public function prepare()
     {
         $data = [];
+
+        foreach ($this->exceptions as $time => $exception) {
+            $data[number_format($time, 5)] = $exception;
+        }
+
         return $data;
     }
 

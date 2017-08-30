@@ -40,9 +40,12 @@ class QueryHandler extends AbstractHandler
      * Instantiate a query handler object
      *
      * @param  Profiler $profiler
+     * @param  string   $name
      */
-    public function __construct(Profiler $profiler = null)
+    public function __construct(Profiler $profiler = null, $name = null)
     {
+        parent::__construct($name);
+
         if (null !== $profiler) {
             $this->setProfiler($profiler);
         }
@@ -97,7 +100,24 @@ class QueryHandler extends AbstractHandler
      */
     public function prepare()
     {
-        $data = [];
+        $data = [
+            'start'   => number_format($this->profiler->getStart(), 5),
+            'finish'  => number_format($this->profiler->getFinish(), 5),
+            'elapsed' => $this->profiler->getElapsed(),
+            'steps'   => []
+        ];
+
+        foreach ($this->profiler->getSteps() as $step) {
+            $data['steps'][] = [
+                'start'   => number_format($step->getStart(), 5),
+                'finish'  => number_format($step->getFinish(), 5),
+                'elapsed' => $step->getElapsed(),
+                'query'   => $step->getQuery(),
+                'params'  => $step->getParams(),
+                'errors'  => $step->getErrors()
+            ];
+        }
+
         return $data;
     }
 

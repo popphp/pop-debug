@@ -27,6 +27,48 @@ abstract class AbstractHandler implements HandlerInterface
 {
 
     /**
+     * Name of time measurement
+     * @var string
+     */
+    protected $name = null;
+
+    /**
+     * Constructor
+     *
+     * Instantiate a handler object
+     *
+     * @param string  $name
+     */
+    public function __construct($name = null)
+    {
+        if (null !== $name) {
+            $this->setName($name);
+        }
+    }
+
+    /**
+     * Set name
+     *
+     * @param  string  $name
+     * @return AbstractHandler
+     */
+    public function setName($name)
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    /**
+     * Get name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
      * Prepare handler data for storage
      *
      * @return array
