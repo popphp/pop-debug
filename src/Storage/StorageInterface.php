@@ -26,4 +26,44 @@ namespace Pop\Debug\Storage;
 interface StorageInterface
 {
 
+    /**
+     * Save debug data
+     *
+     * @param  string $id
+     * @param  mixed  $value
+     * @return void
+     */
+    public function save($id, $value);
+
+    /**
+     * Get debug data
+     *
+     * @param  string $id
+     * @return mixed
+     */
+    public function get($id);
+
+    /**
+     * Determine if debug data exists
+     *
+     * @param  string $id
+     * @return mixed
+     */
+    public function has($id);
+
+    /**
+     * Delete debug data
+     *
+     * @param  string $id
+     * @return void
+     */
+    public function delete($id);
+
+    /**
+     * Clear all debug data
+     *
+     * @return void
+     */
+    public function clear();
+
 }

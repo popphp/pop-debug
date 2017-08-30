@@ -26,4 +26,44 @@ namespace Pop\Debug\Storage;
 abstract class AbstractStorage implements StorageInterface
 {
 
+    /**
+     * Save debug data
+     *
+     * @param  string $id
+     * @param  mixed  $value
+     * @return void
+     */
+    abstract public function save($id, $value);
+
+    /**
+     * Get debug data
+     *
+     * @param  string $id
+     * @return mixed
+     */
+    abstract public function get($id);
+
+    /**
+     * Determine if debug data exists
+     *
+     * @param  string $id
+     * @return mixed
+     */
+    abstract public function has($id);
+
+    /**
+     * Delete debug data
+     *
+     * @param  string $id
+     * @return void
+     */
+    abstract public function delete($id);
+
+    /**
+     * Clear all debug data
+     *
+     * @return void
+     */
+    abstract public function clear();
+
 }
