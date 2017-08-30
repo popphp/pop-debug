@@ -101,16 +101,16 @@ class QueryHandler extends AbstractHandler
     public function prepare()
     {
         $data = [
-            'start'   => number_format($this->profiler->getStart(), 5),
-            'finish'  => number_format($this->profiler->getFinish(), 5),
+            'start'   => number_format($this->profiler->getStart(), 5, '.', ''),
+            'finish'  => number_format($this->profiler->getFinish(), 5, '.', ''),
             'elapsed' => $this->profiler->getElapsed(),
             'steps'   => []
         ];
 
         foreach ($this->profiler->getSteps() as $step) {
             $data['steps'][] = [
-                'start'   => number_format($step->getStart(), 5),
-                'finish'  => number_format($step->getFinish(), 5),
+                'start'   => number_format($step->getStart(), 5, '.', ''),
+                'finish'  => number_format($step->getFinish(), 5, '.', ''),
                 'elapsed' => $step->getElapsed(),
                 'query'   => $step->getQuery(),
                 'params'  => $step->getParams(),
@@ -119,6 +119,31 @@ class QueryHandler extends AbstractHandler
         }
 
         return $data;
+    }
+
+    /**
+     * Prepare header string
+     *
+     * @return string
+     */
+    public function prepareHeaderAsString()
+    {
+        $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Query Handler';
+        $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
+
+        return $string;
+    }
+
+    /**
+     * Prepare handler data as string
+     *
+     * @return string
+     */
+    public function prepareAsString()
+    {
+        $string = '';
+
+        return $string;
     }
 
     /**

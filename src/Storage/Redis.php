@@ -42,7 +42,7 @@ class Redis extends AbstractStorage
      * @param  int    $port
      * @throws Exception
      */
-    public function __construct($format = 'text', $host = 'localhost', $port = 6379)
+    public function __construct($format = 'json', $host = 'localhost', $port = 6379)
     {
         if (!class_exists('Redis', false)) {
             throw new Exception('Error: Redis is not available.');

@@ -106,7 +106,7 @@ class TimeHandler extends AbstractHandler
         if (null === $this->stop) {
             $this->stop();
         }
-        return number_format(($this->stop - $this->start), 5);
+        return number_format(($this->stop - $this->start), 5, '.', '');
     }
 
     /**
@@ -121,12 +121,43 @@ class TimeHandler extends AbstractHandler
         }
 
         $data = [
-            'start'   => number_format($this->start, 5),
-            'stop'    => number_format($this->stop, 5),
+            'start'   => number_format($this->start, 5, '.', ''),
+            'stop'    => number_format($this->stop, 5, '.', ''),
             'elapsed' => $this->getElapsed()
         ];
 
         return $data;
+    }
+
+    /**
+     * Prepare header string
+     *
+     * @return string
+     */
+    public function prepareHeaderAsString()
+    {
+        $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Time Handler';
+        $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
+
+        return $string;
+    }
+
+    /**
+     * Prepare handler data as string
+     *
+     * @return string
+     */
+    public function prepareAsString()
+    {
+        if (null === $this->stop) {
+            $this->stop();
+        }
+
+        $string  = "Start:\t\t\t" . number_format($this->start, 5, '.', '') . PHP_EOL;
+        $string .= "Stop:\t\t\t" . number_format($this->stop, 5, '.', '') . PHP_EOL;
+        $string .= "Elapsed:\t\t" . $this->getElapsed() . ' seconds' . PHP_EOL . PHP_EOL;
+
+        return $string;
     }
 
 }

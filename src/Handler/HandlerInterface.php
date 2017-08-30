@@ -48,4 +48,18 @@ interface HandlerInterface
      */
     public function prepare();
 
+    /**
+     * Prepare header string
+     *
+     * @return string
+     */
+    public function prepareHeaderAsString();
+
+    /**
+     * Prepare handler data as string
+     *
+     * @return string
+     */
+    public function prepareAsString();
+
 }

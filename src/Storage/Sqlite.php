@@ -73,7 +73,7 @@ class Sqlite extends AbstractStorage
      * @param  boolean $pdo
      * @throws Exception
      */
-    public function __construct($db, $format = 'text', $table = 'pop_debug', $pdo = false)
+    public function __construct($db, $format = 'json', $table = 'pop_debug', $pdo = false)
     {
         parent::__construct($format);
 
@@ -114,7 +114,7 @@ class Sqlite extends AbstractStorage
         $rows = [];
 
         $this->prepare('SELECT * FROM "' . $this->table . '" WHERE "id" = :id')
-             ->bindParams(['id' => sha1($id)])
+             ->bindParams(['id' => $id])
              ->execute();
 
         if ($this->isPdo) {
@@ -130,7 +130,7 @@ class Sqlite extends AbstractStorage
             $sql = 'INSERT INTO "' . $this->table .
                 '" ("id", "value") VALUES (:id, :value)';
             $params = [
-                'id'    => sha1($id),
+                'id'    => $id,
                 'value' => $this->encodeValue($value)
             ];
         // Else, update it.
@@ -139,7 +139,7 @@ class Sqlite extends AbstractStorage
                 '" SET "value" = :value WHERE "id" = :id';
             $params = [
                 'value' => $this->encodeValue($value),
-                'id'    => sha1($id)
+                'id'    => $id
             ];
         }
 
@@ -165,7 +165,7 @@ class Sqlite extends AbstractStorage
         $rows = [];
 
         $this->prepare('SELECT * FROM "' . $this->table . '" WHERE "id" = :id')
-             ->bindParams(['id' => sha1($id)])
+             ->bindParams(['id' => $id])
              ->execute();
 
         if ($this->isPdo) {
@@ -200,7 +200,7 @@ class Sqlite extends AbstractStorage
         $rows = [];
 
         $this->prepare('SELECT * FROM "' . $this->table . '" WHERE "id" = :id')
-             ->bindParams(['id' => sha1($id)])
+             ->bindParams(['id' => $id])
              ->execute();
 
         if ($this->isPdo) {
@@ -223,7 +223,7 @@ class Sqlite extends AbstractStorage
     public function delete($id)
     {
         $this->prepare('DELETE FROM "' . $this->table . '" WHERE "id" = :id')
-             ->bindParams(['id' => sha1($id)])
+             ->bindParams(['id' => $id])
              ->execute();
 
         return $this;

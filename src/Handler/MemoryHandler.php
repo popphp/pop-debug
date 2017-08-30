@@ -145,14 +145,53 @@ class MemoryHandler extends AbstractHandler
         ];
 
         foreach ($this->usages as $time => $usage) {
-            $data['usages'][number_format($time, 5)] = $this->formatMemoryToString($usage);
+            $data['usages'][number_format($time, 5, '.', '')] = $this->formatMemoryToString($usage);
         }
 
         foreach ($this->peaks as $time => $peak) {
-            $data['peaks'][number_format($time, 5)] = $this->formatMemoryToString($peak);
+            $data['peaks'][number_format($time, 5, '.', '')] = $this->formatMemoryToString($peak);
         }
 
         return $data;
+    }
+
+    /**
+     * Prepare header string
+     *
+     * @return string
+     */
+    public function prepareHeaderAsString()
+    {
+        $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Memory Handler';
+        $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
+
+        return $string;
+    }
+
+    /**
+     * Prepare handler data as string
+     *
+     * @return string
+     */
+    public function prepareAsString()
+    {
+        $string  = "Limit:\t\t\t" . $this->formatMemoryToString($this->limit) . PHP_EOL . PHP_EOL;
+
+        $string .= "Usages:" . PHP_EOL;
+        $string .= "-------" . PHP_EOL;
+        foreach ($this->usages as $time => $usage) {
+            $string .= number_format($time, 5, '.', '') . "\t" . $this->formatMemoryToString($usage) . PHP_EOL;
+        }
+        $string .= PHP_EOL;
+
+        $string .= "Peaks:" . PHP_EOL;
+        $string .= "------" . PHP_EOL;
+        foreach ($this->peaks as $time => $peak) {
+            $string .= number_format($time, 5, '.', '') . "\t" . $this->formatMemoryToString($peak) . PHP_EOL;
+        }
+        $string .= PHP_EOL;
+
+        return $string;
     }
 
     /**

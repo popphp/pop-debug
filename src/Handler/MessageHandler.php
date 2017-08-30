@@ -74,10 +74,39 @@ class MessageHandler extends AbstractHandler
         $data = [];
 
         foreach ($this->messages as $time => $message) {
-            $data[number_format($time, 5)] = $message;
+            $data[number_format($time, 5, '.', '')] = $message;
         }
 
         return $data;
+    }
+
+    /**
+     * Prepare header string
+     *
+     * @return string
+     */
+    public function prepareHeaderAsString()
+    {
+        $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Message Handler';
+        $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
+
+        return $string;
+    }
+
+    /**
+     * Prepare handler data as string
+     *
+     * @return string
+     */
+    public function prepareAsString()
+    {
+        $string = '';
+        foreach ($this->messages as $time => $message) {
+            $string .= number_format($time, 5, '.', '') . "\t" . $message . PHP_EOL;
+        }
+        $string .= PHP_EOL;
+
+        return $string;
     }
 
 }

@@ -75,4 +75,18 @@ abstract class AbstractHandler implements HandlerInterface
      */
     abstract public function prepare();
 
+    /**
+     * Prepare header string
+     *
+     * @return string
+     */
+    abstract public function prepareHeaderAsString();
+
+    /**
+     * Prepare handler data as string
+     *
+     * @return string
+     */
+    abstract public function prepareAsString();
+
 }

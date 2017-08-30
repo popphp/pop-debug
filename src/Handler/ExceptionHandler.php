@@ -74,10 +74,39 @@ class ExceptionHandler extends AbstractHandler
         $data = [];
 
         foreach ($this->exceptions as $time => $exception) {
-            $data[number_format($time, 5)] = $exception;
+            $data[number_format($time, 5, '.', '')] = $exception;
         }
 
         return $data;
+    }
+
+    /**
+     * Prepare header string
+     *
+     * @return string
+     */
+    public function prepareHeaderAsString()
+    {
+        $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Exception Handler';
+        $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
+
+        return $string;
+    }
+
+    /**
+     * Prepare handler data as string
+     *
+     * @return string
+     */
+    public function prepareAsString()
+    {
+        $string = '';
+        foreach ($this->exceptions as $time => $exception) {
+            $string .= number_format($time, 5, '.', '') . "\t" . $exception->getMessage() . PHP_EOL;
+        }
+        $string .= PHP_EOL;
+
+        return $string;
     }
 
 }

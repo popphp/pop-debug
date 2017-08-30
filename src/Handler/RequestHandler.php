@@ -101,6 +101,12 @@ class RequestHandler extends AbstractHandler
     protected $parsedData = null;
 
     /**
+     * Request timestamp
+     * @var float
+     */
+    protected $requestTimestamp = null;
+
+    /**
      * Constructor
      *
      * Instantiate a request handler object
@@ -110,6 +116,8 @@ class RequestHandler extends AbstractHandler
     public function __construct($name = null)
     {
         parent::__construct($name);
+
+        $this->requestTimestamp = microtime(true);
 
         $this->server  = (isset($_SERVER))  ? $_SERVER  : [];
         $this->env     = (isset($_ENV))     ? $_ENV     : [];
@@ -155,23 +163,91 @@ class RequestHandler extends AbstractHandler
     public function prepare()
     {
         $data = [
-            'uri'     => $this->requestUri,
-            'headers' => $this->headers,
-            'server'  => $this->server,
-            'env'     => $this->env,
-            'get'     => $this->get,
-            'post'    => $this->post,
-            'put'     => $this->put,
-            'patch'   => $this->patch,
-            'delete'  => $this->delete,
-            'files'   => $this->files,
-            'cookie'  => $this->cookie,
-            'session' => $this->session,
-            'raw'     => $this->rawData,
-            'parsed'  => $this->parsedData,
+            'uri'       => $this->requestUri,
+            'headers'   => $this->headers,
+            'server'    => $this->server,
+            'env'       => $this->env,
+            'get'       => $this->get,
+            'post'      => $this->post,
+            'put'       => $this->put,
+            'patch'     => $this->patch,
+            'delete'    => $this->delete,
+            'files'     => $this->files,
+            'cookie'    => $this->cookie,
+            'session'   => $this->session,
+            'raw'       => $this->rawData,
+            'parsed'    => $this->parsedData,
+            'timestamp' => number_format($this->requestTimestamp, 5, '.', '')
         ];
 
         return $data;
+    }
+
+    /**
+     * Prepare header string
+     *
+     * @return string
+     */
+    public function prepareHeaderAsString()
+    {
+        $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Request Handler';
+        $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
+
+        return $string;
+    }
+
+    /**
+     * Prepare handler data as string
+     *
+     * @return string
+     */
+    public function prepareAsString()
+    {
+        $string = '';
+        if (!empty($this->requestUri)) {
+            $string .= "URI: " . $this->requestUri . ' [' . number_format($this->requestTimestamp, 5, '.', '') . ']' . PHP_EOL;
+            if (count($this->headers) > 0) {
+                $string .= PHP_EOL;
+                $string .= "HEADERS:" . PHP_EOL;
+                $string .= "--------" . PHP_EOL;
+                foreach ($this->headers as $header => $value) {
+                    $string .= $header . ": " . $value . PHP_EOL;
+                }
+                $string .= PHP_EOL;
+            }
+            $dataArrays = ['server', 'env', 'cookie', 'session', 'get', 'post', 'put', 'patch', 'delete', 'files', 'parsedData'];
+            foreach ($dataArrays as $data) {
+                if (count($this->{$data}) > 0) {
+                    $string .= str_replace('DATA', '', strtoupper($data)) . ":" . PHP_EOL;
+                    $string .= str_repeat('-', (strlen(str_replace('DATA', '', strtoupper($data))) + 1)) . PHP_EOL;
+                    foreach ($this->{$data} as $key => $value) {
+                        $string .= $key . ": " . ((is_array($value)) ? http_build_query($value) : $value) . PHP_EOL;
+                    }
+                    $string .= PHP_EOL;
+                }
+            }
+            if (!empty($this->rawData)) {
+                $string .= "RAW:" . PHP_EOL;
+                $string .= "----" . PHP_EOL;
+                $string .= $this->rawData . PHP_EOL;
+            }
+        } else {
+            $string .= "No Request URI Detected." . PHP_EOL;
+        }
+
+        $string .= PHP_EOL;
+
+        return $string;
+    }
+
+    /**
+     * Get request timestamp
+     *
+     * @return float
+     */
+    public function getRequestTimestamp()
+    {
+        return $this->requestTimestamp;
     }
 
     /**

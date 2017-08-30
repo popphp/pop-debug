@@ -85,7 +85,7 @@ class File extends AbstractStorage
      */
     public function save($id, $value)
     {
-        $filename = sha1($id);
+        $filename = $id;
 
         if ($this->format == 'json') {
             $filename .= '.json';
@@ -108,7 +108,7 @@ class File extends AbstractStorage
      */
     public function get($id)
     {
-        $fileId = $this->dir . DIRECTORY_SEPARATOR . sha1($id);
+        $fileId = $this->dir . DIRECTORY_SEPARATOR . $id;
 
         if ($this->format == 'json') {
             $fileId .= '.json';
@@ -132,7 +132,7 @@ class File extends AbstractStorage
      */
     public function has($id)
     {
-        $fileId = $this->dir . DIRECTORY_SEPARATOR . sha1($id);
+        $fileId = $this->dir . DIRECTORY_SEPARATOR . $id;
 
         if ($this->format == 'json') {
             $fileId .= '.json';
@@ -153,7 +153,7 @@ class File extends AbstractStorage
      */
     public function delete($id)
     {
-        $fileId = $this->dir . DIRECTORY_SEPARATOR . sha1($id);
+        $fileId = $this->dir . DIRECTORY_SEPARATOR . $id;
 
         if ($this->format == 'json') {
             $fileId .= '.json';

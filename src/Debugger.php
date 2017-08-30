@@ -17,7 +17,7 @@ use Pop\Debug\Handler;
 use Pop\Debug\Storage;
 
 /**
- * Debug class
+ * Debugger class
  *
  * @category   Pop
  * @package    Pop\Debug
@@ -26,7 +26,7 @@ use Pop\Debug\Storage;
  * @license    http://www.popphp.org/license     New BSD License
  * @version    1.0.0
  */
-class Debug implements \ArrayAccess
+class Debugger implements \ArrayAccess
 {
 
     /**
@@ -71,7 +71,7 @@ class Debug implements \ArrayAccess
      * Add a handler
      *
      * @param  Handler\HandlerInterface
-     * @return Debug
+     * @return Debugger
      */
     public function addHandler(Handler\HandlerInterface $handler)
     {
@@ -79,7 +79,7 @@ class Debug implements \ArrayAccess
         if (strrpos($type, '\\') !== false) {
             $type = substr($type, (strrpos($type, '\\') + 1));
             if (!empty($handler->getName())) {
-                $type .= '-' . str_replace(' ', '-', strtolower($handler->getName()));
+                $type = str_replace(' ', '-', strtolower($handler->getName())) . '-' . $type;
             }
         }
 
@@ -124,7 +124,7 @@ class Debug implements \ArrayAccess
      * Set the storage object
      *
      * @param Storage\StorageInterface $storage
-     * @return Debug
+     * @return Debugger
      */
     public function setStorage(Storage\StorageInterface $storage)
     {
@@ -153,6 +153,51 @@ class Debug implements \ArrayAccess
     }
 
     /**
+     * Save the debug handlers' data to storage
+     *
+     * @return void
+     */
+    public function save()
+    {
+        foreach ($this->handlers as $name => $handler) {
+            $data = ($this->storage->getFormat() == 'text') ? $handler->prepareAsString() : $handler->prepare();
+            $this->storage->save(time() . '-' . $name, $data);
+        }
+    }
+
+    /**
+     * Render the debug handlers' data to string
+     *
+     * @return string
+     */
+    public function render()
+    {
+        $output = '';
+
+        foreach ($this->handlers as $handler) {
+            $output .= $handler->prepareAsString();
+        }
+
+        return $output;
+    }
+
+    /**
+     * Render the debug handlers' data to string with headers
+     *
+     * @return string
+     */
+    public function renderWithHeaders()
+    {
+        $output = '';
+
+        foreach ($this->handlers as $handler) {
+            $output .= $handler->prepareHeaderAsString() . $handler->prepareAsString();
+        }
+
+        return $output;
+    }
+
+    /**
      * ArrayAccess offsetExists
      *
      * @param  mixed $offset
@@ -162,6 +207,7 @@ class Debug implements \ArrayAccess
     {
         return isset($this->handlers[$offset]);
     }
+
     /**
      * ArrayAccess offsetGet
      *
@@ -172,6 +218,7 @@ class Debug implements \ArrayAccess
     {
         return (isset($this->handlers[$offset])) ? $this->handlers[$offset] : null;
     }
+
     /**
      * ArrayAccess offsetSet
      *
@@ -187,6 +234,7 @@ class Debug implements \ArrayAccess
         }
         $this->handlers[$offset] = $value;
     }
+
     /**
      * ArrayAccess offsetUnset
      *
@@ -198,6 +246,16 @@ class Debug implements \ArrayAccess
         if (isset($this->handlers[$offset])) {
             unset($this->handlers[$offset]);
         }
+    }
+
+    /**
+     * Render to string
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->renderWithHeaders();
     }
 
 }
