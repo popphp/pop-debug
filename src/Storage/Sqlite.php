@@ -76,7 +76,7 @@ class Sqlite extends AbstractStorage
     public function __construct($db, $format = 'text', $table = 'pop_debug', $pdo = false)
     {
         parent::__construct($format);
-        
+
         $this->setDb($db);
 
         $pdoDrivers = (class_exists('Pdo', false)) ? \PDO::getAvailableDrivers() : [];
