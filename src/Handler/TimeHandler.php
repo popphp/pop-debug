@@ -55,6 +55,16 @@ class TimeHandler extends AbstractHandler
     }
 
     /**
+     * Get start value
+     *
+     * @return float
+     */
+    public function getStart()
+    {
+        return $this->start;
+    }
+
+    /**
      * Determined if the timer has started
      *
      * @return boolean
@@ -62,6 +72,16 @@ class TimeHandler extends AbstractHandler
     public function hasStarted()
     {
         return (null !== $this->start);
+    }
+
+    /**
+     * Get stop value
+     *
+     * @return float
+     */
+    public function getStop()
+    {
+        return $this->stop;
     }
 
     /**
