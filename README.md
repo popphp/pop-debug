@@ -24,17 +24,17 @@ BASIC USAGE
 The debugger supports a number of handlers that can record various events during an application's lifecycle.
 The provided handlers are:
 
-- ExceptionHandler
+- **ExceptionHandler**
     + Capture exceptions thrown by the application
-- MemoryHandler
+- **MemoryHandler**
     + Capture memory usage and peak memory usage
-- MessageHandler
+- **MessageHandler**
     + Capture messages at various points in the application's lifecycle
-- QueryHandler
+- **QueryHandler**
     + Capture database queries and their parameters and information
-- RequestHandler
+- **RequestHandler**
     + Capture information about the current request
-- TimeHandler
+- **TimeHandler**
     + Trigger a timer to time the current request or a part of the request.
 
 Also, the debugger supports a few storage methods to storage the debug data after the request is complete:
@@ -82,8 +82,26 @@ $debugger['message']->addMessage('Hey! Something happened!');
 $debugger['exception']->addException(new \Exception('Whoops!'));
 $debugger['memory']->updateMemoryUsage();
 $debugger['memory']->updatePeakMemoryUsage();
+
+$debugger->save();
 ```
 
 In the above example, if the debugger is exposed as a service throughout the application,
 then you can call those methods above for the individual handlers to capture the things
 you need to examine.
+
+### Storage formats
+
+The storage object allows you to store the debug data in the following formats:
+
+- Plain text
+- JSON
+- Serialized PHP
+
+```php
+use Pop\Debug;
+
+$debugger = new Debug\Debugger();
+$debugger->addHandler(new Debug\Handler\MessageHandler());
+$debugger->setStorage(new Debug\Storage\File('log', 'json'));
+```
