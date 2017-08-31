@@ -141,7 +141,32 @@ class QueryHandler extends AbstractHandler
      */
     public function prepareAsString()
     {
-        $string = '';
+        $string  = "Start:\t\t\t" . number_format($this->profiler->getStart(), 5, '.', '') . PHP_EOL;
+        $string .= "Finish:\t\t\t" . number_format($this->profiler->getFinish(), 5, '.', '') . PHP_EOL;
+        $string .= "Elapsed:\t\t" . $this->profiler->getElapsed() . ' seconds' . PHP_EOL . PHP_EOL;
+
+        $string .= "Queries:" . PHP_EOL;
+        $string .= "--------" . PHP_EOL;
+        foreach ($this->profiler->getSteps() as $step) {
+            $string .= $step->getQuery() . ' [' . $step->getElapsed() . ']' . PHP_EOL;
+            $string .= "Start:\t\t\t" . number_format($step->getStart(), 5, '.', '') . PHP_EOL;
+            $string .= "Finish:\t\t\t" . number_format($step->getFinish(), 5, '.', '') . PHP_EOL;
+            if ($step->hasParams()) {
+                $string .= "Params:" . PHP_EOL;
+                foreach ($step->getParams() as $name => $value) {
+                    $string .= "\t" . $name . ' => ' . $value . PHP_EOL;
+                }
+            }
+            if ($step->hasErrors()) {
+                $string .= "Errors:" . PHP_EOL;
+                foreach ($step->getErrors() as $time => $error) {
+                    $string .= "\t[" . number_format($time, 5, '.', '') . "]" . $error['error'] .
+                        ((!empty($error['number'])) ? ' [' . $error['number'] . ']' : '') . PHP_EOL;
+                }
+
+            }
+            $string .= PHP_EOL;
+        }
 
         return $string;
     }
