@@ -87,8 +87,8 @@ $debugger->save();
 ```
 
 In the above example, if the debugger is exposed as a service throughout the application,
-then you can call those methods above for the individual handlers to capture the things
-you need to examine.
+then you can access it and call those methods above for the individual handlers to capture
+the things you need to examine.
 
 ### Storage formats
 
@@ -105,3 +105,35 @@ $debugger = new Debug\Debugger();
 $debugger->addHandler(new Debug\Handler\MessageHandler());
 $debugger->setStorage(new Debug\Storage\File('log', 'json'));
 ```
+
+### Query Handler
+
+The query handler is a special handler that ties into the `pop-db` component and the
+profiler available with that component. It allows you to capture any database queries
+and any information associated with them.
+
+You can set up the query handler like this:
+
+```php
+use Pop\Debug;
+use Pop\Db;
+
+$db = Db\Db::mysqlConnect([
+    'database' => 'popdb',
+    'username' => 'popuser',
+    'password' => '12pop34'
+]);
+
+$queryHandler = $db->listen('Pop\Debug\Handler\QueryHandler');
+
+$debugger = new Debug\Debugger();
+$debugger->addHandler($queryHandler);
+$debugger->setStorage(new Debug\Storage\File('log'));
+
+// Run DB queries...
+
+$debugger->save();
+```
+
+So with the query handler attached to the database adapter object, any and all queries
+that are executed will be recorded by the debugger's query handler.
