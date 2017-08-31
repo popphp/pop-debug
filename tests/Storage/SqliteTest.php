@@ -18,12 +18,12 @@ class SqliteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('pop_debug', $sqlite->getTable());
     }
 
-
     public function testSaveAndGetText()
     {
         $time = time();
         $sqlite = new Storage\Sqlite(__DIR__ . '/../tmp/debug.sqlite');
         $sqlite->save($time, 'Hello World');
+        $this->assertTrue($sqlite->has($time));
         $this->assertEquals('Hello World', $sqlite->get($time));
         $sqlite->delete($time);
     }
@@ -33,6 +33,7 @@ class SqliteTest extends \PHPUnit_Framework_TestCase
         $time = time();
         $sqlite = new Storage\Sqlite(__DIR__ . '/../tmp/debug.sqlite');
         $sqlite->save($time, 'Hello World');
+        $this->assertTrue($sqlite->has($time));
         $this->assertEquals('Hello World', $sqlite->get($time));
         $sqlite->delete($time);
     }
@@ -42,6 +43,37 @@ class SqliteTest extends \PHPUnit_Framework_TestCase
         $time = time();
         $sqlite = new Storage\Sqlite(__DIR__ . '/../tmp/debug.sqlite');
         $sqlite->save($time, 'Hello World');
+        $this->assertTrue($sqlite->has($time));
+        $this->assertEquals('Hello World', $sqlite->get($time));
+        $sqlite->delete($time);
+    }
+
+    public function testSaveAndGetTextWithPdo()
+    {
+        $time = time();
+        $sqlite = new Storage\Sqlite(__DIR__ . '/../tmp/debug.sqlite', 'json', 'pop_debug', true);
+        $sqlite->save($time, 'Hello World');
+        $this->assertTrue($sqlite->has($time));
+        $this->assertEquals('Hello World', $sqlite->get($time));
+        $sqlite->delete($time);
+    }
+
+    public function testSaveAndGetJsonWithPdo()
+    {
+        $time = time();
+        $sqlite = new Storage\Sqlite(__DIR__ . '/../tmp/debug.sqlite', 'json', 'pop_debug', true);
+        $sqlite->save($time, 'Hello World');
+        $this->assertTrue($sqlite->has($time));
+        $this->assertEquals('Hello World', $sqlite->get($time));
+        $sqlite->delete($time);
+    }
+
+    public function testSaveAndGetPhpWithPdo()
+    {
+        $time = time();
+        $sqlite = new Storage\Sqlite(__DIR__ . '/../tmp/debug.sqlite', 'json', 'pop_debug', true);
+        $sqlite->save($time, 'Hello World');
+        $this->assertTrue($sqlite->has($time));
         $this->assertEquals('Hello World', $sqlite->get($time));
         $sqlite->delete($time);
     }
@@ -52,6 +84,8 @@ class SqliteTest extends \PHPUnit_Framework_TestCase
         $sqlite = new Storage\Sqlite(__DIR__ . '/../tmp/debug.sqlite');
         $sqlite->save($time, 'Hello World');
         $this->assertTrue($sqlite->has($time));
+        $sqlite->clear();
+        $this->assertFalse($sqlite->has($time));
 
         if (file_exists(__DIR__ . '/../tmp/debug.sqlite')) {
             unlink(__DIR__ . '/../tmp/debug.sqlite');

@@ -34,6 +34,25 @@ class MemoryHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertGreaterThan(0, (int)$peak);
     }
 
+    public function testFormatToString()
+    {
+        $handler = new Handler\MemoryHandler();
+        $this->assertEquals('2GB', $handler->formatMemoryToString(2147483648));
+        $this->assertEquals('512MB', $handler->formatMemoryToString(536870912));
+        $this->assertEquals('512KB', $handler->formatMemoryToString(524288));
+        $this->assertEquals('512B', $handler->formatMemoryToString(512));
+    }
+
+
+    public function testFormatToInt()
+    {
+        $handler = new Handler\MemoryHandler();
+        $this->assertEquals(2147483648, $handler->formatMemoryToInt('2GB'));
+        $this->assertEquals(536870912, $handler->formatMemoryToInt('512MB'));
+        $this->assertEquals(524288, $handler->formatMemoryToInt('512KB'));
+        $this->assertEquals(512, $handler->formatMemoryToInt('512B'));
+    }
+
     public function testPrepare()
     {
         $handler = new Handler\MemoryHandler();

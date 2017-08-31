@@ -9,8 +9,11 @@ class TimeHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testConstructor()
     {
-        $handler = new Handler\TimeHandler();
+        $handler = new Handler\TimeHandler('test1');
+        $this->assertEquals('test1', $handler->getName());
+        $handler->setName('test2');
         $this->assertInstanceOf('Pop\Debug\Handler\TimeHandler', $handler);
+        $this->assertEquals('test2', $handler->getName());
     }
 
     public function testStartAndStop()
@@ -22,7 +25,12 @@ class TimeHandlerTest extends \PHPUnit_Framework_TestCase
         $handler->stop();
         $this->assertTrue($handler->hasStopped());
         $this->assertGreaterThan(0, $handler->getStop());
+    }
 
+    public function testGetElapsed()
+    {
+        $handler = new Handler\TimeHandler(null, true);
+        $this->assertGreaterThan(0, $handler->getElapsed());
     }
 
     public function testPrepare()

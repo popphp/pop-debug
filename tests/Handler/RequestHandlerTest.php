@@ -29,6 +29,7 @@ class RequestHandlerTest extends \PHPUnit_Framework_TestCase
 
         $request = new Handler\RequestHandler();
         $this->assertEquals('/page', $request->getRequestUri());
+        $this->assertGreaterThan(0, $request->getRequestTimestamp());
         $this->assertEquals('123', $request->getQuery('var'));
         $this->assertEquals('bar', $request->getQuery('foo'));
         $this->assertEquals('var=123&foo=bar', $request->getRawData());
@@ -63,6 +64,7 @@ class RequestHandlerTest extends \PHPUnit_Framework_TestCase
 
         $request = new Handler\RequestHandler();
         $this->assertEquals('bar', $request->getParsedData()['foo']);
+        $this->assertEquals(getcwd(), $request->getDocumentRoot());
     }
 
     public function testParseXmlData()
