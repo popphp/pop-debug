@@ -65,6 +65,18 @@ class DebuggerTest extends \PHPUnit_Framework_TestCase
         $debugger['custom-exception'] = ['bad'];
     }
 
+    public function testGetData()
+    {
+        $debugger = new Debugger([
+            new Handler\MemoryHandler(),
+            new Storage\File(__DIR__ . '/tmp')
+        ]);
+        $debugger['memory']->updatePeakMemoryUsage();
+
+        $data = $debugger->getData();
+        $this->assertTrue(isset($data['memory']));
+    }
+
     public function testSave()
     {
         $debugger = new Debugger([

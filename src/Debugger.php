@@ -30,16 +30,22 @@ class Debugger implements \ArrayAccess
 {
 
     /**
-     * Debug handlers
+     * Debugger handlers
      * @var array
      */
     protected $handlers = [];
 
     /**
-     * Debug storage object
+     * Debugger storage object
      * @var Storage\StorageInterface
      */
     protected $storage = null;
+
+    /**
+     * Debugger request ID
+     * @var string
+     */
+    protected $requestId = null;
 
     /**
      * Constructor
@@ -153,6 +159,20 @@ class Debugger implements \ArrayAccess
     }
 
     /**
+     * Get all data from handlers
+     *
+     * @return array
+     */
+    public function getData()
+    {
+        $data = [];
+        foreach ($this->handlers as $name => $handler) {
+            $data[$name] = ($this->storage->getFormat() == 'text') ? $handler->prepareAsString() : $handler->prepare();
+        }
+        return $data;
+    }
+
+    /**
      * Save the debug handlers' data to storage
      *
      * @return void
@@ -161,7 +181,7 @@ class Debugger implements \ArrayAccess
     {
         foreach ($this->handlers as $name => $handler) {
             $data = ($this->storage->getFormat() == 'text') ? $handler->prepareAsString() : $handler->prepare();
-            $this->storage->save(time() . '-' . $name, $data);
+            $this->storage->save($this->getRequestId() . '-' . $name, $data);
         }
     }
 
@@ -182,6 +202,20 @@ class Debugger implements \ArrayAccess
     }
 
     /**
+     * Get current request ID
+     *
+     * @return string
+     */
+    public function getRequestId()
+    {
+        if (null === $this->requestId) {
+            $this->requestId = $this->generateId();
+        }
+
+        return $this->requestId;
+    }
+
+    /**
      * Render the debug handlers' data to string with headers
      *
      * @return string
@@ -195,6 +229,22 @@ class Debugger implements \ArrayAccess
         }
 
         return $output;
+    }
+
+    /**
+     * Generate unique ID
+     *
+     * @return string
+     */
+    public function generateId()
+    {
+        if (function_exists('random_bytes')) {
+            return bin2hex(random_bytes(16));
+        } else if (function_exists('openssl_random_pseudo_bytes')) {
+            return bin2hex(openssl_random_pseudo_bytes(16));
+        } else {
+            return md5(uniqid());
+        }
     }
 
     /**

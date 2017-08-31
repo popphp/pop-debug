@@ -46,7 +46,7 @@ class TimeHandler extends AbstractHandler
      * @param string  $name
      * @param boolean $start
      */
-    public function __construct($name = null, $start = false)
+    public function __construct($name = null, $start = true)
     {
         parent::__construct($name);
         if ($start) {
