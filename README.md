@@ -106,7 +106,7 @@ $debugger->addHandler(new Debug\Handler\MessageHandler());
 $debugger->setStorage(new Debug\Storage\File('log', 'json'));
 ```
 
-### Query Handler
+### Query handler
 
 The query handler is a special handler that ties into the `pop-db` component and the
 profiler available with that component. It allows you to capture any database queries
