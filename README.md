@@ -29,7 +29,9 @@ The provided handlers are:
 - **MemoryHandler**
     + Capture memory usage and peak memory usage
 - **MessageHandler**
-    + Capture messages at various points in the application's lifecycle
+    + Capture generic messages at various points in the application's lifecycle
+- **LogHandler**
+    + Capture standard log messages at various points in the application's lifecycle
 - **QueryHandler**
     + Capture database queries and their parameters and information
 - **RequestHandler**
@@ -105,6 +107,30 @@ $debugger = new Debug\Debugger();
 $debugger->addHandler(new Debug\Handler\MessageHandler());
 $debugger->setStorage(new Debug\Storage\File('log', 'json'));
 ```
+
+### Log handler
+
+The log handler is a special handler that ties into the `pop-log` component. It allows you
+to capture standard log messages. You can set up the log handler like this:
+
+```php
+use Pop\Debug;
+use Pop\Log;
+
+$logger = new Log\Logger(new Log\Writer\File('log/system.log'));
+$debugger = new Debug\Debugger();
+$debugger->addHandler(new Debug\Handler\LogHandler($logger));
+$debugger->setStorage(new Debug\Storage\File('log'));
+
+$debugger['log']->info("Here's some info about what just happened!");
+sleep(1);
+$debugger['log']->alert("Hey you! I must alert you to something!");
+
+$debugger->save();
+```
+
+So with the logger object attached to the debugger, the debugger can record the log entries
+that are sent to the logger as well.
 
 ### Query handler
 

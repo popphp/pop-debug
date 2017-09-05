@@ -22,6 +22,7 @@
     },
     "require-dev": {
         "popphp/pop-db" : ">=4.1.0",
+        "popphp/pop-log" : ">=3.0.0",
         "phpunit/phpunit": "5.5.*"
     },
     "autoload": {
