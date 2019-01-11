@@ -5,8 +5,9 @@ namespace Pop\Debug\Test;
 use Pop\Debug\Debugger;
 use Pop\Debug\Handler;
 use Pop\Debug\Storage;
+use PHPUnit\Framework\TestCase;
 
-class DebuggerTest extends \PHPUnit_Framework_TestCase
+class DebuggerTest extends TestCase
 {
 
     public function testConstructor1()

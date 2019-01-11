@@ -4,8 +4,9 @@ namespace Pop\Debug\Test;
 
 use Pop\Debug\Handler;
 use Pop\Db\Adapter\Profiler;
+use PHPUnit\Framework\TestCase;
 
-class QueryHandlerTest extends \PHPUnit_Framework_TestCase
+class QueryHandlerTest extends TestCase
 {
 
 

@@ -3,8 +3,9 @@
 namespace Pop\Debug\Test;
 
 use Pop\Debug\Handler;
+use PHPUnit\Framework\TestCase;
 
-class MemoryHandlerTest extends \PHPUnit_Framework_TestCase
+class MemoryHandlerTest extends TestCase
 {
 
     public function testConstructor()

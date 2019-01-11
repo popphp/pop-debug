@@ -3,8 +3,9 @@
 namespace Pop\Debug\Test;
 
 use Pop\Debug\Storage;
+use PHPUnit\Framework\TestCase;
 
-class SqliteTest extends \PHPUnit_Framework_TestCase
+class SqliteTest extends TestCase
 {
 
     public function testConstructor()

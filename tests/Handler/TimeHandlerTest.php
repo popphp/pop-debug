@@ -3,8 +3,9 @@
 namespace Pop\Debug\Test;
 
 use Pop\Debug\Handler;
+use PHPUnit\Framework\TestCase;
 
-class TimeHandlerTest extends \PHPUnit_Framework_TestCase
+class TimeHandlerTest extends TestCase
 {
 
     public function testConstructor()
