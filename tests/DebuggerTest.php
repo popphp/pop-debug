@@ -35,7 +35,7 @@ class DebuggerTest extends TestCase
 
     public function testAddHandler()
     {
-        $exception = new Handler\ExceptionHandler('custom');
+        $exception = new Handler\ExceptionHandler(false, 'custom');
         $debugger = new Debugger();
         $debugger->addHandler($exception);
         $this->assertTrue($debugger->hasHandler('custom-exception'));

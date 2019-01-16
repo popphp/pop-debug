@@ -27,10 +27,30 @@ class ExceptionHandler extends AbstractHandler
 {
 
     /**
+     * Verbose flag
+     * @var boolean
+     */
+    protected $verbose = false;
+
+    /**
      * Exceptions
      * @var array
      */
     protected $exceptions = [];
+
+    /**
+     * Constructor
+     *
+     * Instantiate a handler object
+     *
+     * @param boolean $verbose
+     * @param string  $name
+     */
+    public function __construct($verbose = false, $name = null)
+    {
+        parent::__construct($name);
+        $this->verbose = (bool)$verbose;
+    }
 
     /**
      * Add exception
@@ -101,8 +121,19 @@ class ExceptionHandler extends AbstractHandler
     public function prepareAsString()
     {
         $string = '';
+
         foreach ($this->exceptions as $time => $exception) {
-            $string .= number_format($time, 5, '.', '') . "\t" . $exception->getMessage() . PHP_EOL;
+            if ($this->verbose) {
+                $string .= number_format($time, 5, '.', '') .
+                    "\tCode: " . $exception->getCode() .
+                    "\tLine: " . $exception->getLine() .
+                    "\t" . $exception->getFile() .
+                    "\t" . $exception->getMessage() .
+                    "\t" . $exception->getTraceAsString() . PHP_EOL . PHP_EOL;
+            } else {
+                $string .= number_format($time, 5, '.', '') . "\t" . $exception->getMessage() . PHP_EOL;
+            }
+
         }
         $string .= PHP_EOL;
 

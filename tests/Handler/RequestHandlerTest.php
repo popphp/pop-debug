@@ -85,6 +85,8 @@ class RequestHandlerTest extends TestCase
 
     public function testGetHost()
     {
+        unset($_SERVER['CONTENT_TYPE']);
+
         $_SERVER['HTTP_HOST']      = '';
         $_SERVER['SERVER_NAME']    = 'localhost';
         $_SERVER['SERVER_PORT']    = 8000;

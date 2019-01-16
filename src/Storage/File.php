@@ -56,9 +56,9 @@ class File extends AbstractStorage
     public function setDir($dir)
     {
         if (!file_exists($dir)) {
-            throw new Exception('Error: That cache directory does not exist.');
+            throw new Exception('Error: That directory does not exist.');
         } else if (!is_writable($dir)) {
-            throw new Exception('Error: That cache directory is not writable.');
+            throw new Exception('Error: That directory is not writable.');
         }
 
         $this->dir = realpath($dir);
