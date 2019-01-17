@@ -154,7 +154,13 @@ class QueryHandler extends AbstractHandler
             if ($step->hasParams()) {
                 $string .= "Params:" . PHP_EOL;
                 foreach ($step->getParams() as $name => $value) {
-                    $string .= "\t" . $name . ' => ' . $value . PHP_EOL;
+                    if (is_array($value)) {
+                        foreach ($value as $v) {
+                            $string .= "\t" . $name . ' => ' . $v . PHP_EOL;
+                        }
+                    } else {
+                        $string .= "\t" . $name . ' => ' . $value . PHP_EOL;
+                    }
                 }
             }
             if ($step->hasErrors()) {
