@@ -9,7 +9,6 @@ use PHPUnit\Framework\TestCase;
 class QueryHandlerTest extends TestCase
 {
 
-
     public function testConstructor()
     {
         $profiler = new Profiler\Profiler();
@@ -18,6 +17,10 @@ class QueryHandlerTest extends TestCase
         $profiler->addStep();
         $profiler->current->setQuery('SELECT * FROM users');
         $profiler->current->finish();
+        $this->assertTrue($handler->hasProfiler());
+        $this->assertInstanceOf('Pop\Db\Adapter\Profiler\Profiler', $handler->getProfiler());
+        $this->assertInstanceOf('Pop\Db\Adapter\Profiler\Profiler', $handler->profiler());
+        $this->assertInstanceOf('Pop\Db\Adapter\Profiler\Profiler', $handler->profiler);
     }
 
     public function testPrepare()
