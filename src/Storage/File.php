@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2019 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2020 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,9 +19,9 @@ namespace Pop\Debug\Storage;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2019 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2020 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.1.0
+ * @version    1.2.0
  */
 class File extends AbstractStorage
 {
@@ -205,7 +205,8 @@ class File extends AbstractStorage
         if ($this->format == 'json') {
             $value = json_encode($value, JSON_PRETTY_PRINT);
         } else if ($this->format == 'php') {
-            $value = "<?php" . PHP_EOL . "return unserialize(base64_decode('" . base64_encode(serialize($value)) . "'));" . PHP_EOL;
+            $value = "<?php" . PHP_EOL . "return unserialize(base64_decode('" .
+                base64_encode(serialize($value)) . "'));" . PHP_EOL;
         } else if (!is_string($value)) {
             throw new Exception('Error: The value must be a string if storing as a text file.');
         }
