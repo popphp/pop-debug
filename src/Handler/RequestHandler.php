@@ -14,6 +14,7 @@
 namespace Pop\Debug\Handler;
 
 use Pop\Http\Request;
+use Pop\Session\Session;
 
 /**
  * Debug request handler class
@@ -66,7 +67,9 @@ class RequestHandler extends AbstractHandler
      */
     public function prepare()
     {
-        $data = [
+        Session::getInstance();
+
+        $data    = [
             'uri'       => $this->request->getRequestUri(),
             'headers'   => $this->request->getHeaders(),
             'server'    => $this->request->getServer(),
@@ -78,7 +81,7 @@ class RequestHandler extends AbstractHandler
             'delete'    => $this->request->getDelete(),
             'files'     => $this->request->getFiles(),
             'cookie'    => $this->request->getCookie(),
-            'session'   => $this->request->getSession(),
+            'session'   => (isset($_SESSION)) ? $_SESSION : [],
             'raw'       => $this->request->getRawData(),
             'parsed'    => $this->request->getParsedData(),
             'timestamp' => number_format($this->requestTimestamp, 5, '.', '')
@@ -150,14 +153,14 @@ class RequestHandler extends AbstractHandler
     public function prepareAsString()
     {
         $string = '';
-        if (!empty($this->requestUri)) {
-            $string .= "URI: " . $this->requestUri . ' [' .
+        if (!empty($this->request->getRequestUri())) {
+            $string .= "URI: " . $this->request->getRequestUri() . ' [' .
                 number_format($this->requestTimestamp, 5, '.', '') . ']' . PHP_EOL;
-            if (count($this->headers) > 0) {
+            if ($this->request->hasHeaders()) {
                 $string .= PHP_EOL;
                 $string .= "HEADERS:" . PHP_EOL;
                 $string .= "--------" . PHP_EOL;
-                foreach ($this->headers as $header => $value) {
+                foreach ($this->request->getHeaders() as $header => $value) {
                     $string .= $header . ": " . $value . PHP_EOL;
                 }
                 $string .= PHP_EOL;
@@ -175,10 +178,10 @@ class RequestHandler extends AbstractHandler
                     $string .= PHP_EOL;
                 }
             }
-            if (!empty($this->rawData)) {
+            if (!empty($this->request->getRawData())) {
                 $string .= "RAW:" . PHP_EOL;
                 $string .= "----" . PHP_EOL;
-                $string .= $this->rawData . PHP_EOL;
+                $string .= $this->request->getRawData() . PHP_EOL;
             }
         } else {
             $string .= "No Request URI Detected." . PHP_EOL;
