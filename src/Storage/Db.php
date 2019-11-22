@@ -329,7 +329,7 @@ class Db extends AbstractStorage
         $schema = $this->db->createSchema();
         $schema->create($this->table)
             ->int('id')->increment()
-            ->varchar('key', 255)->unique()
+            ->varchar('key', 255)
             ->text('value')
             ->primary('id');
 
