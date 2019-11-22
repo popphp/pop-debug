@@ -80,7 +80,7 @@ class RequestHandler extends AbstractHandler
             'patch'     => $this->request->getPatch(),
             'delete'    => $this->request->getDelete(),
             'files'     => $this->request->getFiles(),
-            'cookie'    => $this->request->getCookie(),
+            'cookie'    => (isset($_COOKIE)) ? $_COOKIE : [],
             'session'   => (isset($_SESSION)) ? $_SESSION : [],
             'raw'       => $this->request->getRawData(),
             'parsed'    => $this->request->getParsedData(),
@@ -165,15 +165,15 @@ class RequestHandler extends AbstractHandler
                 }
                 $string .= PHP_EOL;
             }
-            $dataArrays = [
-                'server', 'env', 'cookie', 'session', 'get', 'post', 'put', 'patch', 'delete', 'files', 'parsedData'
-            ];
-            foreach ($dataArrays as $data) {
-                if (count($this->{$data}) > 0) {
-                    $string .= str_replace('DATA', '', strtoupper($data)) . ":" . PHP_EOL;
-                    $string .= str_repeat('-', (strlen(str_replace('DATA', '', strtoupper($data))) + 1)) . PHP_EOL;
-                    foreach ($this->{$data} as $key => $value) {
-                        $string .= $key . ": " . ((is_array($value)) ? http_build_query($value) : $value) . PHP_EOL;
+
+            $dataArrays = $this->prepare();
+
+            foreach ($dataArrays as $key => $data) {
+                if (is_array($data) && (count($data) > 0)) {
+                    $string .= str_replace('DATA', '', strtoupper($key)) . ":" . PHP_EOL;
+                    $string .= str_repeat('-', (strlen(str_replace('DATA', '', strtoupper($key))) + 1)) . PHP_EOL;
+                    foreach ($data as $k => $v) {
+                        $string .= $k . ": " . ((is_array($v)) ? http_build_query($v) : $v) . PHP_EOL;
                     }
                     $string .= PHP_EOL;
                 }

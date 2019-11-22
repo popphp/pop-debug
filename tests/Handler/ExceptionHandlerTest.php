@@ -46,4 +46,16 @@ class ExceptionHandlerTest extends TestCase
         $this->assertContains('Error: Whoops!', $string);
     }
 
+    public function testPrepareAsStringVerbose()
+    {
+        $handler = new Handler\ExceptionHandler(true);
+        $handler->addException(new \Exception('Error: Whoops!'));
+
+        $string = $handler->prepareHeaderAsString() . $handler->prepareAsString();
+
+        $this->assertContains('Exception Handler', $string);
+        $this->assertContains('Error: Whoops!', $string);
+        $this->assertContains('Code:', $string);
+    }
+
 }

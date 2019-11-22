@@ -195,7 +195,7 @@ class File extends AbstractStorage
             $value = "<?php" . PHP_EOL . "return unserialize(base64_decode('" .
                 base64_encode(serialize($value)) . "'));" . PHP_EOL;
         } else if (!is_string($value)) {
-            throw new Exception('Error: The value must be a string if storing as a text file.');
+            throw new Exception('Error: The value must be a string if storing in text format.');
         }
 
         return $value;

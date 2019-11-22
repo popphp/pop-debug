@@ -124,15 +124,15 @@ class Db extends AbstractStorage
         $placeholder = $sql->getPlaceholder();
 
         if ($placeholder == ':') {
-            $placeholder .= 'id';
+            $placeholder .= 'key';
         } else if ($placeholder == '$') {
             $placeholder .= '1';
         }
 
-        $sql->select()->from($this->table)->where('id = ' . $placeholder);
+        $sql->select()->from($this->table)->where('key = ' . $placeholder);
 
         $this->db->prepare($sql)
-            ->bindParams(['id' => $id])
+            ->bindParams(['key' => $id])
             ->execute();
 
         $rows = $this->db->fetchAll();
@@ -143,17 +143,8 @@ class Db extends AbstractStorage
         // Insert new value
         if (count($rows) == 0) {
             if ($placeholder == ':') {
-                $placeholder = ':value';
-            } else if ($placeholder == '$') {
-                $placeholder = '$1';
-            }
-            $sql->insert($this->table)->values(['value' => $placeholder]);
-            $params = ['value' => $this->encodeValue($value)];
-        // Else, update it.
-        } else {
-            if ($placeholder == ':') {
-                $placeholder1 = ':value';
-                $placeholder2 = ':id';
+                $placeholder1 = ':key';
+                $placeholder2 = ':value';
             } else if ($placeholder == '$') {
                 $placeholder1 = '$1';
                 $placeholder2 = '$2';
@@ -161,10 +152,27 @@ class Db extends AbstractStorage
                 $placeholder1 = $placeholder;
                 $placeholder2 = $placeholder;
             }
-            $sql->update($this->table)->values(['value' => $placeholder1])->where('id = ' . $placeholder2);
+            $sql->insert($this->table)->values(['key' => $placeholder1, 'value' => $placeholder2]);
+            $params = [
+                'key'   => $id,
+                'value' => $this->encodeValue($value)
+            ];
+        // Else, update it.
+        } else {
+            if ($placeholder == ':') {
+                $placeholder1 = ':value';
+                $placeholder2 = ':key';
+            } else if ($placeholder == '$') {
+                $placeholder1 = '$1';
+                $placeholder2 = '$2';
+            } else {
+                $placeholder1 = $placeholder;
+                $placeholder2 = $placeholder;
+            }
+            $sql->update($this->table)->values(['value' => $placeholder1])->where('key = ' . $placeholder2);
             $params = [
                 'value' => $this->encodeValue($value),
-                'id'    => $id
+                'key'   => $id
             ];
         }
 
@@ -189,15 +197,15 @@ class Db extends AbstractStorage
         $value       = false;
 
         if ($placeholder == ':') {
-            $placeholder .= 'id';
+            $placeholder .= 'key';
         } else if ($placeholder == '$') {
             $placeholder .= '1';
         }
 
-        $sql->select()->from($this->table)->where('id = ' . $placeholder);
+        $sql->select()->from($this->table)->where('key = ' . $placeholder);
 
         $this->db->prepare($sql)
-            ->bindParams(['id' => $id])
+            ->bindParams(['key' => $id])
             ->execute();
 
         $rows = $this->db->fetchAll();
@@ -222,15 +230,15 @@ class Db extends AbstractStorage
         $placeholder = $sql->getPlaceholder();
 
         if ($placeholder == ':') {
-            $placeholder .= 'id';
+            $placeholder .= 'key';
         } else if ($placeholder == '$') {
             $placeholder .= '1';
         }
 
-        $sql->select()->from($this->table)->where('id = ' . $placeholder);
+        $sql->select()->from($this->table)->where('key = ' . $placeholder);
 
         $this->db->prepare($sql)
-            ->bindParams(['id' => $id])
+            ->bindParams(['key' => $id])
             ->execute();
 
         $rows = $this->db->fetchAll();
@@ -250,15 +258,15 @@ class Db extends AbstractStorage
         $placeholder = $sql->getPlaceholder();
 
         if ($placeholder == ':') {
-            $placeholder .= 'id';
+            $placeholder .= 'key';
         } else if ($placeholder == '$') {
             $placeholder .= '1';
         }
 
-        $sql->delete($this->table)->where('id = ' . $placeholder);
+        $sql->delete($this->table)->where('key = ' . $placeholder);
 
         $this->db->prepare($sql)
-            ->bindParams(['id' => $id])
+            ->bindParams(['key' => $id])
             ->execute();
     }
 
@@ -283,9 +291,9 @@ class Db extends AbstractStorage
      */
     public function encodeValue($value)
     {
-        if ($this->format == 'json') {
+        if ($this->format == self::JSON) {
             $value = json_encode($value, JSON_PRETTY_PRINT);
-        } else if ($this->format == 'php') {
+        } else if ($this->format == self::PHP) {
             $value = serialize($value);
         } else if (!is_string($value)) {
             throw new Exception('Error: The value must be a string if storing in text format.');
@@ -321,6 +329,7 @@ class Db extends AbstractStorage
         $schema = $this->db->createSchema();
         $schema->create($this->table)
             ->int('id')->increment()
+            ->varchar('key', 255)->unique()
             ->text('value')
             ->primary('id');
 

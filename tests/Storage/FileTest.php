@@ -13,8 +13,7 @@ class FileTest extends TestCase
         $file = new Storage\File(__DIR__ . '/../tmp');
         $this->assertInstanceOf('Pop\Debug\Storage\File', $file);
         $this->assertEquals(realpath(__DIR__ . '/../tmp'), $file->getDir());
-        $this->assertEquals('text', $file->getFormat());
-        $this->assertTrue($file->isText());
+        $this->assertNull($file->getFormat());
         $this->assertFalse($file->isJson());
         $this->assertFalse($file->isPhp());
 

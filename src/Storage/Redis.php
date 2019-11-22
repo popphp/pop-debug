@@ -119,7 +119,7 @@ class Redis extends AbstractStorage
      */
     public function delete($id)
     {
-        $this->redis->delete($id);
+        $this->redis->del($id);
         return $this;
     }
 
@@ -143,9 +143,9 @@ class Redis extends AbstractStorage
      */
     public function encodeValue($value)
     {
-        if ($this->format == 'json') {
+        if ($this->format == self::JSON) {
             $value = json_encode($value, JSON_PRETTY_PRINT);
-        } else if ($this->format == 'php') {
+        } else if ($this->format == self::PHP) {
             $value = serialize($value);
         } else if (!is_string($value)) {
             throw new Exception('Error: The value must be a string if storing as a text file.');

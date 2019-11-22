@@ -167,7 +167,7 @@ class Debugger implements \ArrayAccess
     {
         $data = [];
         foreach ($this->handlers as $name => $handler) {
-            $data[$name] = ($this->storage->getFormat() == 'text') ? $handler->prepareAsString() : $handler->prepare();
+            $data[$name] = (null === $this->storage->getFormat()) ? $handler->prepareAsString() : $handler->prepare();
         }
         return $data;
     }
@@ -180,7 +180,7 @@ class Debugger implements \ArrayAccess
     public function save()
     {
         foreach ($this->handlers as $name => $handler) {
-            $data = ($this->storage->getFormat() == 'text') ? $handler->prepareAsString() : $handler->prepare();
+            $data = (null === $this->storage->getFormat()) ? $handler->prepareAsString() : $handler->prepare();
             $this->storage->save($this->getRequestId() . '-' . $name, $data);
         }
     }
