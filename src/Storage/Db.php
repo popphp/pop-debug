@@ -162,8 +162,6 @@ class Db extends AbstractStorage
                 $placeholder2 = $placeholder;
             }
             $sql->update($this->table)->values(['value' => $placeholder1])->where('id = ' . $placeholder2);
-            $sql = 'UPDATE "' . $this->table .
-                '" SET "value" = :value WHERE "id" = :id';
             $params = [
                 'value' => $this->encodeValue($value),
                 'id'    => $id
@@ -206,13 +204,7 @@ class Db extends AbstractStorage
 
         // If the value is found, return.
         if (isset($rows[0]) && isset($rows[0]['value'])) {
-            if ($this->format == 'json') {
-                $value = json_decode($rows[0]['value'], true);
-            } else if ($this->format == 'php') {
-                $value = unserialize($rows[0]['value']);
-            } else {
-                $value = $rows[0]['value'];
-            }
+            $value = $this->decodeValue($rows[0]['value']);
         }
 
         return $value;
@@ -256,7 +248,6 @@ class Db extends AbstractStorage
     {
         $sql         = $this->db->createSql();
         $placeholder = $sql->getPlaceholder();
-        $value       = false;
 
         if ($placeholder == ':') {
             $placeholder .= 'id';
@@ -298,6 +289,23 @@ class Db extends AbstractStorage
             $value = serialize($value);
         } else if (!is_string($value)) {
             throw new Exception('Error: The value must be a string if storing in text format.');
+        }
+
+        return $value;
+    }
+
+    /**
+     * Decode the value based on the format
+     *
+     * @param  mixed  $value
+     * @return mixed
+     */
+    public function decodeValue($value)
+    {
+        if ($this->format == self::JSON) {
+            $value = json_decode($value, true);
+        } else if ($this->format == self::PHP) {
+            $value = unserialize($value);
         }
 
         return $value;

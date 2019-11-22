@@ -35,13 +35,6 @@ interface StorageInterface
     public function setFormat($format);
 
     /**
-     * Determine if the format is text
-     *
-     * @return boolean
-     */
-    public function isText();
-
-    /**
      * Determine if the format is PHP
      *
      * @return boolean
@@ -106,9 +99,16 @@ interface StorageInterface
      * Encode the value based on the format
      *
      * @param  mixed  $value
-     * @throws Exception
      * @return string
      */
     public function encodeValue($value);
+
+    /**
+     * Decode the value based on the format
+     *
+     * @param  mixed  $value
+     * @return mixed
+     */
+    public function decodeValue($value);
 
 }

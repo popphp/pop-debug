@@ -42,7 +42,7 @@ class Redis extends AbstractStorage
      * @param  int    $port
      * @throws Exception
      */
-    public function __construct($format = 'json', $host = 'localhost', $port = 6379)
+    public function __construct($format = null, $host = 'localhost', $port = 6379)
     {
         if (!class_exists('Redis', false)) {
             throw new Exception('Error: Redis is not available.');
@@ -97,15 +97,7 @@ class Redis extends AbstractStorage
      */
     public function get($id)
     {
-        $value = $this->redis->get($id);
-        if ($value !== false) {
-            if ($this->format == 'json') {
-                $value = json_decode($value, true);
-            } else if ($this->format == 'php') {
-                $value = unserialize($value);
-            }
-        }
-        return $value;
+        return $this->decodeValue($this->redis->get($id));
     }
 
     /**
@@ -157,6 +149,25 @@ class Redis extends AbstractStorage
             $value = serialize($value);
         } else if (!is_string($value)) {
             throw new Exception('Error: The value must be a string if storing as a text file.');
+        }
+
+        return $value;
+    }
+
+    /**
+     * Decode the value based on the format
+     *
+     * @param  mixed  $value
+     * @return mixed
+     */
+    public function decodeValue($value)
+    {
+        if ($value !== false) {
+            if ($this->format == self::JSON) {
+                $value = json_decode($value, true);
+            } else if ($this->format == self::PHP) {
+                $value = unserialize($value);
+            }
         }
 
         return $value;
