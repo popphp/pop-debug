@@ -42,7 +42,7 @@ The provided handlers are:
 Also, the debugger supports a few storage methods to storage the debug data after the request is complete:
 
 - File
-- SQLite Database
+- Database
 - Redis
 
 ### Setting up the debugger
