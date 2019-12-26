@@ -275,11 +275,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      */
     public function __set($name, $value)
     {
-        if (!($value instanceof Handler\HandlerInterface)) {
-            throw new Exception('Error: The value passed must be an instance of HandlerInterface');
-        }
-        $this->handlers[$name] = $value;
-        return $this;
+        return $this->offsetSet($name, $value);
     }
 
     /**
@@ -290,7 +286,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      */
     public function __get($name)
     {
-        return (isset($this->handlers[$name])) ? $this->handlers[$name] : null;
+        return $this->offsetGet($name);
     }
 
     /**
@@ -301,7 +297,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      */
     public function __isset($name)
     {
-        return isset($this->handlers[$name]);
+        return $this->offsetExists($name);
     }
 
     /**
@@ -312,9 +308,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      */
     public function __unset($name)
     {
-        if (isset($this->handlers[$name])) {
-            unset($this->handlers[$name]);
-        }
+        $this->offsetUnset($name);
     }
 
     /**
@@ -327,7 +321,11 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      */
     public function offsetSet($offset, $value)
     {
-        return $this->__set($offset, $value);
+        if (!($value instanceof Handler\HandlerInterface)) {
+            throw new Exception('Error: The value passed must be an instance of HandlerInterface');
+        }
+        $this->handlers[$offset] = $value;
+        return $this;
     }
 
     /**
@@ -338,7 +336,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      */
     public function offsetGet($offset)
     {
-        return $this->__get($offset);
+        return (isset($this->handlers[$offset])) ? $this->handlers[$offset] : null;
     }
 
     /**
@@ -349,7 +347,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      */
     public function offsetExists($offset)
     {
-        return $this->__isset($offset);
+        return isset($this->handlers[$offset]);
     }
 
     /**
@@ -360,7 +358,9 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      */
     public function offsetUnset($offset)
     {
-        $this->__unset($offset);
+        if (isset($this->handlers[$offset])) {
+            unset($this->handlers[$offset]);
+        }
     }
 
     /**
