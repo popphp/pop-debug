@@ -26,7 +26,7 @@ use Pop\Debug\Storage;
  * @license    http://www.popphp.org/license     New BSD License
  * @version    1.2.0
  */
-class Debugger implements \ArrayAccess
+class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
 {
 
     /**
@@ -246,16 +246,88 @@ class Debugger implements \ArrayAccess
             return md5(uniqid());
         }
     }
+    /**
+     * Method to get the count of the handlers
+     *
+     * @return int
+     */
+    public function count()
+    {
+        return count($this->handlers);
+    }
 
     /**
-     * ArrayAccess offsetExists
+     * Method to iterate over the handlers
      *
-     * @param  mixed $offset
+     * @return \ArrayIterator
+     */
+    public function getIterator()
+    {
+        return new \ArrayIterator($this->handlers);
+    }
+
+    /**
+     * Set a handler
+     *
+     * @param  string $name
+     * @param  mixed $value
+     * @return Debugger
+     */
+    public function __set($name, $value)
+    {
+        if (!($value instanceof Handler\HandlerInterface)) {
+            throw new Exception('Error: The value passed must be an instance of HandlerInterface');
+        }
+        $this->handlers[$name] = $value;
+        return $this;
+    }
+
+    /**
+     * Get a handler
+     *
+     * @param  string $name
+     * @return Handler\HandlerInterface
+     */
+    public function __get($name)
+    {
+        return (isset($this->handlers[$name])) ? $this->handlers[$name] : null;
+    }
+
+    /**
+     * Is handler set
+     *
+     * @param  string $name
      * @return boolean
      */
-    public function offsetExists($offset)
+    public function __isset($name)
     {
-        return isset($this->handlers[$offset]);
+        return isset($this->handlers[$name]);
+    }
+
+    /**
+     * Unset a handler
+     *
+     * @param  string $name
+     * @return void
+     */
+    public function __unset($name)
+    {
+        if (isset($this->handlers[$name])) {
+            unset($this->handlers[$name]);
+        }
+    }
+
+    /**
+     * ArrayAccess offsetSet
+     *
+     * @param  mixed $offset
+     * @param  mixed $value
+     * @throws Exception
+     * @return Debugger
+     */
+    public function offsetSet($offset, $value)
+    {
+        return $this->__set($offset, $value);
     }
 
     /**
@@ -266,23 +338,18 @@ class Debugger implements \ArrayAccess
      */
     public function offsetGet($offset)
     {
-        return (isset($this->handlers[$offset])) ? $this->handlers[$offset] : null;
+        return $this->__get($offset);
     }
 
     /**
-     * ArrayAccess offsetSet
+     * ArrayAccess offsetExists
      *
      * @param  mixed $offset
-     * @param  mixed $value
-     * @throws Exception
-     * @return void
+     * @return boolean
      */
-    public function offsetSet($offset, $value)
+    public function offsetExists($offset)
     {
-        if (!($value instanceof Handler\HandlerInterface)) {
-            throw new Exception('Error: The value passed must be an instance of HandlerInterface');
-        }
-        $this->handlers[$offset] = $value;
+        return $this->__isset($offset);
     }
 
     /**
@@ -293,9 +360,7 @@ class Debugger implements \ArrayAccess
      */
     public function offsetUnset($offset)
     {
-        if (isset($this->handlers[$offset])) {
-            unset($this->handlers[$offset]);
-        }
+        $this->__unset($offset);
     }
 
     /**

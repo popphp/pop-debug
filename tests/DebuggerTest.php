@@ -38,9 +38,18 @@ class DebuggerTest extends TestCase
         $exception = new Handler\ExceptionHandler(false, 'custom');
         $debugger = new Debugger();
         $debugger->addHandler($exception);
+
+        $handlerName = null;
+
+        foreach ($debugger as $name => $handler) {
+            $handlerName = $name;
+        }
+
+        $this->assertEquals('custom-exception', $handlerName);
         $this->assertTrue($debugger->hasHandler('custom-exception'));
         $this->assertTrue(isset($debugger['custom-exception']));
         $this->assertEquals(1, count($debugger->getHandlers()));
+        $this->assertEquals(1, count($debugger));
         $this->assertInstanceOf('Pop\Debug\Handler\ExceptionHandler', $debugger->getHandler('custom-exception'));
         $this->assertInstanceOf('Pop\Debug\Handler\ExceptionHandler', $debugger['custom-exception']);
     }
