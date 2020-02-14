@@ -4,7 +4,6 @@ namespace {
     ob_start();
 }
 
-
 namespace Pop\Debug\Test {
 
     use Pop\Debug\Handler;
@@ -17,8 +16,8 @@ namespace Pop\Debug\Test {
         {
             $request = new Handler\RequestHandler();
             $this->assertInstanceOf('Pop\Debug\Handler\RequestHandler', $request);
-            $this->assertInstanceOf('Pop\Http\Request', $request->getRequest());
-            $this->assertInstanceOf('Pop\Http\Request', $request->request());
+            $this->assertInstanceOf('Pop\Http\Server\Request', $request->getRequest());
+            $this->assertInstanceOf('Pop\Http\Server\Request', $request->request());
             $this->assertTrue($request->hasRequest());
             $this->assertNotEmpty($request->getRequestTimestamp());
         }
