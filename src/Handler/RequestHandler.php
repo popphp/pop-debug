@@ -13,7 +13,7 @@
  */
 namespace Pop\Debug\Handler;
 
-use Pop\Http\Request;
+use Pop\Http\Server\Request;
 use Pop\Session\Session;
 
 /**
@@ -69,7 +69,7 @@ class RequestHandler extends AbstractHandler
     {
         Session::getInstance();
 
-        $data    = [
+        return [
             'uri'       => $this->request->getRequestUri(),
             'headers'   => $this->request->getHeaders(),
             'server'    => $this->request->getServer(),
@@ -86,8 +86,6 @@ class RequestHandler extends AbstractHandler
             'parsed'    => $this->request->getParsedData(),
             'timestamp' => number_format($this->requestTimestamp, 5, '.', '')
         ];
-
-        return $data;
     }
 
     /**
