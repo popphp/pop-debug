@@ -70,7 +70,7 @@ class FileTest extends TestCase
         $file->save($time, 'Hello World');
         $this->assertFileExists(__DIR__ . '/../tmp/' . $time . '.log');
         $file->clear();
-        $this->assertFileNotExists(__DIR__ . '/../tmp/' . $time . '.log');
+        $this->assertFileDoesNotExist(__DIR__ . '/../tmp/' . $time . '.log');
         touch(__DIR__ . '/../tmp/.empty');
     }
 

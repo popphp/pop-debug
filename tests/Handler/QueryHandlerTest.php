@@ -44,8 +44,8 @@ class QueryHandlerTest extends TestCase
 
         $string = $handler->prepareHeaderAsString() . $handler->prepareAsString();
 
-        $this->assertContains('Query Handler', $string);
-        $this->assertContains('SELECT * FROM users', $string);
+        $this->assertStringContainsString('Query Handler', $string);
+        $this->assertStringContainsString('SELECT * FROM users', $string);
     }
 
 }

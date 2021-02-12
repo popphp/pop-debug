@@ -40,8 +40,8 @@ namespace Pop\Debug\Test {
 
             $string = $request->prepareHeaderAsString() . $request->prepareAsString();
 
-            $this->assertContains('Request Handler', $string);
-            $this->assertContains('URI', $string);
+            $this->assertStringContainsString('Request Handler', $string);
+            $this->assertStringContainsString('URI', $string);
         }
 
     }

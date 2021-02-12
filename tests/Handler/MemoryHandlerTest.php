@@ -75,8 +75,8 @@ class MemoryHandlerTest extends TestCase
 
         $string = $handler->prepareHeaderAsString() . $handler->prepareAsString();
 
-        $this->assertContains('Memory Handler', $string);
-        $this->assertContains('Limit', $string);
+        $this->assertStringContainsString('Memory Handler', $string);
+        $this->assertStringContainsString('Limit', $string);
     }
 
 }

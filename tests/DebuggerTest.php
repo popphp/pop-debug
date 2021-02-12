@@ -106,7 +106,7 @@ class DebuggerTest extends TestCase
         while (false !== ($obj = readdir($dh))) {
             if (($obj != '.') && ($obj != '..') && ($obj != '.empty') &&
                 !is_dir(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj) && is_file(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj)) {
-                $this->assertContains('Usage', file_get_contents(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj));
+                $this->assertStringContainsString('Usage', file_get_contents(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj));
                 break;
             }
         }
@@ -125,7 +125,7 @@ class DebuggerTest extends TestCase
         $debugger['memory']->updatePeakMemoryUsage();
 
         $data = $debugger->render();
-        $this->assertContains('Usage', $data);
+        $this->assertStringContainsString('Usage', $data);
     }
 
     public function testRenderWithHeaders()
@@ -137,7 +137,7 @@ class DebuggerTest extends TestCase
         $debugger['memory']->updatePeakMemoryUsage();
 
         $data = $debugger->renderWithHeaders();
-        $this->assertContains('Memory Handler', $data);
+        $this->assertStringContainsString('Memory Handler', $data);
     }
 
     public function testRenderToString()
@@ -152,7 +152,7 @@ class DebuggerTest extends TestCase
         echo $debugger;
         $results = ob_get_clean();
 
-        $this->assertContains('Memory Handler', $results);
+        $this->assertStringContainsString('Memory Handler', $results);
     }
 
 }

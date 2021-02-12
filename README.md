@@ -1,7 +1,7 @@
 pop-debug
 =========
 
-[![Build Status](https://travis-ci.org/popphp/pop-debug.svg?branch=master)](https://travis-ci.org/popphp/pop-debug)
+[![Build Status](https://github.com/popphp/pop-debug/workflows/phpunit/badge.svg)](https://github.com/popphp/pop-debug/actions)
 [![Coverage Status](http://cc.popphp.org/coverage.php?comp=pop-debug)](http://cc.popphp.org/pop-debug/)
 
 OVERVIEW

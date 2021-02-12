@@ -18,13 +18,13 @@
         }
     ],
     "require": {
-        "php": ">=7.1.0",
+        "php": ">=7.3.0",
         "popphp/pop-db": "^5.0.5",
-        "popphp/pop-http": "^4.0.0",
-        "popphp/pop-session": "^3.2.0"
+        "popphp/pop-http": "^4.1.0",
+        "popphp/pop-session": "^3.3.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^7.0.0"
+        "phpunit/phpunit": "^9.0.0"
     },
     "autoload": {
         "psr-4": {
@@ -36,9 +36,12 @@
             "Pop\\Debug\\Test\\": "tests/"
         }
     },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.2.x-dev"
+            "dev-master": "1.3.x-dev"
         }
     }
 }

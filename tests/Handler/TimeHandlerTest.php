@@ -52,8 +52,8 @@ class TimeHandlerTest extends TestCase
 
         $string = $handler->prepareHeaderAsString() . $handler->prepareAsString();
 
-        $this->assertContains('Time Handler', $string);
-        $this->assertContains('Start', $string);
+        $this->assertStringContainsString('Time Handler', $string);
+        $this->assertStringContainsString('Start', $string);
     }
 
 }
