@@ -31,6 +31,7 @@ class TimeHandlerTest extends TestCase
     public function testGetElapsed()
     {
         $handler = new Handler\TimeHandler(null, true);
+        sleep(2);
         $this->assertGreaterThan(0, $handler->getElapsed());
     }
 
