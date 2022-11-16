@@ -60,7 +60,7 @@ class ExceptionHandler extends AbstractHandler
      */
     public function addException(\Exception $exception)
     {
-        $this->exceptions[microtime(true)] = $exception;
+        $this->exceptions[(string)microtime(true)] = $exception;
         return $this;
     }
 

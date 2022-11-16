@@ -75,7 +75,7 @@ class MemoryHandler extends AbstractHandler
      */
     public function updateMemoryUsage($real = false)
     {
-        $this->usages[microtime(true)] = memory_get_usage($real);
+        $this->usages[(string)microtime(true)] = memory_get_usage($real);
         return $this;
     }
 
@@ -107,7 +107,7 @@ class MemoryHandler extends AbstractHandler
      */
     public function updatePeakMemoryUsage($real = false)
     {
-        $this->peaks[microtime(true)] = memory_get_peak_usage($real);
+        $this->peaks[(string)microtime(true)] = memory_get_peak_usage($real);
         return $this;
     }
 

@@ -15,6 +15,7 @@ namespace Pop\Debug;
 
 use Pop\Debug\Handler;
 use Pop\Debug\Storage;
+use ReturnTypeWillChange;
 
 /**
  * Debugger class
@@ -251,7 +252,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return count($this->handlers);
     }
@@ -261,7 +262,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      *
      * @return \ArrayIterator
      */
-    public function getIterator()
+    public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->handlers);
     }
@@ -319,6 +320,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * @throws Exception
      * @return Debugger
      */
+    #[ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         if (!($value instanceof Handler\HandlerInterface)) {
@@ -334,6 +336,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * @param  mixed $offset
      * @return mixed
      */
+    #[ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return (isset($this->handlers[$offset])) ? $this->handlers[$offset] : null;
@@ -345,7 +348,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * @param  mixed $offset
      * @return boolean
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return isset($this->handlers[$offset]);
     }
@@ -356,6 +359,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * @param  mixed $offset
      * @return void
      */
+    #[ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         if (isset($this->handlers[$offset])) {

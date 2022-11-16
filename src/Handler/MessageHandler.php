@@ -40,7 +40,7 @@ class MessageHandler extends AbstractHandler
      */
     public function addMessage($message)
     {
-        $this->messages[microtime(true)] = $message;
+        $this->messages[(string)microtime(true)] = $message;
         return $this;
     }
 
