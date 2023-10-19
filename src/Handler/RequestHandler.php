@@ -14,6 +14,7 @@
 namespace Pop\Debug\Handler;
 
 use Pop\Http\Server\Request;
+use Pop\Http\Uri;
 use Pop\Session\Session;
 
 /**
@@ -53,7 +54,7 @@ class RequestHandler extends AbstractHandler
     {
         parent::__construct($name);
         if ($request === null) {
-            $request = new Request();
+            $request = new Request(new Uri());
         }
         $this->setRequest($request);
 
@@ -70,7 +71,7 @@ class RequestHandler extends AbstractHandler
         Session::getInstance();
 
         return [
-            'uri'       => $this->request->getRequestUri(),
+            'uri'       => $this->request->getUri()->getUri(),
             'headers'   => $this->request->getHeaders(),
             'server'    => $this->request->getServer(),
             'env'       => $this->request->getEnv(),
@@ -151,8 +152,8 @@ class RequestHandler extends AbstractHandler
     public function prepareAsString(): string
     {
         $string = '';
-        if (!empty($this->request->getRequestUri())) {
-            $string .= "URI: " . $this->request->getRequestUri() . ' [' .
+        if (!empty($this->request->getUri()) && !empty($this->request->getUri()->getUri())) {
+            $string .= "URI: " . $this->request->getUri()->getUri() . ' [' .
                 number_format($this->requestTimestamp, 5, '.', '') . ']' . PHP_EOL;
             if ($this->request->hasHeaders()) {
                 $string .= PHP_EOL;

@@ -197,11 +197,11 @@ class MemoryHandler extends AbstractHandler
     /**
      * Format memory amount into readable string
      *
-     * @param  int $memory
+     * @param  int|string $memory
      * @param  int $bytes
      * @return string
      */
-    public function formatMemoryToString(int $memory, int $bytes = 1024): string
+    public function formatMemoryToString(int|string $memory, int $bytes = 1024): string
     {
         if ($memory >= pow($bytes, 3)) {
             $memory = round(($memory / pow($bytes, 3)), 2) . 'GB';
@@ -219,11 +219,11 @@ class MemoryHandler extends AbstractHandler
     /**
      * Format memory amount into integer
      *
-     * @param  int $memory
+     * @param  int|string $memory
      * @param  int $bytes
      * @return int
      */
-    public function formatMemoryToInt(int $memory, int $bytes = 1024): int
+    public function formatMemoryToInt(int|string $memory, int $bytes = 1024): int
     {
         $factor = 1;
 
@@ -235,7 +235,7 @@ class MemoryHandler extends AbstractHandler
             $factor = $bytes;
         }
 
-        return $memory * $factor;
+        return (int)$memory * $factor;
     }
 
 }

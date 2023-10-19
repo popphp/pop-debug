@@ -94,9 +94,9 @@ abstract class AbstractStorage implements StorageInterface
     /**
      * Get the storage format
      *
-     * @return string
+     * @return ?string
      */
-    public function getFormat(): bool
+    public function getFormat(): ?string
     {
         return $this->format;
     }
