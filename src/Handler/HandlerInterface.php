@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,9 +19,9 @@ namespace Pop\Debug\Handler;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 interface HandlerInterface
 {
@@ -30,36 +30,36 @@ interface HandlerInterface
      * Set name
      *
      * @param  string  $name
-     * @return AbstractHandler
+     * @return HandlerInterface
      */
-    public function setName($name);
+    public function setName(string $name): HandlerInterface;
 
     /**
      * Get name
      *
-     * @return string
+     * @return ?string
      */
-    public function getName();
+    public function getName(): ?string;
 
     /**
      * Prepare handler data for storage
      *
      * @return array
      */
-    public function prepare();
+    public function prepare(): array;
 
     /**
      * Prepare header string
      *
      * @return string
      */
-    public function prepareHeaderAsString();
+    public function prepareHeaderAsString(): string;
 
     /**
      * Prepare handler data as string
      *
      * @return string
      */
-    public function prepareAsString();
+    public function prepareAsString(): string;
 
 }

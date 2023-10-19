@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -13,36 +13,38 @@
  */
 namespace Pop\Debug\Storage;
 
+use RedisException;
+
 /**
  * Debug redis storage class
  *
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 class Redis extends AbstractStorage
 {
 
     /**
      * Redis object
-     * @var \Redis
+     * @var \Redis|null
      */
-    protected $redis = null;
+    protected \Redis|null $redis = null;
 
     /**
      * Constructor
      *
      * Instantiate the Redis storage object
      *
-     * @param  string $format
-     * @param  string $host
-     * @param  int    $port
-     * @throws Exception
+     * @param  ?string $format
+     * @param  string  $host
+     * @param  int     $port
+     * @throws Exception|RedisException
      */
-    public function __construct($format = null, $host = 'localhost', $port = 6379)
+    public function __construct(?string $format = null, string $host = 'localhost', int $port = 6379)
     {
         if (!class_exists('Redis', false)) {
             throw new Exception('Error: Redis is not available.');
@@ -61,7 +63,7 @@ class Redis extends AbstractStorage
      *
      * @return \Redis
      */
-    public function redis()
+    public function redis(): \Redis
     {
         return $this->redis;
     }
@@ -71,7 +73,7 @@ class Redis extends AbstractStorage
      *
      * @return string
      */
-    public function getVersion()
+    public function getVersion(): string
     {
         return $this->redis->info()['redis_version'];
     }
@@ -81,12 +83,11 @@ class Redis extends AbstractStorage
      *
      * @param  string $id
      * @param  mixed  $value
-     * @return Redis
+     * @return void
      */
-    public function save($id, $value)
+    public function save(string $id, mixed $value): void
     {
         $this->redis->set($id, $this->encodeValue($value));
-        return $this;
     }
 
     /**
@@ -95,7 +96,7 @@ class Redis extends AbstractStorage
      * @param  string $id
      * @return mixed
      */
-    public function get($id)
+    public function get(string $id): mixed
     {
         return $this->decodeValue($this->redis->get($id));
     }
@@ -104,9 +105,9 @@ class Redis extends AbstractStorage
      * Determine if debug data exists
      *
      * @param  string $id
-     * @return boolean
+     * @return bool
      */
-    public function has($id)
+    public function has(string $id): bool
     {
         return ($this->redis->get($id) !== false);
     }
@@ -115,23 +116,21 @@ class Redis extends AbstractStorage
      * Delete debug data
      *
      * @param  string $id
-     * @return Redis
+     * @return void
      */
-    public function delete($id)
+    public function delete(string $id): void
     {
         $this->redis->del($id);
-        return $this;
     }
 
     /**
      * Clear all debug data
      *
-     * @return Redis
+     * @return void
      */
-    public function clear()
+    public function clear(): void
     {
         $this->redis->flushDb();
-        return $this;
     }
 
     /**
@@ -141,7 +140,7 @@ class Redis extends AbstractStorage
      * @throws Exception
      * @return string
      */
-    public function encodeValue($value)
+    public function encodeValue(mixed $value): string
     {
         if ($this->format == self::JSON) {
             $value = json_encode($value, JSON_PRETTY_PRINT);
@@ -160,7 +159,7 @@ class Redis extends AbstractStorage
      * @param  mixed  $value
      * @return mixed
      */
-    public function decodeValue($value)
+    public function decodeValue(mixed $value): mixed
     {
         if ($value !== false) {
             if ($this->format == self::JSON) {

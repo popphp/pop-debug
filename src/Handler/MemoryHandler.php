@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,9 +19,9 @@ namespace Pop\Debug\Handler;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 class MemoryHandler extends AbstractHandler
 {
@@ -30,28 +30,28 @@ class MemoryHandler extends AbstractHandler
      * Memory limit
      * @var int
      */
-    protected $limit = 0;
+    protected int $limit = 0;
 
     /**
      * Memory usage snapshots
      * @var array
      */
-    protected $usages = [];
+    protected array $usages = [];
 
     /**
      * Peak memory usage snapshots
      * @var array
      */
-    protected $peaks = [];
+    protected array $peaks = [];
 
     /**
      * Constructor
      *
      * Instantiate a memory handler object
      *
-     * @param  string   $name
+     * @param  ?string $name
      */
-    public function __construct($name = null)
+    public function __construct(?string $name = null)
     {
         parent::__construct($name);
         $this->limit = $this->formatMemoryToInt(ini_get('memory_limit'));
@@ -62,7 +62,7 @@ class MemoryHandler extends AbstractHandler
      *
      * @return int
      */
-    public function getLimit()
+    public function getLimit(): int
     {
         return $this->limit;
     }
@@ -70,10 +70,10 @@ class MemoryHandler extends AbstractHandler
     /**
      * Take a memory usage snapshot
      *
-     * @param  boolean $real
-     * @return self
+     * @param  bool $real
+     * @return MemoryHandler
      */
-    public function updateMemoryUsage($real = false)
+    public function updateMemoryUsage(bool $real = false): MemoryHandler
     {
         $this->usages[(string)microtime(true)] = memory_get_usage($real);
         return $this;
@@ -82,9 +82,9 @@ class MemoryHandler extends AbstractHandler
     /**
      * Determine if the handler has memory usages snapshots
      *
-     * @return boolean
+     * @return bool
      */
-    public function hasUsages()
+    public function hasUsages(): bool
     {
         return (count($this->usages) > 0);
     }
@@ -94,7 +94,7 @@ class MemoryHandler extends AbstractHandler
      *
      * @return array
      */
-    public function getUsages()
+    public function getUsages(): array
     {
         return $this->usages;
     }
@@ -102,10 +102,10 @@ class MemoryHandler extends AbstractHandler
     /**
      * Take a peak memory usage snapshot
      *
-     * @param  boolean $real
-     * @return self
+     * @param  bool $real
+     * @return MemoryHandler
      */
-    public function updatePeakMemoryUsage($real = false)
+    public function updatePeakMemoryUsage(bool $real = false): MemoryHandler
     {
         $this->peaks[(string)microtime(true)] = memory_get_peak_usage($real);
         return $this;
@@ -114,9 +114,9 @@ class MemoryHandler extends AbstractHandler
     /**
      * Determine if the handler has peak memory usages snapshots
      *
-     * @return boolean
+     * @return bool
      */
-    public function hasPeakUsages()
+    public function hasPeakUsages(): bool
     {
         return (count($this->peaks) > 0);
     }
@@ -126,7 +126,7 @@ class MemoryHandler extends AbstractHandler
      *
      * @return array
      */
-    public function getPeakUsages()
+    public function getPeakUsages(): array
     {
         return $this->peaks;
     }
@@ -136,7 +136,7 @@ class MemoryHandler extends AbstractHandler
      *
      * @return array
      */
-    public function prepare()
+    public function prepare(): array
     {
         $data = [
             'limit'  => $this->formatMemoryToString($this->limit),
@@ -160,7 +160,7 @@ class MemoryHandler extends AbstractHandler
      *
      * @return string
      */
-    public function prepareHeaderAsString()
+    public function prepareHeaderAsString(): string
     {
         $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Memory Handler';
         $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
@@ -173,7 +173,7 @@ class MemoryHandler extends AbstractHandler
      *
      * @return string
      */
-    public function prepareAsString()
+    public function prepareAsString(): string
     {
         $string  = "Limit:\t\t\t" . $this->formatMemoryToString($this->limit) . PHP_EOL . PHP_EOL;
 
@@ -201,7 +201,7 @@ class MemoryHandler extends AbstractHandler
      * @param  int $bytes
      * @return string
      */
-    public function formatMemoryToString($memory, $bytes = 1024)
+    public function formatMemoryToString(int $memory, int $bytes = 1024): string
     {
         if ($memory >= pow($bytes, 3)) {
             $memory = round(($memory / pow($bytes, 3)), 2) . 'GB';
@@ -223,7 +223,7 @@ class MemoryHandler extends AbstractHandler
      * @param  int $bytes
      * @return int
      */
-    public function formatMemoryToInt($memory, $bytes = 1024)
+    public function formatMemoryToInt(int $memory, int $bytes = 1024): int
     {
         $factor = 1;
 
@@ -235,7 +235,7 @@ class MemoryHandler extends AbstractHandler
             $factor = $bytes;
         }
 
-        return (int)$memory * $factor;
+        return $memory * $factor;
     }
 
 }

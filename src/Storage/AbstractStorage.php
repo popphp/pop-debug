@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,9 +19,9 @@ namespace Pop\Debug\Storage;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 abstract class AbstractStorage implements StorageInterface
 {
@@ -34,20 +34,20 @@ abstract class AbstractStorage implements StorageInterface
 
     /**
      * Storage format (json, php or text)
-     * @var string
+     * @var ?string
      */
-    protected $format = null;
+    protected ?string $format = null;
 
     /**
      * Constructor
      *
      * Instantiate the storage object
      *
-     * @param  string $format
+     * @param  ?string $format
      */
-    public function __construct($format = null)
+    public function __construct(?string $format = null)
     {
-        if (null !== $format) {
+        if ($format !== null) {
             $this->setFormat($format);
         }
     }
@@ -58,7 +58,7 @@ abstract class AbstractStorage implements StorageInterface
      * @param  string $format
      * @return AbstractStorage
      */
-    public function setFormat($format)
+    public function setFormat(string $format): AbstractStorage
     {
         switch (strtoupper($format)) {
             case self::JSON:
@@ -74,9 +74,9 @@ abstract class AbstractStorage implements StorageInterface
     /**
      * Determine if the format is PHP
      *
-     * @return boolean
+     * @return bool
      */
-    public function isPhp()
+    public function isPhp(): bool
     {
         return ($this->format == self::PHP);
     }
@@ -84,9 +84,9 @@ abstract class AbstractStorage implements StorageInterface
     /**
      * Determine if the format is JSON
      *
-     * @return boolean
+     * @return bool
      */
-    public function isJson()
+    public function isJson(): bool
     {
         return ($this->format == self::JSON);
     }
@@ -96,7 +96,7 @@ abstract class AbstractStorage implements StorageInterface
      *
      * @return string
      */
-    public function getFormat()
+    public function getFormat(): bool
     {
         return $this->format;
     }
@@ -108,7 +108,7 @@ abstract class AbstractStorage implements StorageInterface
      * @param  mixed  $value
      * @return void
      */
-    abstract public function save($id, $value);
+    abstract public function save(string $id, mixed $value): void;
 
     /**
      * Get debug data
@@ -116,15 +116,15 @@ abstract class AbstractStorage implements StorageInterface
      * @param  string $id
      * @return mixed
      */
-    abstract public function get($id);
+    abstract public function get(string $id): mixed;
 
     /**
      * Determine if debug data exists
      *
      * @param  string $id
-     * @return mixed
+     * @return bool
      */
-    abstract public function has($id);
+    abstract public function has(string $id): bool;
 
     /**
      * Delete debug data
@@ -132,14 +132,14 @@ abstract class AbstractStorage implements StorageInterface
      * @param  string $id
      * @return void
      */
-    abstract public function delete($id);
+    abstract public function delete(string $id): void;
 
     /**
      * Clear all debug data
      *
      * @return void
      */
-    abstract public function clear();
+    abstract public function clear(): void;
 
     /**
      * Encode the value based on the format
@@ -147,7 +147,7 @@ abstract class AbstractStorage implements StorageInterface
      * @param  mixed  $value
      * @return string
      */
-    abstract public function encodeValue($value);
+    abstract public function encodeValue(mixed $value): string;
 
     /**
      * Decode the value based on the format
@@ -155,6 +155,5 @@ abstract class AbstractStorage implements StorageInterface
      * @param  mixed  $value
      * @return mixed
      */
-    abstract public function decodeValue($value);
-
+    abstract public function decodeValue(mixed $value): mixed;
 }

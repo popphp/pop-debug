@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,9 +19,9 @@ namespace Pop\Debug\Handler;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 class MessageHandler extends AbstractHandler
 {
@@ -30,15 +30,15 @@ class MessageHandler extends AbstractHandler
      * Messages
      * @var array
      */
-    protected $messages = [];
+    protected array $messages = [];
 
     /**
      * Add message
      *
      * @param  string $message
-     * @return self
+     * @return MessageHandler
      */
-    public function addMessage($message)
+    public function addMessage(string $message): MessageHandler
     {
         $this->messages[(string)microtime(true)] = $message;
         return $this;
@@ -47,9 +47,9 @@ class MessageHandler extends AbstractHandler
     /**
      * Determine if the handler has messages
      *
-     * @return boolean
+     * @return bool
      */
-    public function hasMessages()
+    public function hasMessages(): bool
     {
         return (count($this->messages) > 0);
     }
@@ -59,7 +59,7 @@ class MessageHandler extends AbstractHandler
      *
      * @return array
      */
-    public function getMessages()
+    public function getMessages(): array
     {
         return $this->messages;
     }
@@ -69,7 +69,7 @@ class MessageHandler extends AbstractHandler
      *
      * @return array
      */
-    public function prepare()
+    public function prepare(): array
     {
         $data = [];
 
@@ -85,7 +85,7 @@ class MessageHandler extends AbstractHandler
      *
      * @return string
      */
-    public function prepareHeaderAsString()
+    public function prepareHeaderAsString(): string
     {
         $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Message Handler';
         $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
@@ -98,7 +98,7 @@ class MessageHandler extends AbstractHandler
      *
      * @return string
      */
-    public function prepareAsString()
+    public function prepareAsString(): string
     {
         $string = '';
         foreach ($this->messages as $time => $message) {

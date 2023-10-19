@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -13,9 +13,7 @@
  */
 namespace Pop\Debug;
 
-use Pop\Debug\Handler;
-use Pop\Debug\Storage;
-use ReturnTypeWillChange;
+use ArrayIterator;
 
 /**
  * Debugger class
@@ -23,9 +21,9 @@ use ReturnTypeWillChange;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
 {
@@ -34,19 +32,19 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * Debugger handlers
      * @var array
      */
-    protected $handlers = [];
+    protected array $handlers = [];
 
     /**
      * Debugger storage object
-     * @var Storage\StorageInterface
+     * @var ?Storage\StorageInterface
      */
-    protected $storage = null;
+    protected ?Storage\StorageInterface $storage = null;
 
     /**
      * Debugger request ID
-     * @var string
+     * @var ?string
      */
-    protected $requestId = null;
+    protected ?string $requestId = null;
 
     /**
      * Constructor
@@ -80,7 +78,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * @param  Handler\HandlerInterface
      * @return Debugger
      */
-    public function addHandler(Handler\HandlerInterface $handler)
+    public function addHandler(Handler\HandlerInterface $handler): Debugger
     {
         $type = strtolower(str_replace('Handler', '', get_class($handler)));
         if (strrpos($type, '\\') !== false) {
@@ -99,9 +97,9 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * Determine if the debug object has a handler
      *
      * @param  string $name
-     * @return boolean
+     * @return bool
      */
-    public function hasHandler($name)
+    public function hasHandler(string $name): bool
     {
         return isset($this->handlers[$name]);
     }
@@ -110,11 +108,11 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * Get a handler
      *
      * @param  string $name
-     * @return mixed
+     * @return ?Handler\HandlerInterface
      */
-    public function getHandler($name)
+    public function getHandler(string $name): ?Handler\HandlerInterface
     {
-        return (isset($this->handlers[$name])) ? $this->handlers[$name] : null;
+        return $this->handlers[$name] ?? null;
     }
 
     /**
@@ -122,7 +120,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      *
      * @return array
      */
-    public function getHandlers()
+    public function getHandlers(): array
     {
         return $this->handlers;
     }
@@ -130,10 +128,10 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
     /**
      * Set the storage object
      *
-     * @param Storage\StorageInterface $storage
+     * @param  Storage\StorageInterface $storage
      * @return Debugger
      */
-    public function setStorage(Storage\StorageInterface $storage)
+    public function setStorage(Storage\StorageInterface $storage): Debugger
     {
         $this->storage = $storage;
         return $this;
@@ -142,11 +140,11 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
     /**
      * Determine if the debug object has storage
      *
-     * @return boolean
+     * @return bool
      */
-    public function hasStorage()
+    public function hasStorage(): bool
     {
-        return (null !== $this->storage);
+        return ($this->storage !== null);
     }
 
     /**
@@ -154,7 +152,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      *
      * @return Storage\StorageInterface
      */
-    public function getStorage()
+    public function getStorage(): Storage\StorageInterface
     {
         return $this->storage;
     }
@@ -164,11 +162,11 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      *
      * @return array
      */
-    public function getData()
+    public function getData(): array
     {
         $data = [];
         foreach ($this->handlers as $name => $handler) {
-            $data[$name] = (null === $this->storage->getFormat()) ? $handler->prepareAsString() : $handler->prepare();
+            $data[$name] = ($this->storage->getFormat() === null) ? $handler->prepareAsString() : $handler->prepare();
         }
         return $data;
     }
@@ -178,10 +176,10 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      *
      * @return void
      */
-    public function save()
+    public function save(): void
     {
         foreach ($this->handlers as $name => $handler) {
-            $data = (null === $this->storage->getFormat()) ? $handler->prepareAsString() : $handler->prepare();
+            $data = ($this->storage->getFormat() === null) ? $handler->prepareAsString() : $handler->prepare();
             $this->storage->save($this->getRequestId() . '-' . $name, $data);
         }
     }
@@ -191,7 +189,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      *
      * @return string
      */
-    public function render()
+    public function render(): string
     {
         $output = '';
 
@@ -207,9 +205,9 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      *
      * @return string
      */
-    public function getRequestId()
+    public function getRequestId(): string
     {
-        if (null === $this->requestId) {
+        if ($this->requestId === null) {
             $this->requestId = $this->generateId();
         }
 
@@ -221,7 +219,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      *
      * @return string
      */
-    public function renderWithHeaders()
+    public function renderWithHeaders(): string
     {
         $output = '';
 
@@ -237,7 +235,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      *
      * @return string
      */
-    public function generateId()
+    public function generateId(): string
     {
         if (function_exists('random_bytes')) {
             return bin2hex(random_bytes(16));
@@ -260,11 +258,11 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
     /**
      * Method to iterate over the handlers
      *
-     * @return \ArrayIterator
+     * @return ArrayIterator
      */
-    public function getIterator(): \ArrayIterator
+    public function getIterator(): ArrayIterator
     {
-        return new \ArrayIterator($this->handlers);
+        return new ArrayIterator($this->handlers);
     }
 
     /**
@@ -272,20 +270,21 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      *
      * @param  string $name
      * @param  mixed $value
-     * @return Debugger
+     * @throws Exception
+     * @return void
      */
-    public function __set($name, $value)
+    public function __set(string $name, mixed $value): void
     {
-        return $this->offsetSet($name, $value);
+        $this->offsetSet($name, $value);
     }
 
     /**
      * Get a handler
      *
      * @param  string $name
-     * @return Handler\HandlerInterface
+     * @return mixed
      */
-    public function __get($name)
+    public function __get(string $name): mixed
     {
         return $this->offsetGet($name);
     }
@@ -294,9 +293,9 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * Is handler set
      *
      * @param  string $name
-     * @return boolean
+     * @return bool
      */
-    public function __isset($name)
+    public function __isset(string $name): bool
     {
         return $this->offsetExists($name);
     }
@@ -307,7 +306,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * @param  string $name
      * @return void
      */
-    public function __unset($name)
+    public function __unset(string $name): void
     {
         $this->offsetUnset($name);
     }
@@ -318,16 +317,14 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * @param  mixed $offset
      * @param  mixed $value
      * @throws Exception
-     * @return Debugger
+     * @return void
      */
-    #[ReturnTypeWillChange]
-    public function offsetSet($offset, $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         if (!($value instanceof Handler\HandlerInterface)) {
             throw new Exception('Error: The value passed must be an instance of HandlerInterface');
         }
         $this->handlers[$offset] = $value;
-        return $this;
     }
 
     /**
@@ -336,19 +333,18 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * @param  mixed $offset
      * @return mixed
      */
-    #[ReturnTypeWillChange]
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
-        return (isset($this->handlers[$offset])) ? $this->handlers[$offset] : null;
+        return $this->handlers[$offset] ?? null;
     }
 
     /**
      * ArrayAccess offsetExists
      *
      * @param  mixed $offset
-     * @return boolean
+     * @return bool
      */
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return isset($this->handlers[$offset]);
     }
@@ -359,8 +355,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * @param  mixed $offset
      * @return void
      */
-    #[ReturnTypeWillChange]
-    public function offsetUnset($offset)
+    public function offsetUnset(mixed $offset): void
     {
         if (isset($this->handlers[$offset])) {
             unset($this->handlers[$offset]);
@@ -372,7 +367,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->renderWithHeaders();
     }

@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,34 +19,34 @@ namespace Pop\Debug\Handler;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 class TimeHandler extends AbstractHandler
 {
 
     /**
      * Start time
-     * @var float
+     * @var ?float
      */
-    protected $start = null;
+    protected ?float $start = null;
 
     /**
      * Stop time
-     * @var float
+     * @var ?float
      */
-    protected $stop = null;
+    protected ?float $stop = null;
 
     /**
      * Constructor
      *
      * Instantiate a time handler object
      *
-     * @param string  $name
-     * @param boolean $start
+     * @param ?string $name
+     * @param bool    $start
      */
-    public function __construct($name = null, $start = true)
+    public function __construct(?string $name = null, bool $start = true)
     {
         parent::__construct($name);
         if ($start) {
@@ -57,9 +57,9 @@ class TimeHandler extends AbstractHandler
     /**
      * Get start value
      *
-     * @return float
+     * @return ?float
      */
-    public function getStart()
+    public function getStart(): ?float
     {
         return $this->start;
     }
@@ -67,11 +67,11 @@ class TimeHandler extends AbstractHandler
     /**
      * Determined if the timer has started
      *
-     * @return boolean
+     * @return bool
      */
-    public function hasStarted()
+    public function hasStarted(): bool
     {
-        return (null !== $this->start);
+        return ($this->start !== null);
     }
 
     /**
@@ -79,7 +79,7 @@ class TimeHandler extends AbstractHandler
      *
      * @return float
      */
-    public function getStop()
+    public function getStop(): float
     {
         return $this->stop;
     }
@@ -87,19 +87,19 @@ class TimeHandler extends AbstractHandler
     /**
      * Determined if the timer has stopped
      *
-     * @return boolean
+     * @return bool
      */
-    public function hasStopped()
+    public function hasStopped(): bool
     {
-        return (null !== $this->stop);
+        return ($this->stop !== null);
     }
 
     /**
      * Start timer
      *
-     * @return self
+     * @return TimeHandler
      */
-    public function start()
+    public function start(): TimeHandler
     {
         $this->start = microtime(true);
         return $this;
@@ -108,9 +108,9 @@ class TimeHandler extends AbstractHandler
     /**
      * Stop timer
      *
-     * @return self
+     * @return TimeHandler
      */
-    public function stop()
+    public function stop(): TimeHandler
     {
         $this->stop = microtime(true);
         return $this;
@@ -121,9 +121,9 @@ class TimeHandler extends AbstractHandler
      *
      * @return string
      */
-    public function getElapsed()
+    public function getElapsed(): string
     {
-        if (null === $this->stop) {
+        if ($this->stop === null) {
             $this->stop();
         }
         return number_format(($this->stop - $this->start), 5, '.', '');
@@ -134,9 +134,9 @@ class TimeHandler extends AbstractHandler
      *
      * @return array
      */
-    public function prepare()
+    public function prepare(): array
     {
-        if (null === $this->stop) {
+        if ($this->stop === null) {
             $this->stop();
         }
 
@@ -154,7 +154,7 @@ class TimeHandler extends AbstractHandler
      *
      * @return string
      */
-    public function prepareHeaderAsString()
+    public function prepareHeaderAsString(): string
     {
         $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Time Handler';
         $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
@@ -167,9 +167,9 @@ class TimeHandler extends AbstractHandler
      *
      * @return string
      */
-    public function prepareAsString()
+    public function prepareAsString(): string
     {
-        if (null === $this->stop) {
+        if ($this->stop === null) {
             $this->stop();
         }
 

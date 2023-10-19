@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -22,37 +22,37 @@ use Pop\Session\Session;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 class RequestHandler extends AbstractHandler
 {
 
     /**
      * Request
-     * @var Request
+     * @var ?Request
      */
-    protected $request = null;
+    protected ?Request $request = null;
 
     /**
      * Request timestamp
-     * @var float
+     * @var ?float
      */
-    protected $requestTimestamp = null;
+    protected ?float $requestTimestamp = null;
 
     /**
      * Constructor
      *
      * Instantiate a request handler object
      *
-     * @param string  $name
-     * @param Request $request
+     * @param ?string  $name
+     * @param ?Request $request
      */
-    public function __construct($name = null, Request $request = null)
+    public function __construct(?string $name = null, ?Request $request = null)
     {
         parent::__construct($name);
-        if (null === $request) {
+        if ($request === null) {
             $request = new Request();
         }
         $this->setRequest($request);
@@ -65,7 +65,7 @@ class RequestHandler extends AbstractHandler
      *
      * @return array
      */
-    public function prepare()
+    public function prepare(): array
     {
         Session::getInstance();
 
@@ -94,7 +94,7 @@ class RequestHandler extends AbstractHandler
      * @param  Request $request
      * @return RequestHandler
      */
-    public function setRequest(Request $request)
+    public function setRequest(Request $request): RequestHandler
     {
         $this->request = $request;
         return $this;
@@ -105,7 +105,7 @@ class RequestHandler extends AbstractHandler
      *
      * @return Request
      */
-    public function getRequest()
+    public function getRequest(): Request
     {
         return $this->request;
     }
@@ -115,7 +115,7 @@ class RequestHandler extends AbstractHandler
      *
      * @return Request
      */
-    public function request()
+    public function request(): Request
     {
         return $this->request;
     }
@@ -123,11 +123,11 @@ class RequestHandler extends AbstractHandler
     /**
      * Has request
      *
-     * @return boolean
+     * @return bool
      */
-    public function hasRequest()
+    public function hasRequest(): bool
     {
-        return (null !== $this->request);
+        return ($this->request !== null);
     }
 
     /**
@@ -135,7 +135,7 @@ class RequestHandler extends AbstractHandler
      *
      * @return string
      */
-    public function prepareHeaderAsString()
+    public function prepareHeaderAsString(): string
     {
         $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Request Handler';
         $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
@@ -148,7 +148,7 @@ class RequestHandler extends AbstractHandler
      *
      * @return string
      */
-    public function prepareAsString()
+    public function prepareAsString(): string
     {
         $string = '';
         if (!empty($this->request->getRequestUri())) {
@@ -195,7 +195,7 @@ class RequestHandler extends AbstractHandler
      *
      * @return float
      */
-    public function getRequestTimestamp()
+    public function getRequestTimestamp(): float
     {
         return $this->requestTimestamp;
     }

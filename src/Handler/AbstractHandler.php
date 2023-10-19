@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,29 +19,29 @@ namespace Pop\Debug\Handler;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 abstract class AbstractHandler implements HandlerInterface
 {
 
     /**
      * Name of time measurement
-     * @var string
+     * @var ?string
      */
-    protected $name = null;
+    protected ?string $name = null;
 
     /**
      * Constructor
      *
      * Instantiate a handler object
      *
-     * @param string  $name
+     * @param ?string $name
      */
-    public function __construct($name = null)
+    public function __construct(?string $name = null)
     {
-        if (null !== $name) {
+        if ($name !== null) {
             $this->setName($name);
         }
     }
@@ -52,7 +52,7 @@ abstract class AbstractHandler implements HandlerInterface
      * @param  string  $name
      * @return AbstractHandler
      */
-    public function setName($name)
+    public function setName(string $name): AbstractHandler
     {
         $this->name = $name;
         return $this;
@@ -61,9 +61,9 @@ abstract class AbstractHandler implements HandlerInterface
     /**
      * Get name
      *
-     * @return string
+     * @return ?string
      */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -73,20 +73,20 @@ abstract class AbstractHandler implements HandlerInterface
      *
      * @return array
      */
-    abstract public function prepare();
+    abstract public function prepare(): array;
 
     /**
      * Prepare header string
      *
      * @return string
      */
-    abstract public function prepareHeaderAsString();
+    abstract public function prepareHeaderAsString(): string;
 
     /**
      * Prepare handler data as string
      *
      * @return string
      */
-    abstract public function prepareAsString();
+    abstract public function prepareAsString(): string;
 
 }

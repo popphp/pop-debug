@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -21,32 +21,32 @@ use Pop\Db\Adapter\Profiler\Profiler;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 class QueryHandler extends AbstractHandler
 {
 
     /**
      * Profiler
-     * @var Profiler
+     * @var ?Profiler
      */
-    protected $profiler = null;
+    protected ?Profiler $profiler = null;
 
     /**
      * Constructor
      *
      * Instantiate a query handler object
      *
-     * @param  Profiler $profiler
-     * @param  string   $name
+     * @param  ?Profiler $profiler
+     * @param  ?string   $name
      */
-    public function __construct(Profiler $profiler = null, $name = null)
+    public function __construct(?Profiler $profiler = null, ?string $name = null)
     {
         parent::__construct($name);
 
-        if (null !== $profiler) {
+        if ($profiler !== null) {
             $this->setProfiler($profiler);
         }
     }
@@ -55,9 +55,9 @@ class QueryHandler extends AbstractHandler
      * Set profiler
      *
      * @param  Profiler $profiler
-     * @return self
+     * @return QueryHandler
      */
-    public function setProfiler(Profiler $profiler)
+    public function setProfiler(Profiler $profiler): QueryHandler
     {
         $this->profiler = $profiler;
         return $this;
@@ -66,11 +66,11 @@ class QueryHandler extends AbstractHandler
     /**
      * Determine if the handler has a profiler
      *
-     * @return boolean
+     * @return bool
      */
-    public function hasProfiler()
+    public function hasProfiler(): bool
     {
-        return (null !== $this->profiler);
+        return ($this->profiler !== null);
     }
 
     /**
@@ -78,7 +78,7 @@ class QueryHandler extends AbstractHandler
      *
      * @return Profiler
      */
-    public function getProfiler()
+    public function getProfiler(): Profiler
     {
         return $this->profiler;
     }
@@ -88,7 +88,7 @@ class QueryHandler extends AbstractHandler
      *
      * @return Profiler
      */
-    public function profiler()
+    public function profiler(): Profiler
     {
         return $this->profiler;
     }
@@ -98,7 +98,7 @@ class QueryHandler extends AbstractHandler
      *
      * @return array
      */
-    public function prepare()
+    public function prepare(): array
     {
         $data = [
             'start'   => number_format((float)$this->profiler->getStart(), 5, '.', ''),
@@ -126,7 +126,7 @@ class QueryHandler extends AbstractHandler
      *
      * @return string
      */
-    public function prepareHeaderAsString()
+    public function prepareHeaderAsString(): string
     {
         $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Query Handler';
         $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
@@ -139,7 +139,7 @@ class QueryHandler extends AbstractHandler
      *
      * @return string
      */
-    public function prepareAsString()
+    public function prepareAsString(): string
     {
         $string  = "Start:\t\t\t" . number_format((float)$this->profiler->getStart(), 5, '.', '') . PHP_EOL;
         $string .= "Finish:\t\t\t" . number_format((float)$this->profiler->getFinish(), 5, '.', '') . PHP_EOL;
@@ -183,15 +183,12 @@ class QueryHandler extends AbstractHandler
      * @param  string $name
      * @return mixed
      */
-    public function __get($name)
+    public function __get(string $name): mixed
     {
-        switch ($name) {
-            case 'profiler':
-                return $this->profiler;
-                break;
-            default:
-                return null;
-        }
+        return match ($name) {
+            'profiler' => $this->profiler,
+            default    => null,
+        };
     }
 
 }

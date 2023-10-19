@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,46 +19,46 @@ namespace Pop\Debug\Handler;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 class ExceptionHandler extends AbstractHandler
 {
 
     /**
      * Verbose flag
-     * @var boolean
+     * @var bool
      */
-    protected $verbose = false;
+    protected bool $verbose = false;
 
     /**
      * Exceptions
      * @var array
      */
-    protected $exceptions = [];
+    protected array $exceptions = [];
 
     /**
      * Constructor
      *
      * Instantiate a handler object
      *
-     * @param boolean $verbose
-     * @param string  $name
+     * @param bool    $verbose
+     * @param ?string $name
      */
-    public function __construct($verbose = false, $name = null)
+    public function __construct(bool $verbose = false, ?string $name = null)
     {
         parent::__construct($name);
-        $this->verbose = (bool)$verbose;
+        $this->verbose = $verbose;
     }
 
     /**
      * Add exception
      *
      * @param  \Exception $exception
-     * @return self
+     * @return ExceptionHandler
      */
-    public function addException(\Exception $exception)
+    public function addException(\Exception $exception): ExceptionHandler
     {
         $this->exceptions[(string)microtime(true)] = $exception;
         return $this;
@@ -67,9 +67,9 @@ class ExceptionHandler extends AbstractHandler
     /**
      * Determine if the handler has exceptions
      *
-     * @return boolean
+     * @return bool
      */
-    public function hasExceptions()
+    public function hasExceptions(): bool
     {
         return (count($this->exceptions) > 0);
     }
@@ -79,7 +79,7 @@ class ExceptionHandler extends AbstractHandler
      *
      * @return array
      */
-    public function getExceptions()
+    public function getExceptions(): array
     {
         return $this->exceptions;
     }
@@ -89,7 +89,7 @@ class ExceptionHandler extends AbstractHandler
      *
      * @return array
      */
-    public function prepare()
+    public function prepare(): array
     {
         $data = [];
 
@@ -105,7 +105,7 @@ class ExceptionHandler extends AbstractHandler
      *
      * @return string
      */
-    public function prepareHeaderAsString()
+    public function prepareHeaderAsString(): string
     {
         $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Exception Handler';
         $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
@@ -118,7 +118,7 @@ class ExceptionHandler extends AbstractHandler
      *
      * @return string
      */
-    public function prepareAsString()
+    public function prepareAsString(): string
     {
         $string = '';
 

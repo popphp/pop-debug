@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -21,24 +21,24 @@ use Pop\Db\Adapter\AbstractAdapter;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 class Db extends AbstractStorage
 {
 
     /**
      * DB adapter
-     * @var AbstractAdapter
+     * @var ?AbstractAdapter
      */
-    protected $db = null;
+    protected ?AbstractAdapter $db = null;
 
     /**
      * Table
      * @var string
      */
-    protected $table = 'pop_debug';
+    protected string $table = 'pop_debug';
 
     /**
      * Constructor
@@ -54,7 +54,7 @@ class Db extends AbstractStorage
      * @param  string          $format
      * @param  string          $table
      */
-    public function __construct(AbstractAdapter $db, $format = 'text', $table = 'pop_debug')
+    public function __construct(AbstractAdapter $db, string $format = 'text', string $table = 'pop_debug')
     {
         parent::__construct($format);
 
@@ -69,10 +69,10 @@ class Db extends AbstractStorage
     /**
      * Set the current debug db adapter.
      *
-     * @param  string $db
+     * @param  AbstractAdapter $db
      * @return Db
      */
-    public function setDb($db)
+    public function setDb(AbstractAdapter $db): Db
     {
         $this->db = $db;
         return $this;
@@ -81,9 +81,9 @@ class Db extends AbstractStorage
     /**
      * Get the current debug db adapter.
      *
-     * @return AbstractAdapter
+     * @return ?AbstractAdapter
      */
-    public function getDb()
+    public function getDb(): ?AbstractAdapter
     {
         return $this->db;
     }
@@ -93,7 +93,7 @@ class Db extends AbstractStorage
      *
      * @return string
      */
-    public function getTable()
+    public function getTable(): string
     {
         return $this->table;
     }
@@ -104,7 +104,7 @@ class Db extends AbstractStorage
      * @param  string $table
      * @return Db
      */
-    public function setTable($table)
+    public function setTable(string $table): Db
     {
         $this->table = $table;
         return $this;
@@ -115,9 +115,9 @@ class Db extends AbstractStorage
      *
      * @param  string $id
      * @param  mixed  $value
-     * @return Db
+     * @return void
      */
-    public function save($id, $value)
+    public function save(string $id, mixed $value): void
     {
         // Determine if the value already exists.
         $sql         = $this->db->createSql();
@@ -180,8 +180,6 @@ class Db extends AbstractStorage
         $this->db->prepare($sql)
             ->bindParams($params)
             ->execute();
-
-        return $this;
     }
 
     /**
@@ -190,7 +188,7 @@ class Db extends AbstractStorage
      * @param  string $id
      * @return mixed
      */
-    public function get($id)
+    public function get(string $id): mixed
     {
         $sql         = $this->db->createSql();
         $placeholder = $sql->getPlaceholder();
@@ -222,9 +220,9 @@ class Db extends AbstractStorage
      * Determine if debug data exists
      *
      * @param  string $id
-     * @return mixed
+     * @return bool
      */
-    public function has($id)
+    public function has(string $id): bool
     {
         $sql         = $this->db->createSql();
         $placeholder = $sql->getPlaceholder();
@@ -252,7 +250,7 @@ class Db extends AbstractStorage
      * @param  string $id
      * @return void
      */
-    public function delete($id)
+    public function delete(string $id): void
     {
         $sql         = $this->db->createSql();
         $placeholder = $sql->getPlaceholder();
@@ -275,7 +273,7 @@ class Db extends AbstractStorage
      *
      * @return void
      */
-    public function clear()
+    public function clear(): void
     {
         $sql = $this->db->createSql();
         $sql->delete($this->table);
@@ -289,7 +287,7 @@ class Db extends AbstractStorage
      * @throws Exception
      * @return string
      */
-    public function encodeValue($value)
+    public function encodeValue(mixed $value): string
     {
         if ($this->format == self::JSON) {
             $value = json_encode($value, JSON_PRETTY_PRINT);
@@ -308,7 +306,7 @@ class Db extends AbstractStorage
      * @param  mixed  $value
      * @return mixed
      */
-    public function decodeValue($value)
+    public function decodeValue(mixed $value): mixed
     {
         if ($this->format == self::JSON) {
             $value = json_decode($value, true);
@@ -324,7 +322,7 @@ class Db extends AbstractStorage
      *
      * @return void
      */
-    protected function createTable()
+    protected function createTable(): void
     {
         $schema = $this->db->createSchema();
         $schema->create($this->table)

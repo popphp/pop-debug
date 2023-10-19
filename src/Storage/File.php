@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,28 +19,28 @@ namespace Pop\Debug\Storage;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 class File extends AbstractStorage
 {
 
     /**
      * Storage dir
-     * @var string
+     * @var ?string
      */
-    protected $dir = null;
+    protected ?string $dir = null;
 
     /**
      * Constructor
      *
      * Instantiate the file storage object
      *
-     * @param  string $dir
-     * @param  string $format
+     * @param  string  $dir
+     * @param  ?string $format
      */
-    public function __construct($dir, $format = null)
+    public function __construct(string $dir, ?string $format = null)
     {
         parent::__construct($format);
         $this->setDir($dir);
@@ -53,7 +53,7 @@ class File extends AbstractStorage
      * @throws Exception
      * @return File
      */
-    public function setDir($dir)
+    public function setDir(string $dir): File
     {
         if (!file_exists($dir)) {
             throw new Exception('Error: That directory does not exist.');
@@ -69,9 +69,9 @@ class File extends AbstractStorage
     /**
      * Get the storage dir
      *
-     * @return string
+     * @return ?string
      */
-    public function getDir()
+    public function getDir(): ?string
     {
         return $this->dir;
     }
@@ -81,9 +81,9 @@ class File extends AbstractStorage
      *
      * @param  string $id
      * @param  mixed  $value
-     * @return File
+     * @return void
      */
-    public function save($id, $value)
+    public function save(string $id, mixed $value): void
     {
         $filename = $id;
 
@@ -96,8 +96,6 @@ class File extends AbstractStorage
         }
 
         file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename, $this->encodeValue($value));
-
-        return $this;
     }
 
     /**
@@ -106,7 +104,7 @@ class File extends AbstractStorage
      * @param  string $id
      * @return mixed
      */
-    public function get($id)
+    public function get(string $id): mixed
     {
         return $this->decodeValue($this->dir . DIRECTORY_SEPARATOR . $id);
     }
@@ -115,9 +113,9 @@ class File extends AbstractStorage
      * Determine if debug data exists
      *
      * @param  string $id
-     * @return boolean
+     * @return bool
      */
-    public function has($id)
+    public function has(string $id): bool
     {
         $fileId = $this->dir . DIRECTORY_SEPARATOR . $id;
 
@@ -136,9 +134,9 @@ class File extends AbstractStorage
      * Delete debug data
      *
      * @param  string $id
-     * @return File
+     * @return void
      */
-    public function delete($id)
+    public function delete(string $id): void
     {
         $fileId = $this->dir . DIRECTORY_SEPARATOR . $id;
 
@@ -153,19 +151,17 @@ class File extends AbstractStorage
         if (file_exists($fileId)) {
             unlink($fileId);
         }
-
-        return $this;
     }
 
     /**
      * Clear all debug data
      *
-     * @return File
+     * @return void
      */
-    public function clear()
+    public function clear(): void
     {
         if (!$dh = @opendir($this->dir)) {
-            return $this;
+            return;
         }
 
         while (false !== ($obj = readdir($dh))) {
@@ -176,8 +172,6 @@ class File extends AbstractStorage
         }
 
         closedir($dh);
-
-        return $this;
     }
 
     /**
@@ -187,7 +181,7 @@ class File extends AbstractStorage
      * @throws Exception
      * @return string
      */
-    public function encodeValue($value)
+    public function encodeValue(mixed $value): string
     {
         if ($this->format == self::JSON) {
             $value = json_encode($value, JSON_PRETTY_PRINT);
@@ -207,7 +201,7 @@ class File extends AbstractStorage
      * @param  mixed  $value
      * @return mixed
      */
-    public function decodeValue($value)
+    public function decodeValue(mixed $value): mixed
     {
         if ($this->format == self::JSON) {
             $value .= '.json';

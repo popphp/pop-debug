@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,9 +19,9 @@ namespace Pop\Debug\Storage;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    1.3.2
+ * @version    2.0.0
  */
 interface StorageInterface
 {
@@ -32,28 +32,28 @@ interface StorageInterface
      * @param  string $format
      * @return StorageInterface
      */
-    public function setFormat($format);
+    public function setFormat(string $format): StorageInterface;
 
     /**
      * Determine if the format is PHP
      *
-     * @return boolean
+     * @return bool
      */
-    public function isPhp();
+    public function isPhp(): bool;
 
     /**
      * Determine if the format is JSON
      *
-     * @return boolean
+     * @return bool
      */
-    public function isJson();
+    public function isJson(): bool;
 
     /**
      * Get the storage format
      *
-     * @return string
+     * @return ?string
      */
-    public function getFormat();
+    public function getFormat(): ?string;
 
     /**
      * Save debug data
@@ -62,7 +62,7 @@ interface StorageInterface
      * @param  mixed  $value
      * @return void
      */
-    public function save($id, $value);
+    public function save(string $id, mixed $value): void;
 
     /**
      * Get debug data
@@ -70,15 +70,15 @@ interface StorageInterface
      * @param  string $id
      * @return mixed
      */
-    public function get($id);
+    public function get(string $id): mixed;
 
     /**
      * Determine if debug data exists
      *
      * @param  string $id
-     * @return mixed
+     * @return bool
      */
-    public function has($id);
+    public function has(string $id): bool;
 
     /**
      * Delete debug data
@@ -86,29 +86,29 @@ interface StorageInterface
      * @param  string $id
      * @return void
      */
-    public function delete($id);
+    public function delete(string $id): void;
 
     /**
      * Clear all debug data
      *
      * @return void
      */
-    public function clear();
+    public function clear(): void;
 
     /**
      * Encode the value based on the format
      *
-     * @param  mixed  $value
+     * @param  mixed $value
      * @return string
      */
-    public function encodeValue($value);
+    public function encodeValue(mixed $value): string;
 
     /**
      * Decode the value based on the format
      *
-     * @param  mixed  $value
+     * @param  mixed $value
      * @return mixed
      */
-    public function decodeValue($value);
+    public function decodeValue(mixed $value): mixed;
 
 }
