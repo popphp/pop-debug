@@ -18,6 +18,8 @@ Install `pop-debug` using Composer.
 
     composer require popphp/pop-debug
 
+Or, require it in your composer.json file
+
     "require": {
         "popphp/pop-debug" : "^2.0.0"
     }
