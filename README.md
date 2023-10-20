@@ -169,3 +169,4 @@ $debugger->save();
 
 So with the query handler attached to the database adapter object, any and all queries
 that are executed will be recorded by the debugger's query handler.
+
