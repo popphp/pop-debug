@@ -4,14 +4,34 @@ pop-debug
 [![Build Status](https://github.com/popphp/pop-debug/workflows/phpunit/badge.svg)](https://github.com/popphp/pop-debug/actions)
 [![Coverage Status](http://cc.popphp.org/coverage.php?comp=pop-debug)](http://cc.popphp.org/pop-debug/)
 
-OVERVIEW
+[![Join the chat at https://popphp.slack.com](https://media.popphp.org/img/slack.svg)](https://popphp.slack.com)
+[![Join the chat at https://discord.gg/D9JBxPa5](https://media.popphp.org/img/discord.svg)](https://discord.gg/D9JBxPa5)
+
+* [Overview](#overview)
+* [Install](#install)
+* [Quickstart](#quickstart)
+* [Handlers](#handlers)
+  - [Exception](#exception)
+  - [Memory](#memory)
+  - [Message](#message)
+  - [Query](#query)
+  - [Request](#request)
+  - [Time](#time)
+* [Storage](#storage)
+  - [File](#file)
+  - [Database](#database)
+  - [Redis](#redis)
+* [Formats](#formats)
+
+Overview
 --------
-`pop-debug` is a simple debugging component that can be used to hooked into an application to track
-certain aspects of the application's lifecycle.
+`pop-debug` is a debugging component that can be used to hooked into an application to track
+certain aspects of the application's lifecycle. It can help provide insight to an application's
+performance or any issues that may arise within an application.
 
 `pop-debug` is a component of the [Pop PHP Framework](http://www.popphp.org/).
 
-INSTALL
+Install
 -------
 
 Install `pop-debug` using Composer.
@@ -24,41 +44,25 @@ Or, require it in your composer.json file
         "popphp/pop-debug" : "^2.0.0"
     }
 
-BASIC USAGE
------------
+[Top](#pop-debug)
 
-The debugger supports a number of handlers that can record various events during an application's lifecycle.
-The provided handlers are:
+Quickstart
+----------
 
-- **ExceptionHandler**
-    + Capture exceptions thrown by the application
-- **MemoryHandler**
-    + Capture memory usage and peak memory usage
-- **MessageHandler**
-    + Capture generic messages at various points in the application's lifecycle
-- **LogHandler**
-    + Capture standard log messages at various points in the application's lifecycle
-- **QueryHandler**
-    + Capture database queries and their parameters and information
-- **RequestHandler**
-    + Capture information about the current request
-- **TimeHandler**
-    + Trigger a timer to time the current request or a part of the request.
+The basic concept of the debugger is that it works with a handler object or multiple handler objects and
+one storage object. The handlers are wired to listen to and track various aspects of the application and
+push their results to the storage object to be retrieved at a later time.
 
-Also, the debugger supports a few storage methods to storage the debug data after the request is complete:
-
-- File
-- Database
-- Redis
-
-### Setting up the debugger
+In this simple example, we can set up a generic message handler to storage its triggered messages in a file.
 
 ```php
-use Pop\Debug;
+use Pop\Debug\Debugger;
+use Pop\Debug\Handler\MessageHandler;
+use Pop\Debug\Storage\File;
 
-$debugger = new Debug\Debugger();
-$debugger->addHandler(new Debug\Handler\MessageHandler());
-$debugger->setStorage(new Debug\Storage\File('log'));
+$debugger = new Debugger();
+$debugger->addHandler(new MessageHandler());
+$debugger->setStorage(new File(__DIR__ . '/log'));
 
 $debugger['message']->addMessage('Hey! Something happened!');
 
@@ -68,105 +72,273 @@ $debugger->save();
 The above code will save the following output to the `log` folder in a plain text file:
 
 ```text
-1504213206.00000	Hey! Something happened!
+1504213206.00000    Hey! Something happened!
 ```
 
-### Setting up multiple handlers
+[Top](#pop-debug)
 
-You can configure multiple handlers to capture different points of data within the application:
+Handlers
+----------
+
+There are a total of 6 available handlers. More handlers can be added, provided they implement the
+handler interface.
+
+[Top](#pop-debug)
+
+### Exception
+
+The exception handler captures and tracks any exceptions thrown by an application.
 
 ```php
-use Pop\Debug;
+use Pop\Debug\Debugger;
+use Pop\Debug\Handler\ExceptionHandler;
+use Pop\Debug\Storage\File;
 
-$debugger = new Debug\Debugger();
-$debugger->addHandler(new Debug\Handler\MessageHandler())
-    ->addHandler(new Debug\Handler\ExceptionHandler())
-    ->addHandler(new Debug\Handler\RequestHandler())
-    ->addHandler(new Debug\Handler\MemoryHandler())
-    ->addHandler(new Debug\Handler\TimeHandler());
-$debugger->setStorage(new Debug\Storage\File('log'));
+$debugger = new Debugger();
+$debugger->addHandler(new ExceptionHandler());
+$debugger->setStorage(new File(__DIR__ . '/log'));
 
-$debugger['message']->addMessage('Hey! Something happened!');
-$debugger['exception']->addException(new \Exception('Whoops!'));
+try {
+    throw new \Exception('Error: This is a test exception');
+} catch (\Exception $e) {
+    $debugger['exception']->addException($e);
+    $debugger->save();
+}
+```
+
+The above code will save the following output to the `log` folder in a plain text file:
+
+```text
+1698699170.22920	Error: This is a test exception
+```
+
+[Top](#pop-debug)
+
+### Memory
+
+The memory handler captures memory usages and peak memory usage. At any point in the application,
+you can call the `updateMemoryUsage()` and `updatePeakMemoryUsage()` methods to take a snapshot
+of memory usage in the app at that time.
+
+```php
+use Pop\Debug\Debugger;
+use Pop\Debug\Handler\MemoryHandler;
+use Pop\Debug\Storage\File;
+
+$debugger = new Debugger();
+$debugger->addHandler(new MemoryHandler());
+$debugger->setStorage(new File(__DIR__ . '/log'));
+
+
+$debugger['memory']->updateMemoryUsage();
+$debugger['memory']->updatePeakMemoryUsage();
+sleep(2);
 $debugger['memory']->updateMemoryUsage();
 $debugger['memory']->updatePeakMemoryUsage();
 
 $debugger->save();
 ```
 
-In the above example, if the debugger is exposed as a service throughout the application,
-then you can access it and call those methods above for the individual handlers to capture
-the things you need to examine.
+The above code will save the following output to the `log` folder in a plain text file:
 
-### Storage formats
+```text
+Limit:			128MB
 
-The storage object allows you to store the debug data in the following formats:
+Usages:
+-------
+1698699589.59750	1.19MB
+1698699591.59760	1.19MB
 
-- Plain text
-- JSON
-- Serialized PHP
-
-```php
-use Pop\Debug;
-
-$debugger = new Debug\Debugger();
-$debugger->addHandler(new Debug\Handler\MessageHandler());
-$debugger->setStorage(new Debug\Storage\File('log', 'json'));
+Peaks:
+------
+1698699589.59750	1.5MB
+1698699591.59770	1.5MB
 ```
 
-### Log handler
+[Top](#pop-debug)
 
-The log handler is a special handler that ties into the `pop-log` component. It allows you
-to capture standard log messages. You can set up the log handler like this:
+### Query
 
-```php
-use Pop\Debug;
-use Pop\Log;
-
-$logger = new Log\Logger(new Log\Writer\File('log/system.log'));
-$debugger = new Debug\Debugger();
-$debugger->addHandler(new Debug\Handler\LogHandler($logger));
-$debugger->setStorage(new Debug\Storage\File('log'));
-
-$debugger['log']->info("Here's some info about what just happened!");
-sleep(1);
-$debugger['log']->alert("Hey you! I must alert you to something!");
-
-$debugger->save();
-```
-
-So with the logger object attached to the debugger, the debugger can record the log entries
-that are sent to the logger as well.
-
-### Query handler
-
-The query handler is a special handler that ties into the `pop-db` component and the
-profiler available with that component. It allows you to capture any database queries
-and any information associated with them.
+The query handler is a special handler that ties into the `pop-db` component and the profiler
+available with that component. It allows you to capture any database queries and any information
+associated with them.
 
 You can set up the query handler like this:
 
 ```php
-use Pop\Debug;
-use Pop\Db;
+use Pop\Debug\Debugger;
+use Pop\Debug\Storage\File;
+use Pop\Db\Db;
+use Pop\Db\Record;
 
-$db = Db\Db::mysqlConnect([
-    'database' => 'popdb',
-    'username' => 'popuser',
-    'password' => '12pop34'
+$db = Db::mysqlConnect([
+    'database' => 'DATABASE',
+    'username' => 'DB_USER',
+    'password' => 'DB_PASS'
 ]);
 
-$queryHandler = $db->listen('Pop\Debug\Handler\QueryHandler');
+class Users extends Record {}
 
-$debugger = new Debug\Debugger();
-$debugger->addHandler($queryHandler);
-$debugger->setStorage(new Debug\Storage\File('log'));
+Record::setDb($db);
 
-// Run DB queries...
+$debugger = new Debugger();
+$debugger->addHandler($db->listen('Pop\Debug\Handler\QueryHandler'));
+$debugger->setStorage(new File('log'));
+
+// Interact with the database
+$user = new Users([
+    'username' => 'admin',
+    'password' => 'password'
+]);
+
+$user->save();
 
 $debugger->save();
 ```
 
-So with the query handler attached to the database adapter object, any and all queries
-that are executed will be recorded by the debugger's query handler.
+The above code will save the following output to the `log` folder in a plain text file:
 
+```text
+Start:			1698703083.95424
+Finish:			0.00000
+Elapsed:		0.01048 seconds
+
+Queries:
+--------
+INSERT INTO `users` (`username`, `password`) VALUES (?, ?) [0.00697]
+Start:			1698703083.95769
+Finish:			1698703083.96466
+Params:
+	username => admin
+	password => password
+```
+
+[Top](#pop-debug)
+
+### Request
+
+The request handler works with a `Pop\Http\Server\Request` object from the `pop-http` component and tracks
+all of the inbound request data.
+
+```php
+use Pop\Debug\Debugger;
+use Pop\Debug\Handler\RequestHandler;
+use Pop\Debug\Storage\File;
+
+$debugger = new Debugger();
+$debugger->addHandler(new RequestHandler());
+$debugger->setStorage(new File(__DIR__ . '/log'));
+$debugger->save();
+```
+
+The above code will save the following output to the `log` folder in a plain text file:
+
+```text
+GET /http.php?foo=bar [1698703989.32316]
+
+HEADERS:
+--------
+Host: Host: localhost:8000
+User-Agent: User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0
+Accept: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: Accept-Language: en-US,en;q=0.5
+Accept-Encoding: Accept-Encoding: gzip, deflate, br
+Connection: Connection: keep-alive
+Cookie: Cookie: PHPSESSID=gm6schd82drhemu71isp26355b
+
+SERVER:
+-------
+DOCUMENT_ROOT: /path/to/repo/public
+REMOTE_ADDR: 127.0.0.1
+REMOTE_PORT: 43394
+SERVER_SOFTWARE: PHP 8.2.11 Development Server
+SERVER_PROTOCOL: HTTP/1.1
+SERVER_NAME: localhost
+SERVER_PORT: 8000
+REQUEST_URI: /http.php?foo=bar
+REQUEST_METHOD: GET
+SCRIPT_NAME: /http.php
+SCRIPT_FILENAME: /path/to/repo/public/http.php
+PHP_SELF: /http.php
+QUERY_STRING: foo=bar
+HTTP_HOST: localhost:8000
+HTTP_USER_AGENT: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0
+HTTP_ACCEPT: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+HTTP_ACCEPT_LANGUAGE: en-US,en;q=0.5
+HTTP_ACCEPT_ENCODING: gzip, deflate, br
+HTTP_CONNECTION: keep-alive
+HTTP_COOKIE: PHPSESSID=gm6schd82drhemu71isp26355b
+REQUEST_TIME_FLOAT: 1698703590.0842
+REQUEST_TIME: 1698703590
+
+GET:
+----
+foo: bar
+
+COOKIE:
+-------
+PHPSESSID: gm6schd82drhemu71isp26355b
+
+SESSION:
+--------
+_POP_SESSION_: 
+
+PARSED:
+-------
+foo: bar
+
+RAW:
+----
+foo=bar
+```
+
+[Top](#pop-debug)
+
+### Time
+
+The time handler provides a simple way to track how long a application request takes, which is useful
+for performance metrics.
+
+```php
+use Pop\Debug\Debugger;
+use Pop\Debug\Handler\TimeHandler;
+use Pop\Debug\Storage\File;
+
+$debugger = new Debugger();
+$debugger->addHandler(new TimeHandler());
+$debugger->setStorage(new File(__DIR__ . '/log'));
+
+sleep(2);
+
+$debugger->save();
+```
+
+The above code will save the following output to the `log` folder in a plain text file:
+
+```text
+Start:			1698704121.29484
+Stop:			1698704123.29532
+Elapsed:		2.00048 seconds
+```
+
+[Top](#pop-debug)
+
+Storage
+-------
+
+### File
+
+[Top](#pop-debug)
+
+### Database
+
+[Top](#pop-debug)
+
+### Redis
+
+[Top](#pop-debug)
+
+Formats
+-------
+
+[Top](#pop-debug)

@@ -153,17 +153,8 @@ class RequestHandler extends AbstractHandler
     {
         $string = '';
         if (!empty($this->request->getUri()) && !empty($this->request->getUri()->getUri())) {
-            $string .= "URI: " . $this->request->getUri()->getUri() . ' [' .
-                number_format($this->requestTimestamp, 5, '.', '') . ']' . PHP_EOL;
-            if ($this->request->hasHeaders()) {
-                $string .= PHP_EOL;
-                $string .= "HEADERS:" . PHP_EOL;
-                $string .= "--------" . PHP_EOL;
-                foreach ($this->request->getHeaders() as $header => $value) {
-                    $string .= $header . ": " . $value . PHP_EOL;
-                }
-                $string .= PHP_EOL;
-            }
+            $string .= $this->request->getMethod() . ' ' . $this->request->getUri()->getUri() . ' [' .
+                number_format($this->requestTimestamp, 5, '.', '') . ']' . PHP_EOL . PHP_EOL;
 
             $dataArrays = $this->prepare();
 
