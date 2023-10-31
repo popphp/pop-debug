@@ -119,62 +119,34 @@ class Database extends AbstractStorage
      */
     public function save(string $id, mixed $value): void
     {
-        // Determine if the value already exists.
-        $sql         = $this->db->createSql();
-        $placeholder = $sql->getPlaceholder();
-
-        if ($placeholder == ':') {
-            $placeholder .= 'key';
-        } else if ($placeholder == '$') {
-            $placeholder .= '1';
-        }
-
-        $sql->select()->from($this->table)->where('key = ' . $placeholder);
-
-        $this->db->prepare($sql)
-            ->bindParams(['key' => $id])
-            ->execute();
-
-        $rows = $this->db->fetchAll();
-
+        $sql = $this->db->createSql();
         $sql->reset();
         $placeholder = $sql->getPlaceholder();
 
-        // Insert new value
-        if (count($rows) == 0) {
-            if ($placeholder == ':') {
-                $placeholder1 = ':key';
-                $placeholder2 = ':value';
-            } else if ($placeholder == '$') {
-                $placeholder1 = '$1';
-                $placeholder2 = '$2';
-            } else {
-                $placeholder1 = $placeholder;
-                $placeholder2 = $placeholder;
-            }
-            $sql->insert($this->table)->values(['key' => $placeholder1, 'value' => $placeholder2]);
-            $params = [
-                'key'   => $id,
-                'value' => $this->encodeValue($value)
-            ];
-        // Else, update it.
+        if ($placeholder == ':') {
+            $placeholder1 = ':key';
+            $placeholder2 = ':value';
+            $placeholder3 = ':timestamp';
+        } else if ($placeholder == '$') {
+            $placeholder1 = '$1';
+            $placeholder2 = '$2';
+            $placeholder3 = '$3';
         } else {
-            if ($placeholder == ':') {
-                $placeholder1 = ':value';
-                $placeholder2 = ':key';
-            } else if ($placeholder == '$') {
-                $placeholder1 = '$1';
-                $placeholder2 = '$2';
-            } else {
-                $placeholder1 = $placeholder;
-                $placeholder2 = $placeholder;
-            }
-            $sql->update($this->table)->values(['value' => $placeholder1])->where('key = ' . $placeholder2);
-            $params = [
-                'value' => $this->encodeValue($value),
-                'key'   => $id
-            ];
+            $placeholder1 = $placeholder;
+            $placeholder2 = $placeholder;
+            $placeholder3 = $placeholder;
         }
+
+        $sql->insert($this->table)->values([
+            'key'       => $placeholder1,
+            'value'     => $placeholder2,
+            'timestamp' => $placeholder3
+        ]);
+        $params = [
+            'key'       => $id,
+            'value'     => $this->encodeValue($value),
+            'timestamp' => date('Y-m-d H:i:s')
+        ];
 
         // Save value
         $this->db->prepare($sql)
@@ -371,6 +343,7 @@ class Database extends AbstractStorage
             ->int('id')->increment()
             ->varchar('key', 255)
             ->text('value')
+            ->datetime('timestamp')
             ->primary('id');
 
         $this->db->query($schema);
