@@ -25,7 +25,7 @@ use Pop\Db\Adapter\AbstractAdapter;
  * @license    http://www.popphp.org/license     New BSD License
  * @version    2.0.0
  */
-class Db extends AbstractStorage
+class Database extends AbstractStorage
 {
 
     /**
@@ -70,9 +70,9 @@ class Db extends AbstractStorage
      * Set the current debug db adapter.
      *
      * @param  AbstractAdapter $db
-     * @return Db
+     * @return Database
      */
-    public function setDb(AbstractAdapter $db): Db
+    public function setDb(AbstractAdapter $db): Database
     {
         $this->db = $db;
         return $this;
@@ -102,9 +102,9 @@ class Db extends AbstractStorage
      * Set the debug db table
      *
      * @param  string $table
-     * @return Db
+     * @return Database
      */
-    public function setTable(string $table): Db
+    public function setTable(string $table): Database
     {
         $this->table = $table;
         return $this;

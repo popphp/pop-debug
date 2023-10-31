@@ -72,6 +72,7 @@ class RequestHandler extends AbstractHandler
 
         return [
             'uri'       => $this->request->getUri()->getUri(),
+            'method'    => $this->request->getMethod(),
             'headers'   => $this->request->getHeaders(),
             'server'    => $this->request->getServer(),
             'env'       => $this->request->getEnv(),

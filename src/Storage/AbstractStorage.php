@@ -29,6 +29,7 @@ abstract class AbstractStorage implements StorageInterface
     /**
      * Format constants
      */
+    const TEXT = 'TEXT';
     const JSON = 'JSON';
     const PHP  = 'PHP';
 

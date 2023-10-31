@@ -37,7 +37,7 @@ class DebuggerTest extends TestCase
     {
         $exception = new Handler\ExceptionHandler(false, 'custom');
         $debugger = new Debugger();
-        $debugger->addHandler($exception);
+        $debugger->addHandlers([$exception]);
 
         $handlerName = null;
 

@@ -326,19 +326,98 @@ Elapsed:		2.00048 seconds
 Storage
 -------
 
+There are a few different storage options are available to store the output of the debugger.
+
 ### File
+
+Store the debugger output into a file in a folder location:
+
+```php
+use Pop\Debug\Debugger;
+use Pop\Debug\Handler\TimeHandler;
+use Pop\Debug\Storage\File;
+
+$debugger = new Debugger();
+$debugger->addHandler(new TimeHandler());
+$debugger->setStorage(new File(__DIR__ . '/log'));
+```
 
 [Top](#pop-debug)
 
 ### Database
 
+Store the debugger output into a table in a database. The default table name is `pop_debug` but that
+can be changed with the database storage object.
+
+```php
+use Pop\Debug\Debugger;
+use Pop\Debug\Handler\TimeHandler;
+use Pop\Debug\Storage\Database;
+use Pop\Db\Db;
+
+$db = Db::mysqlConnect([
+    'database' => 'DATABASE',
+    'username' => 'DB_USER',
+    'password' => 'DB_PASS'
+]);
+
+$debugger = new Debugger();
+$debugger->addHandler(new TimeHandler());
+$debugger->setStorage(new Database($db, 'text', 'my_debug_table'));
+```
+
 [Top](#pop-debug)
 
 ### Redis
+
+Store the debugger output into the Redis server cache.
+
+```php
+use Pop\Debug\Debugger;
+use Pop\Debug\Handler\TimeHandler;
+use Pop\Debug\Storage\Redis;
+
+$debugger = new Debugger();
+$debugger->addHandler(new TimeHandler());
+$debugger->setStorage(new Redis());
+```
 
 [Top](#pop-debug)
 
 Formats
 -------
+
+Three different formats are available for the storing of the debugger output:
+
+- Text (Default)
+- JSON
+- Serialized PHP
+
+You can set it via the constructor:
+
+```php
+use Pop\Debug\Storage\File;
+
+$fileStorage = new File(__DIR__ . '/log', 'TEXT');
+// OR
+$fileStorage = new File(__DIR__ . '/log', 'JSON');
+// OR
+$fileStorage = new File(__DIR__ . '/log', 'PHP');
+```
+
+Also, the format can be set via the `setFormat()` method:
+
+```php
+use Pop\Debug\Storage\File;
+
+$fileStorage = new File(__DIR__ . '/log');
+
+$fileStorage->setFormat('TEXT');
+// OR
+$fileStorage->setFormat('JSON');
+// OR
+$fileStorage->setFormat('PHP');
+```
+
 
 [Top](#pop-debug)
