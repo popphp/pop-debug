@@ -53,7 +53,7 @@ The basic concept of the debugger is that it works with a handler object or mult
 one storage object. The handlers are wired to listen to and track various aspects of the application and
 push their results to the storage object to be retrieved at a later time.
 
-In this simple example, we can set up a generic message handler to storage its triggered messages in a file.
+In this simple example, we can set up a generic message handler to store its triggered messages in a file.
 
 ```php
 use Pop\Debug\Debugger;
@@ -81,7 +81,7 @@ Handlers
 ----------
 
 There are a total of 6 available handlers. More handlers can be added, provided they implement the
-handler interface.
+`Pop\Debug\Handler\HandlerInterface` interface.
 
 ### Exception
 
