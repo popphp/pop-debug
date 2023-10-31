@@ -247,7 +247,8 @@ Params:
 ### Request
 
 The request handler works with a `Pop\Http\Server\Request` object from the `pop-http` component and tracks
-all of the inbound request data.
+all of the inbound request data. The following example would be a block of code that would run in a script
+that receives an inbound HTTP request:
 
 ```php
 use Pop\Debug\Debugger;
