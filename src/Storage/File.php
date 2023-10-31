@@ -99,18 +99,38 @@ class File extends AbstractStorage
     }
 
     /**
-     * Get debug data
+     * Get debug data by ID
      *
      * @param  string $id
      * @return mixed
      */
-    public function get(string $id): mixed
+    public function getById(string $id): mixed
     {
-        return $this->decodeValue($this->dir . DIRECTORY_SEPARATOR . $id);
+        if (str_ends_with($id, '*') || str_ends_with($id, '%')) {
+            $id = substr($id, 0, -1);
+            return array_values(array_filter(scandir($this->dir), function($value) use ($id) {
+                return (($value != '.') && ($value != '..')) && str_starts_with($value, $id);
+            }));
+        } else {
+            return $this->decodeValue($this->dir . DIRECTORY_SEPARATOR . $id);
+        }
     }
 
     /**
-     * Determine if debug data exists
+     * Get debug data by type
+     *
+     * @param  string $type
+     * @return mixed
+     */
+    public function getByType(string $type): mixed
+    {
+        return array_values(array_filter(scandir($this->dir), function($value) use ($type) {
+            return (($value != '.') && ($value != '..')) && str_contains($value, $type);
+        }));
+    }
+
+    /**
+     * Determine if debug data exists by ID
      *
      * @param  string $id
      * @return bool
@@ -120,18 +140,24 @@ class File extends AbstractStorage
         $fileId = $this->dir . DIRECTORY_SEPARATOR . $id;
 
         if ($this->format == self::JSON) {
-            $fileId .= '.json';
+            if (!str_ends_with($fileId, '.json')) {
+                $fileId .= '.json';
+            }
         } else if ($this->format == self::PHP) {
-            $fileId .= '.php';
+            if (!str_ends_with($fileId, '.php')) {
+                $fileId .= '.php';
+            }
         } else {
-            $fileId .= '.log';
+            if (!str_ends_with($fileId, '.log')) {
+                $fileId .= '.log';
+            }
         }
 
         return (file_exists($fileId));
     }
 
     /**
-     * Delete debug data
+     * Delete debug data by ID
      *
      * @param  string $id
      * @return void
@@ -141,11 +167,17 @@ class File extends AbstractStorage
         $fileId = $this->dir . DIRECTORY_SEPARATOR . $id;
 
         if ($this->format == self::JSON) {
-            $fileId .= '.json';
+            if (!str_ends_with($fileId, '.json')) {
+                $fileId .= '.json';
+            }
         } else if ($this->format == self::PHP) {
-            $fileId .= '.php';
+            if (!str_ends_with($fileId, '.php')) {
+                $fileId .= '.php';
+            }
         } else {
-            $fileId .= '.log';
+            if (!str_ends_with($fileId, '.log')) {
+                $fileId .= '.log';
+            }
         }
 
         if (file_exists($fileId)) {
@@ -204,13 +236,19 @@ class File extends AbstractStorage
     public function decodeValue(mixed $value): mixed
     {
         if ($this->format == self::JSON) {
-            $value .= '.json';
+            if (!str_ends_with($value, '.json')) {
+                $value .= '.json';
+            }
             $value  = (file_exists($value)) ? json_decode(file_get_contents($value), true) : false;
         } else if ($this->format == self::PHP) {
-            $value .= '.php';
+            if (!str_ends_with($value, '.php')) {
+                $value .= '.php';
+            }
             $value  = (file_exists($value)) ? include $value : false;
         } else {
-            $value .= '.log';
+            if (!str_ends_with($value, '.log')) {
+                $value .= '.log';
+            }
             $value  = (file_exists($value)) ? file_get_contents($value) : false;
         }
 

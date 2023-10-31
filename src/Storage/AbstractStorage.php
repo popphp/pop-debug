@@ -35,9 +35,9 @@ abstract class AbstractStorage implements StorageInterface
 
     /**
      * Storage format (json, php or text)
-     * @var ?string
+     * @var string
      */
-    protected ?string $format = null;
+    protected string $format = 'TEXT';
 
     /**
      * Constructor
@@ -46,7 +46,7 @@ abstract class AbstractStorage implements StorageInterface
      *
      * @param  ?string $format
      */
-    public function __construct(?string $format = null)
+    public function __construct(?string $format = self::TEXT)
     {
         if ($format !== null) {
             $this->setFormat($format);
@@ -61,15 +61,23 @@ abstract class AbstractStorage implements StorageInterface
      */
     public function setFormat(string $format): AbstractStorage
     {
-        switch (strtoupper($format)) {
-            case self::JSON:
-                $this->format = self::JSON;
-                break;
-            case self::PHP:
-                $this->format = self::PHP;
-        }
+        $this->format = match (strtoupper($format)) {
+            self::JSON => self::JSON,
+            self::PHP  => self::PHP,
+            default    => self::TEXT,
+        };
 
         return $this;
+    }
+
+    /**
+     * Determine if the format is PHP
+     *
+     * @return bool
+     */
+    public function isText(): bool
+    {
+        return ($this->format == self::TEXT);
     }
 
     /**
@@ -112,15 +120,23 @@ abstract class AbstractStorage implements StorageInterface
     abstract public function save(string $id, mixed $value): void;
 
     /**
-     * Get debug data
+     * Get debug data by ID
      *
      * @param  string $id
      * @return mixed
      */
-    abstract public function get(string $id): mixed;
+    abstract public function getById(string $id): mixed;
 
     /**
-     * Determine if debug data exists
+     * Get debug data by type
+     *
+     * @param  string $type
+     * @return mixed
+     */
+    abstract public function getByType(string $type): mixed;
+
+    /**
+     * Determine if debug data exists by
      *
      * @param  string $id
      * @return bool
@@ -128,7 +144,7 @@ abstract class AbstractStorage implements StorageInterface
     abstract public function has(string $id): bool;
 
     /**
-     * Delete debug data
+     * Delete debug data by id
      *
      * @param  string $id
      * @return void

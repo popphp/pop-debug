@@ -183,12 +183,55 @@ class Database extends AbstractStorage
     }
 
     /**
-     * Get debug data
+     * Get debug data by ID
      *
      * @param  string $id
      * @return mixed
      */
-    public function get(string $id): mixed
+    public function getById(string $id): mixed
+    {
+        $sql         = $this->db->createSql();
+        $placeholder = $sql->getPlaceholder();
+        $value       = false;
+        $isWildcard  = false;
+
+        if ($placeholder == ':') {
+            $placeholder .= 'key';
+        } else if ($placeholder == '$') {
+            $placeholder .= '1';
+        }
+
+        if (str_ends_with($id, '*') || str_ends_with($id, '%')) {
+            $sql->select()->from($this->table)->where('key LIKE ' . $placeholder);
+            $id = substr($id, 0, -1) . '%';
+            $isWildcard = true;
+        } else {
+            $sql->select()->from($this->table)->where('key = ' . $placeholder);
+        }
+
+        $this->db->prepare($sql)
+            ->bindParams(['key' => $id])
+            ->execute();
+
+        $rows = $this->db->fetchAll();
+
+        // If the value is found, return.
+        if (($isWildcard) && isset($rows[0])) {
+            $value = $rows;
+        } else if (isset($rows[0]) && isset($rows[0]['value'])) {
+            $value = $this->decodeValue($rows[0]['value']);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Get debug data by type
+     *
+     * @param  string $type
+     * @return mixed
+     */
+    public function getByType(string $type): mixed
     {
         $sql         = $this->db->createSql();
         $placeholder = $sql->getPlaceholder();
@@ -200,24 +243,23 @@ class Database extends AbstractStorage
             $placeholder .= '1';
         }
 
-        $sql->select()->from($this->table)->where('key = ' . $placeholder);
-
+        $sql->select()->from($this->table)->where('key LIKE ' . $placeholder);
         $this->db->prepare($sql)
-            ->bindParams(['key' => $id])
+            ->bindParams(['key' => '%' . $type])
             ->execute();
 
         $rows = $this->db->fetchAll();
 
         // If the value is found, return.
-        if (isset($rows[0]) && isset($rows[0]['value'])) {
-            $value = $this->decodeValue($rows[0]['value']);
+        if (isset($rows[0])) {
+            $value = $rows;
         }
 
         return $value;
     }
 
     /**
-     * Determine if debug data exists
+     * Determine if debug data exists by ID
      *
      * @param  string $id
      * @return bool
@@ -245,7 +287,7 @@ class Database extends AbstractStorage
     }
 
     /**
-     * Delete debug data
+     * Delete debug data by ID
      *
      * @param  string $id
      * @return void

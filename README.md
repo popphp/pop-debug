@@ -20,8 +20,8 @@ pop-debug
 * [Storage](#storage)
   - [File](#file)
   - [Database](#database)
-  - [Redis](#redis)
 * [Formats](#formats)
+* [Retrieving](#retrieving)
 
 Overview
 --------
@@ -398,22 +398,6 @@ $debugger->setStorage(new Database($db, 'text', 'my_debug_table'));
 
 [Top](#pop-debug)
 
-### Redis
-
-Store the debugger output into the Redis server cache.
-
-```php
-use Pop\Debug\Debugger;
-use Pop\Debug\Handler\TimeHandler;
-use Pop\Debug\Storage\Redis;
-
-$debugger = new Debugger();
-$debugger->addHandler(new TimeHandler());
-$debugger->setStorage(new Redis());
-```
-
-[Top](#pop-debug)
-
 Formats
 -------
 
@@ -449,5 +433,65 @@ $fileStorage->setFormat('JSON');
 $fileStorage->setFormat('PHP');
 ```
 
+[Top](#pop-debug)
+
+Retrieving
+----------
+
+You can retrieve the stored debug content from the debugger. Calling the `save()` method returns the
+request ID generated from that method call.
+
+```php
+use Pop\Debug\Debugger;
+use Pop\Debug\Handler\MessageHandler;
+use Pop\Debug\Storage\File;
+
+$debugger = new Debugger(new MessageHandler(), new MemoryHandler(), new File(__DIR__ . '/logs'));
+$debugger['message']->addMessage('Hey! Something happened!');
+$requestId = $debugger->save();
+```
+
+The auto-generated request ID will look like:
+
+```text
+857f0869d00b64db7c9dbdee4194781a
+```
+
+From there, you can call `getById` to retrieve stored debug content:
+
+```php
+// A wildcard search
+print_r($debugger->getById($requestId . '*'));
+```
+
+```text
+Array
+(
+    [0] => 857f0869d00b64db7c9dbdee4194781a-message.log
+)
+```
+```php
+// An exact search by ID
+print_r($debugger->getById('857f0869d00b64db7c9dbdee4194781a-message'));
+```
+```text
+1698773755.86070	Hey! Something happened!
+```
+
+The method `getByType` is also available to get groups of debug content by type:
+
+```php
+print_r($debugger->getByType('message'));
+```
+
+```text
+Array
+(
+    [0] => 857f0869d00b64db7c9dbdee4194781a-message.log
+    [1] => 966dc22f1c34489d7d61de295aa008a9-message.log
+    [2] => f5c21a372ba375bce9b2382f67e3b70d-message.log
+)
+
+```
 
 [Top](#pop-debug)

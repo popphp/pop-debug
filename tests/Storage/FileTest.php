@@ -13,7 +13,7 @@ class FileTest extends TestCase
         $file = new Storage\File(__DIR__ . '/../tmp');
         $this->assertInstanceOf('Pop\Debug\Storage\File', $file);
         $this->assertEquals(realpath(__DIR__ . '/../tmp'), $file->getDir());
-        $this->assertNull($file->getFormat());
+        $this->assertEquals('TEXT', $file->getFormat());
         $this->assertFalse($file->isJson());
         $this->assertFalse($file->isPhp());
 
@@ -31,7 +31,8 @@ class FileTest extends TestCase
         $file = new Storage\File(__DIR__ . '/../tmp');
         $file->save($time, 'Hello World');
         $this->assertTrue($file->has($time));
-        $this->assertEquals('Hello World', $file->get($time));
+        $this->assertEquals('Hello World', $file->getById($time));
+        $this->assertIsArray($file->getById($time . '*'));
         $file->delete($time);
     }
 
@@ -41,7 +42,7 @@ class FileTest extends TestCase
         $file = new Storage\File(__DIR__ . '/../tmp', 'json');
         $file->save($time, 'Hello World');
         $this->assertTrue($file->has($time));
-        $this->assertEquals('Hello World', $file->get($time));
+        $this->assertEquals('Hello World', $file->getById($time));
         $file->delete($time);
     }
 
@@ -51,8 +52,17 @@ class FileTest extends TestCase
         $file = new Storage\File(__DIR__ . '/../tmp', 'php');
         $file->save($time, 'Hello World');
         $this->assertTrue($file->has($time));
-        $this->assertEquals('Hello World', $file->get($time));
+        $this->assertEquals('Hello World', $file->getById($time));
         $file->delete($time);
+    }
+
+    public function testSaveAndGetByType()
+    {
+        $time = time();
+        $file = new Storage\File(__DIR__ . '/../tmp');
+        $file->save($time . '-message', 'Hello World');
+        $this->assertIsArray($file->getByType('message'));
+        $file->delete($time . '-message');
     }
 
     public function testSaveAndGetTextException()

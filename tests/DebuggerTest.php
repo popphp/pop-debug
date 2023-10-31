@@ -100,7 +100,6 @@ class DebuggerTest extends TestCase
         $debugger['memory']->updatePeakMemoryUsage();
         $debugger->save();
 
-
         $dh = @opendir(__DIR__ . '/tmp');
 
         while (false !== ($obj = readdir($dh))) {
@@ -114,6 +113,23 @@ class DebuggerTest extends TestCase
         if (file_exists(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj)) {
             unlink(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj);
         }
+    }
+
+    public function testGet()
+    {
+        $debugger = new Debugger([
+            new Handler\MemoryHandler(),
+            new Storage\File(__DIR__ . '/tmp')
+        ]);
+        $debugger['memory']->updatePeakMemoryUsage();
+        $requestId = $debugger->save();
+
+        $this->assertIsArray($debugger->getByType('memory'));
+        $this->assertTrue($debugger->has($requestId . '-memory'));
+        $this->assertTrue(str_contains($debugger->getById($requestId . '-memory'), 'Usage'));
+        $debugger->delete($requestId . '-memory');
+        $debugger->clear();
+        $this->assertFalse($debugger->has($requestId . '-memory'));
     }
 
     public function testRender()

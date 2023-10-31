@@ -183,22 +183,78 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
     {
         $data = [];
         foreach ($this->handlers as $name => $handler) {
-            $data[$name] = ($this->storage->getFormat() === null) ? $handler->prepareAsString() : $handler->prepare();
+            $data[$name] = ($this->storage->getFormat() == 'TEXT') ? $handler->prepareAsString() : $handler->prepare();
         }
         return $data;
     }
 
     /**
-     * Save the debug handlers' data to storage
+     * Get stored request by ID
+     *
+     * @param  string $id
+     * @return mixed
+     */
+    public function getById(string $id): mixed
+    {
+        return $this->storage->getById($id);
+    }
+
+    /**
+     * Get stored request by type
+     *
+     * @param  string $type
+     * @return mixed
+     */
+    public function getByType(string $type): mixed
+    {
+        return $this->storage->getByType($type);
+    }
+
+    /**
+     * Determine if debug data exists by ID
+     *
+     * @param  string $id
+     * @return bool
+     */
+    public function has(string $id): bool
+    {
+        return $this->storage->has($id);
+    }
+
+    /**
+     * Delete debug data by ID
+     *
+     * @param  string $id
+     * @return void
+     */
+    public function delete(string $id): void
+    {
+        $this->storage->delete($id);
+    }
+
+    /**
+     * Clear storage
      *
      * @return void
      */
-    public function save(): void
+    public function clear(): void
+    {
+        $this->storage->clear();
+    }
+
+    /**
+     * Save the debug handlers' data to storage
+     *
+     * @return string
+     */
+    public function save(): string
     {
         foreach ($this->handlers as $name => $handler) {
-            $data = ($this->storage->getFormat() === null) ? $handler->prepareAsString() : $handler->prepare();
+            $data = ($this->storage->getFormat() == 'TEXT') ? $handler->prepareAsString() : $handler->prepare();
             $this->storage->save($this->getRequestId() . '-' . $name, $data);
         }
+
+        return $this->getRequestId();
     }
 
     /**

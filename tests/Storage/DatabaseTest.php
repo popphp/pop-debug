@@ -25,10 +25,10 @@ class DatabaseTest extends TestCase
         $db = new Storage\Database(Db::sqliteConnect(['database' => __DIR__ . '/../tmp/debug.sqlite']));
         $db->save(123456, 'Hello World!');
         $this->assertTrue($db->has(123456));
-        $this->assertEquals('Hello World!', $db->get(123456));
+        $this->assertEquals('Hello World!', $db->getById(123456));
         $db->save(123456, 'Hello World 2!');
         $this->assertTrue($db->has(123456));
-        $this->assertEquals('Hello World 2!', $db->get(123456));
+        $this->assertEquals('Hello World 2!', $db->getById(123456));
     }
 
     public function testEncodeException()
@@ -58,10 +58,19 @@ class DatabaseTest extends TestCase
         $db = new Storage\Database(Db::sqliteConnect(['database' => __DIR__ . '/../tmp/debug.sqlite']), 'JSON');
         $db->save(123456, ['foo' => 'bar']);
         $this->assertTrue($db->has(123456));
-        $value = $db->get(123456);
+        $value = $db->getById(123456);
         $this->assertTrue(is_array($value));
         $this->assertTrue(isset($value['foo']));
         $this->assertEquals('bar', $value['foo']);
+        $value = $db->getById('123456*');
+        $this->assertTrue(is_array($value));
+    }
+
+    public function testSaveAndGetByType()
+    {
+        $db = new Storage\Database(Db::sqliteConnect(['database' => __DIR__ . '/../tmp/debug.sqlite']), 'JSON');
+        $db->save('123456-message', ['foo' => 'bar']);
+        $this->assertIsArray($db->getByType('message'));
     }
 
     public function testSavePhp()
@@ -69,7 +78,7 @@ class DatabaseTest extends TestCase
         $db = new Storage\Database(Db::sqliteConnect(['database' => __DIR__ . '/../tmp/debug.sqlite']), 'PHP');
         $db->save(123456, ['foo' => 'bar']);
         $this->assertTrue($db->has(123456));
-        $value = $db->get(123456);
+        $value = $db->getById(123456);
         $this->assertTrue(is_array($value));
         $this->assertTrue(isset($value['foo']));
         $this->assertEquals('bar', $value['foo']);

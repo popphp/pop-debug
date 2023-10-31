@@ -39,6 +39,13 @@ interface StorageInterface
      *
      * @return bool
      */
+    public function isText(): bool;
+
+    /**
+     * Determine if the format is PHP
+     *
+     * @return bool
+     */
     public function isPhp(): bool;
 
     /**
@@ -65,15 +72,23 @@ interface StorageInterface
     public function save(string $id, mixed $value): void;
 
     /**
-     * Get debug data
+     * Get debug data by ID
      *
      * @param  string $id
      * @return mixed
      */
-    public function get(string $id): mixed;
+    public function getById(string $id): mixed;
 
     /**
-     * Determine if debug data exists
+     * Get debug data by type
+     *
+     * @param  string $type
+     * @return mixed
+     */
+    public function getByType(string $type): mixed;
+
+    /**
+     * Determine if debug data exists by ID
      *
      * @param  string $id
      * @return bool
@@ -81,7 +96,7 @@ interface StorageInterface
     public function has(string $id): bool;
 
     /**
-     * Delete debug data
+     * Delete debug data by ID
      *
      * @param  string $id
      * @return void
