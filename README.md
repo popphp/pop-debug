@@ -83,8 +83,6 @@ Handlers
 There are a total of 6 available handlers. More handlers can be added, provided they implement the
 handler interface.
 
-[Top](#pop-debug)
-
 ### Exception
 
 The exception handler captures and tracks any exceptions thrown by an application.
@@ -153,6 +151,34 @@ Peaks:
 ------
 1698699589.59750	1.5MB
 1698699591.59770	1.5MB
+```
+
+[Top](#pop-debug)
+
+Message
+-------
+
+The message handler provides simple and generic messaging to record debug events from
+within the application:
+
+```php
+use Pop\Debug\Debugger;
+use Pop\Debug\Handler\MessageHandler;
+use Pop\Debug\Storage\File;
+
+$debugger = new Debugger();
+$debugger->addHandler(new MessageHandler());
+$debugger->setStorage(new File(__DIR__ . '/log'));
+
+$debugger['message']->addMessage('Hey! Something happened!');
+
+$debugger->save();
+```
+
+The above code will save the following output to the `log` folder in a plain text file:
+
+```text
+1504213206.00000    Hey! Something happened!
 ```
 
 [Top](#pop-debug)
