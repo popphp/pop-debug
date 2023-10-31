@@ -228,15 +228,15 @@ $debugger->save();
 The above code will save the following output to the `log` folder in a plain text file:
 
 ```text
-Start:			1698703083.95424
-Finish:			0.00000
-Elapsed:		0.01048 seconds
+Start:			1698720970.03826
+Finish:			1698720970.05190
+Elapsed:		0.01364 seconds
 
 Queries:
 --------
-INSERT INTO `users` (`username`, `password`) VALUES (?, ?) [0.00697]
-Start:			1698703083.95769
-Finish:			1698703083.96466
+INSERT INTO `users` (`username`, `password`) VALUES (?, ?) [0.00743]
+Start:			1698720970.04443
+Finish:			1698720970.05187
 Params:
 	username => admin
 	password => password

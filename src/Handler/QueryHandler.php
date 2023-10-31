@@ -100,10 +100,11 @@ class QueryHandler extends AbstractHandler
      */
     public function prepare(): array
     {
-        $data = [
+        $elapsed = $this->profiler->getElapsed();
+        $data    = [
             'start'   => number_format((float)$this->profiler->getStart(), 5, '.', ''),
             'finish'  => number_format((float)$this->profiler->getFinish(), 5, '.', ''),
-            'elapsed' => $this->profiler->getElapsed(),
+            'elapsed' => $elapsed,
             'steps'   => []
         ];
 
@@ -141,9 +142,10 @@ class QueryHandler extends AbstractHandler
      */
     public function prepareAsString(): string
     {
+        $elapsed = $this->profiler->getElapsed();
         $string  = "Start:\t\t\t" . number_format((float)$this->profiler->getStart(), 5, '.', '') . PHP_EOL;
         $string .= "Finish:\t\t\t" . number_format((float)$this->profiler->getFinish(), 5, '.', '') . PHP_EOL;
-        $string .= "Elapsed:\t\t" . $this->profiler->getElapsed() . ' seconds' . PHP_EOL . PHP_EOL;
+        $string .= "Elapsed:\t\t" . $elapsed . ' seconds' . PHP_EOL . PHP_EOL;
 
         $string .= "Queries:" . PHP_EOL;
         $string .= "--------" . PHP_EOL;
