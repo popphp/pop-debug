@@ -207,8 +207,11 @@ class Users extends Record {}
 
 Record::setDb($db);
 
+// Register the quert handler with the DB adapter 
+$queryHandler = $db->listen('Pop\Debug\Handler\QueryHandler');
+
 $debugger = new Debugger();
-$debugger->addHandler($db->listen('Pop\Debug\Handler\QueryHandler'));
+$debugger->addHandler($queryHandler);
 $debugger->setStorage(new File('log'));
 
 // Interact with the database
