@@ -447,7 +447,9 @@ use Pop\Debug\Debugger;
 use Pop\Debug\Handler\MessageHandler;
 use Pop\Debug\Storage\File;
 
-$debugger = new Debugger(new MessageHandler(), new MemoryHandler(), new File(__DIR__ . '/logs'));
+$debugger = new Debugger(
+    new MessageHandler(), new MemoryHandler(), new File(__DIR__ . '/logs')
+);
 $debugger['message']->addMessage('Hey! Something happened!');
 $requestId = $debugger->save();
 ```
@@ -542,8 +544,10 @@ The `usage_limit` and `peak_limit` are memory-specific limits to monitor is an o
 ```php
 $loggingParams = [
     'level'       => Log\Logger::WARNING,
-    'usage_limit' => '500000',  // Limit in bytes. If the usage goes above the limit, the log message is sent
-    'peak_limit'  => '1000000', // Limit in bytes. If the peak usage goes above the limit, the log message is sent
+    'usage_limit' => '500000',  // Limit in bytes.
+                                // If the usage goes above the limit, the log message is sent
+    'peak_limit'  => '1000000', // Limit in bytes.
+                                // If the peak usage goes above the limit, the log message is sent
 ];
 ```
 
@@ -555,7 +559,8 @@ operations take longer than the time limit, a log message is sent.
 ```php
 $loggingParams = [
     'level' => Log\Logger::WARNING,
-    'limit' => 1, // Time limit in seconds. If the operation takes longer than the time limit, the log message is sent
+    'limit' => 1, // Time limit in seconds.
+                  // If the operation takes longer than the time limit, the log message is sent
 ];
 ```
 
@@ -583,10 +588,13 @@ $debugger = new Debugger();
 $db->listen('Pop\Debug\Handler\QueryHandler', null, new Profiler($debugger));
 
 // Add logger to the debugger
-$debugger->addLogger(new Log\Logger(new Log\Writer\File(__DIR__ . '/log/debug.log')), [
-    'level' => Log\Logger::INFO,
-    'limit' => 0.001
-]);
+$debugger->addLogger(
+    new Log\Logger(new Log\Writer\File(__DIR__ . '/log/debug.log')),
+    [
+        'level' => Log\Logger::INFO,
+        'limit' => 0.001
+    ]
+);
 
 // Save a user to the database - debugging and logging will automatically happen
 $user = new Users([
