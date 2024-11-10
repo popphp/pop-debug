@@ -545,9 +545,11 @@ The `usage_limit` and `peak_limit` are memory-specific limits to monitor is an o
 $loggingParams = [
     'level'       => Log\Logger::WARNING,
     'usage_limit' => '500000',  // Limit in bytes.
-                                // If the usage goes above the limit, the log message is sent
+                                // If the usage goes above the limit,
+                                // the log message is sent
     'peak_limit'  => '1000000', // Limit in bytes.
-                                // If the peak usage goes above the limit, the log message is sent
+                                // If the peak usage goes above the limit,
+                                // the log message is sent
 ];
 ```
 
@@ -560,7 +562,8 @@ operations take longer than the time limit, a log message is sent.
 $loggingParams = [
     'level' => Log\Logger::WARNING,
     'limit' => 1, // Time limit in seconds.
-                  // If the operation takes longer than the time limit, the log message is sent
+                  // If the operation takes longer than the time limit,
+                  // the log message is sent
 ];
 ```
 
