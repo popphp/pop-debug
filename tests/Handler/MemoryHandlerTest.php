@@ -1,8 +1,9 @@
 <?php
 
-namespace Pop\Debug\Test;
+namespace Pop\Debug\Test\Handler;
 
 use Pop\Debug\Handler;
+use Pop\Log;
 use PHPUnit\Framework\TestCase;
 
 class MemoryHandlerTest extends TestCase
@@ -77,6 +78,43 @@ class MemoryHandlerTest extends TestCase
 
         $this->assertStringContainsString('Memory Handler', $string);
         $this->assertStringContainsString('Limit', $string);
+    }
+
+    public function testLog1()
+    {
+        $handler = new Handler\MemoryHandler(false, 'memory',
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO]
+        );
+        $handler->updateUsage();
+        $handler->log();
+
+        $this->assertFileExists(__DIR__ . '/../tmp/debug.log');
+    }
+
+    public function testLog2()
+    {
+        $handler = new Handler\MemoryHandler(false, 'memory',
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), [
+                'level'       => Log\Logger::WARNING,
+                'usage_limit' => 1000000,
+                'peak_limit'  => 1000000,
+            ]
+        );
+        $handler->updateUsage();
+        $handler->log();
+
+        $this->assertFileExists(__DIR__ . '/../tmp/debug.log');
+    }
+
+    public function testLogException()
+    {
+        $this->expectException('Pop\Debug\Handler\Exception');
+
+        $handler = new Handler\MemoryHandler(false, 'memory',
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['foo' => 'test']
+        );
+        $handler->updateUsage();
+        $handler->log();
     }
 
 }

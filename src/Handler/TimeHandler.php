@@ -13,6 +13,8 @@
  */
 namespace Pop\Debug\Handler;
 
+use Pop\Log\Logger;
+
 /**
  * Debug time handler class
  *
@@ -43,12 +45,14 @@ class TimeHandler extends AbstractHandler
      *
      * Instantiate a time handler object
      *
-     * @param ?string $name
-     * @param bool    $start
+     * @param  bool    $start
+     * @param  ?string $name
+     * @param  ?Logger $logger
+     * @param  array   $loggingParams
      */
-    public function __construct(?string $name = null, bool $start = true)
+    public function __construct(bool $start = true, ?string $name = null, ?Logger $logger = null, array $loggingParams = [])
     {
-        parent::__construct($name);
+        parent::__construct($name, $logger, $loggingParams);
         if ($start) {
             $this->start();
         }
@@ -140,13 +144,11 @@ class TimeHandler extends AbstractHandler
             $this->stop();
         }
 
-        $data = [
+        return [
             'start'   => number_format($this->start, 5, '.', ''),
             'stop'    => number_format($this->stop, 5, '.', ''),
             'elapsed' => $this->getElapsed()
         ];
-
-        return $data;
     }
 
     /**
@@ -178,6 +180,37 @@ class TimeHandler extends AbstractHandler
         $string .= "Elapsed:\t\t" . $this->getElapsed() . ' seconds' . PHP_EOL . PHP_EOL;
 
         return $string;
+    }
+
+    /**
+     * Trigger handler logging
+     *
+     * @throws Exception
+     * @return void
+     */
+    public function log(): void
+    {
+        if (($this->hasLogger()) && ($this->hasLoggingParams())) {
+            $logLevel  = $this->loggingParams['level'] ?? null;
+            $timeLimit = $this->loggingParams['limit'] ?? null;
+
+            if ($logLevel !== null) {
+                $elapsedTime = $this->getElapsed();
+                if ($timeLimit !== null) {
+                    if ($elapsedTime >= $timeLimit) {
+                        $this->logger->log(
+                            $logLevel, 'The time limit of '. $timeLimit . ' second(s) has been exceeded by ' .
+                            $elapsedTime - $timeLimit . ' second(s). The timed event was a total of ' .
+                            $elapsedTime . ' second(s).'
+                        );
+                    }
+                } else {
+                    $this->logger->log($logLevel, 'A new ' . $elapsedTime . ' second event has been triggered.');
+                }
+            } else {
+                throw new Exception('Error: The log level parameter was not set.');
+            }
+        }
     }
 
 }

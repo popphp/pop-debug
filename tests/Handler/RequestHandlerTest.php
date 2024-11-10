@@ -4,9 +4,10 @@ namespace {
     ob_start();
 }
 
-namespace Pop\Debug\Test {
+namespace Pop\Debug\Test\Handler {
 
     use Pop\Debug\Handler;
+    use Pop\Log;
     use PHPUnit\Framework\TestCase;
 
     class RequestHandlerTest extends TestCase
@@ -42,6 +43,43 @@ namespace Pop\Debug\Test {
 
             $this->assertStringContainsString('Request Handler', $string);
             $this->assertStringContainsString('URI', $string);
+        }
+
+        public function testLog1()
+        {
+            $_SERVER['REQUEST_URI'] = '/page';
+            $handler = new Handler\RequestHandler(null, 'request',
+                new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO]
+            );
+            $handler->request()->addHeader('Content-Type', 'text/plain');
+            $handler->log();
+
+            $this->assertFileExists(__DIR__ . '/../tmp/debug.log');
+        }
+
+        public function testLog2()
+        {
+            $_SERVER['REQUEST_URI'] = '/page';
+            $handler = new Handler\RequestHandler(null, 'request',
+                new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO, 'limit' => 1]
+            );
+            $handler->request()->addHeader('Content-Type', 'text/plain');
+            sleep(2);
+            $handler->log();
+
+            $this->assertFileExists(__DIR__ . '/../tmp/debug.log');
+        }
+
+        public function testLogException()
+        {
+            $this->expectException('Pop\Debug\Handler\Exception');
+            $_SERVER['REQUEST_URI'] = '/page';
+            $handler = new Handler\RequestHandler(null, 'request',
+                new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['foo' => 'test']
+            );
+            $handler->request()->addHeader('Content-Type', 'text/plain');
+
+            $handler->log();
         }
 
     }

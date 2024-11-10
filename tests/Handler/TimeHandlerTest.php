@@ -1,8 +1,9 @@
 <?php
 
-namespace Pop\Debug\Test;
+namespace Pop\Debug\Test\Handler;
 
 use Pop\Debug\Handler;
+use Pop\Log;
 use PHPUnit\Framework\TestCase;
 
 class TimeHandlerTest extends TestCase
@@ -10,10 +11,11 @@ class TimeHandlerTest extends TestCase
 
     public function testConstructor()
     {
-        $handler = new Handler\TimeHandler('test1');
+        $handler = new Handler\TimeHandler(true, 'test1');
         $this->assertEquals('test1', $handler->getName());
         $handler->setName('test2');
         $this->assertInstanceOf('Pop\Debug\Handler\TimeHandler', $handler);
+        $this->assertTrue($handler->hasName());
         $this->assertEquals('test2', $handler->getName());
     }
 
@@ -30,7 +32,7 @@ class TimeHandlerTest extends TestCase
 
     public function testGetElapsed()
     {
-        $handler = new Handler\TimeHandler(null, true);
+        $handler = new Handler\TimeHandler();
         sleep(2);
         $this->assertGreaterThan(0, $handler->getElapsed());
     }
@@ -55,6 +57,40 @@ class TimeHandlerTest extends TestCase
 
         $this->assertStringContainsString('Time Handler', $string);
         $this->assertStringContainsString('Start', $string);
+    }
+
+    public function testLog1()
+    {
+        $handler = new Handler\TimeHandler(true, 'time',
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO]
+        );
+        $handler->stop();
+        $handler->log();
+
+        $this->assertFileExists(__DIR__ . '/../tmp/debug.log');
+    }
+
+    public function testLog2()
+    {
+        $handler = new Handler\TimeHandler(true, 'time',
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::WARNING, 'limit' => 1]
+        );
+        sleep(2);
+        $handler->stop();
+        $handler->log();
+
+        $this->assertFileExists(__DIR__ . '/../tmp/debug.log');
+    }
+
+    public function testLogException()
+    {
+        $this->expectException('Pop\Debug\Handler\Exception');
+
+        $handler = new Handler\TimeHandler(true, 'time',
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['foo' => 'test']
+        );
+        $handler->stop();
+        $handler->log();
     }
 
 }

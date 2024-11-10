@@ -1,9 +1,10 @@
 <?php
 
-namespace Pop\Debug\Test;
+namespace Pop\Debug\Test\Handler;
 
 use Pop\Debug\Handler;
 use Pop\Db\Adapter\Profiler;
+use Pop\Log;
 use PHPUnit\Framework\TestCase;
 
 class QueryHandlerTest extends TestCase
@@ -46,6 +47,51 @@ class QueryHandlerTest extends TestCase
 
         $this->assertStringContainsString('Query Handler', $string);
         $this->assertStringContainsString('SELECT * FROM users', $string);
+    }
+
+    public function testLog1()
+    {
+        $profiler = new Profiler\Profiler();
+        $handler = new Handler\QueryHandler($profiler, 'query',
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO]
+        );
+        $profiler->addStep();
+        $profiler->current->setQuery('SELECT * FROM users');
+        $profiler->current->finish();
+        $handler->log();
+
+        $this->assertFileExists(__DIR__ . '/../tmp/debug.log');
+    }
+
+    public function testLog2()
+    {
+        $profiler = new Profiler\Profiler();
+        $handler = new Handler\QueryHandler($profiler, 'query',
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), [
+                'level' => Log\Logger::WARNING,
+                'limit' => 0.001
+            ]
+        );
+        $profiler->addStep();
+        $profiler->current->setQuery('SELECT * FROM users');
+        $profiler->current->finish();
+        $handler->log();
+
+        $this->assertFileExists(__DIR__ . '/../tmp/debug.log');
+    }
+
+    public function testLogException()
+    {
+        $this->expectException('Pop\Debug\Handler\Exception');
+
+        $profiler = new Profiler\Profiler();
+        $handler  = new Handler\QueryHandler($profiler, 'query',
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['foo' => 'test']
+        );
+        $profiler->addStep();
+        $profiler->current->setQuery('SELECT * FROM users');
+        $profiler->current->finish();
+        $handler->log();
     }
 
 }

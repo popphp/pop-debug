@@ -14,6 +14,7 @@
 namespace Pop\Debug\Handler;
 
 use Pop\Db\Adapter\Profiler\Profiler;
+use Pop\Log\Logger;
 
 /**
  * Debug query handler class
@@ -39,12 +40,14 @@ class QueryHandler extends AbstractHandler
      *
      * Instantiate a query handler object
      *
-     * @param  ?Profiler $profiler
-     * @param  ?string   $name
+     * @param ?Profiler $profiler
+     * @param ?string   $name
+     * @param ?Logger   $logger
+     * @param array     $loggingParams
      */
-    public function __construct(?Profiler $profiler = null, ?string $name = null)
+    public function __construct(?Profiler $profiler = null, ?string $name = null, ?Logger $logger = null, array $loggingParams = [])
     {
-        parent::__construct($name);
+        parent::__construct($name, $logger, $loggingParams);
 
         if ($profiler !== null) {
             $this->setProfiler($profiler);
@@ -177,6 +180,42 @@ class QueryHandler extends AbstractHandler
         }
 
         return $string;
+    }
+
+    /**
+     * Trigger handler logging
+     *
+     * @throws Exception
+     * @return void
+     */
+    public function log(): void
+    {
+        if (($this->hasLogger()) && ($this->hasLoggingParams())) {
+            $logLevel  = $this->loggingParams['level'] ?? null;
+            $timeLimit = $this->loggingParams['limit'] ?? null;
+
+            if ($logLevel !== null) {
+                if ($timeLimit !== null) {
+                    foreach ($this->profiler->getSteps() as $step) {
+                        $elapsedTime = $step->getElapsed();
+                        if ($elapsedTime >= $timeLimit) {
+                            $this->logger->log($logLevel, 'A query has exceeded the time limit of ' . $timeLimit .
+                                ' second(s) by ' . $elapsedTime - $timeLimit . ' second(s). The query execution was a total of ' .
+                                $elapsedTime . ' second(s).'
+                            );
+                        }
+                    }
+                } else {
+                    $message = (count($this->profiler->getSteps()) > 1) ?
+                        '(' . count($this->profiler->getSteps()) . ') new queries have been executed.' :
+                        '(1) new query has been executed.';
+
+                    $this->logger->log($logLevel, $message);
+                }
+            } else {
+                throw new Exception('Error: The log level parameter was not set.');
+            }
+        }
     }
 
     /**

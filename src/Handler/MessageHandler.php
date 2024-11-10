@@ -40,7 +40,7 @@ class MessageHandler extends AbstractHandler
      */
     public function addMessage(string $message): MessageHandler
     {
-        $this->messages[(string)microtime(true)] = $message;
+        $this->messages[] = ['message' => $message, 'timestamp' => (string)microtime(true)];
         return $this;
     }
 
@@ -71,13 +71,7 @@ class MessageHandler extends AbstractHandler
      */
     public function prepare(): array
     {
-        $data = [];
-
-        foreach ($this->messages as $time => $message) {
-            $data[number_format($time, 5, '.', '')] = $message;
-        }
-
-        return $data;
+        return $this->messages;
     }
 
     /**
@@ -101,12 +95,35 @@ class MessageHandler extends AbstractHandler
     public function prepareAsString(): string
     {
         $string = '';
-        foreach ($this->messages as $time => $message) {
-            $string .= number_format($time, 5, '.', '') . "\t" . $message . PHP_EOL;
+        foreach ($this->messages as $message) {
+            $string .= number_format($message['timestamp'], 5, '.', '') . "\t" . $message['message'] . PHP_EOL;
         }
         $string .= PHP_EOL;
 
         return $string;
+    }
+
+    /**
+     * Trigger handler logging
+     *
+     * @throws Exception
+     * @return void
+     */
+    public function log(): void
+    {
+        if (($this->hasLogger()) && ($this->hasLoggingParams())) {
+            $logLevel = $this->loggingParams['level'] ?? null;
+
+            if ($logLevel !== null) {
+                $message = (count($this->messages) > 1) ?
+                    '(' . count($this->messages) . ') new messages have been triggered.' :
+                    'A new message has been triggered: ' . $this->messages[0]['message'];
+
+                $this->logger->log($logLevel, $message);
+            } else {
+                throw new Exception('Error: The log level parameter was not set.');
+            }
+        }
     }
 
 }

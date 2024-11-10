@@ -15,6 +15,7 @@ namespace Pop\Debug\Handler;
 
 use Pop\Http\Server\Request;
 use Pop\Http\Uri;
+use Pop\Log\Logger;
 use Pop\Session\Session;
 
 /**
@@ -47,12 +48,12 @@ class RequestHandler extends AbstractHandler
      *
      * Instantiate a request handler object
      *
-     * @param ?string  $name
      * @param ?Request $request
+     * @param ?string  $name
      */
-    public function __construct(?string $name = null, ?Request $request = null)
+    public function __construct(?Request $request = null, ?string $name = null, ?Logger $logger = null, array $loggingParams = [])
     {
-        parent::__construct($name);
+        parent::__construct($name, $logger, $loggingParams);
         if ($request === null) {
             $request = new Request(new Uri());
         }
@@ -86,7 +87,8 @@ class RequestHandler extends AbstractHandler
             'session'   => (isset($_SESSION)) ? $_SESSION : [],
             'raw'       => $this->request->getRawData(),
             'parsed'    => $this->request->getParsedData(),
-            'timestamp' => number_format($this->requestTimestamp, 5, '.', '')
+            'timestamp' => number_format($this->requestTimestamp, 5, '.', ''),
+            'elapsed'   => number_format((microtime(true) - $this->requestTimestamp), 5, '.', '')
         ];
     }
 
@@ -154,12 +156,12 @@ class RequestHandler extends AbstractHandler
     {
         $string = '';
         if (!empty($this->request->getUri()) && !empty($this->request->getUri()->getUri())) {
+            $requestData = $this->prepare();
+
             $string .= $this->request->getMethod() . ' ' . $this->request->getUri()->getUri() . ' [' .
-                number_format($this->requestTimestamp, 5, '.', '') . ']' . PHP_EOL . PHP_EOL;
+                $requestData['timestamp'] . ' (' . $requestData['elapsed'] . ')]' . PHP_EOL . PHP_EOL;
 
-            $dataArrays = $this->prepare();
-
-            foreach ($dataArrays as $key => $data) {
+            foreach ($requestData as $key => $data) {
                 if (is_array($data) && (count($data) > 0)) {
                     $string .= str_replace('DATA', '', strtoupper($key)) . ":" . PHP_EOL;
                     $string .= str_repeat('-', (strlen(str_replace('DATA', '', strtoupper($key))) + 1)) . PHP_EOL;
@@ -181,6 +183,37 @@ class RequestHandler extends AbstractHandler
         $string .= PHP_EOL;
 
         return $string;
+    }
+
+    /**
+     * Trigger handler logging
+     *
+     * @throws Exception
+     * @return void
+     */
+    public function log(): void
+    {
+        if (($this->hasLogger()) && ($this->hasLoggingParams())) {
+            $logLevel  = $this->loggingParams['level'] ?? null;
+            $timeLimit = $this->loggingParams['limit'] ?? null;
+
+            if ($logLevel !== null) {
+                if ($timeLimit !== null) {
+                    $requestData = $this->prepare();
+                    $elapsedTime = $requestData['elapsed'];
+                    if ($elapsedTime >= $timeLimit) {
+                        $this->logger->log($logLevel, 'The request \'' . $this->request->getUri()->getUri() .
+                            '\' has exceeded the time limit of ' . $timeLimit . ' second(s) by ' .
+                            $elapsedTime - $timeLimit . ' second(s). The request was a total of ' . $elapsedTime . ' second(s).'
+                        );
+                    }
+                } else {
+                    $this->logger->log($logLevel, "The request '" .  $this->request->getUri()->getUri() . "' was triggered.");
+                }
+            } else {
+                throw new Exception('Error: The log level parameter was not set.');
+            }
+        }
     }
 
     /**

@@ -13,6 +13,8 @@
  */
 namespace Pop\Debug\Handler;
 
+use Pop\Log\Logger;
+
 /**
  * Debug memory handler class
  *
@@ -25,6 +27,12 @@ namespace Pop\Debug\Handler;
  */
 class MemoryHandler extends AbstractHandler
 {
+
+    /**
+     * Actual bytes flag
+     * @var bool
+     */
+    protected bool $actualBytes = false;
 
     /**
      * Memory limit
@@ -49,12 +57,16 @@ class MemoryHandler extends AbstractHandler
      *
      * Instantiate a memory handler object
      *
-     * @param  ?string $name
+     * @param bool    $actualBytes
+     * @param ?string $name
+     * @param ?Logger $logger
+     * @param array   $loggingParams
      */
-    public function __construct(?string $name = null)
+    public function __construct(bool $actualBytes = false, ?string $name = null, ?Logger $logger = null, array $loggingParams = [])
     {
-        parent::__construct($name);
-        $this->limit = $this->formatMemoryToInt(ini_get('memory_limit'));
+        parent::__construct($name, $logger, $loggingParams);
+        $this->actualBytes = $actualBytes;
+        $this->limit       = $this->formatMemoryToInt(ini_get('memory_limit'));
     }
 
     /**
@@ -68,6 +80,20 @@ class MemoryHandler extends AbstractHandler
     }
 
     /**
+     * Take both a memory usage and peak usage snapshot
+     *
+     * @param  bool $real
+     * @return MemoryHandler
+     */
+    public function updateUsage(bool $real = false): MemoryHandler
+    {
+        $this->updateMemoryUsage($real)
+            ->updatePeakMemoryUsage($real);
+
+        return $this;
+    }
+
+    /**
      * Take a memory usage snapshot
      *
      * @param  bool $real
@@ -75,7 +101,7 @@ class MemoryHandler extends AbstractHandler
      */
     public function updateMemoryUsage(bool $real = false): MemoryHandler
     {
-        $this->usages[(string)microtime(true)] = memory_get_usage($real);
+        $this->usages[] = ['memory' => memory_get_usage($real), 'timestamp' => (string)microtime(true)];
         return $this;
     }
 
@@ -107,7 +133,7 @@ class MemoryHandler extends AbstractHandler
      */
     public function updatePeakMemoryUsage(bool $real = false): MemoryHandler
     {
-        $this->peaks[(string)microtime(true)] = memory_get_peak_usage($real);
+        $this->peaks[] = ['memory' => memory_get_peak_usage($real), 'timestamp' => (string)microtime(true)];
         return $this;
     }
 
@@ -139,17 +165,23 @@ class MemoryHandler extends AbstractHandler
     public function prepare(): array
     {
         $data = [
-            'limit'  => $this->formatMemoryToString($this->limit),
+            'limit'  => (!$this->actualBytes) ? $this->formatMemoryToString($this->limit) : $this->limit,
             'usages' => [],
             'peaks'  => []
         ];
 
-        foreach ($this->usages as $time => $usage) {
-            $data['usages'][number_format($time, 5, '.', '')] = $this->formatMemoryToString($usage);
+        foreach ($this->usages as $usage) {
+            $data['usages'][] = [
+                'memory'    => (!$this->actualBytes) ? $this->formatMemoryToString($usage['memory']) : $usage['memory'],
+                'timestamp' => number_format($usage['timestamp'], 5, '.', '')
+            ];
         }
 
-        foreach ($this->peaks as $time => $peak) {
-            $data['peaks'][number_format($time, 5, '.', '')] = $this->formatMemoryToString($peak);
+        foreach ($this->peaks as $peak) {
+            $data['peaks'][] = [
+                'memory'    => (!$this->actualBytes) ? $this->formatMemoryToString($peak['memory']) : $peak['memory'],
+                'timestamp' => number_format($peak['timestamp'], 5, '.', '')
+            ];
         }
 
         return $data;
@@ -175,23 +207,73 @@ class MemoryHandler extends AbstractHandler
      */
     public function prepareAsString(): string
     {
-        $string  = "Limit:\t\t\t" . $this->formatMemoryToString($this->limit) . PHP_EOL . PHP_EOL;
+        $string  = "Limit:\t\t\t" .
+            ((!$this->actualBytes) ? $this->formatMemoryToString($this->limit) : $this->limit) . PHP_EOL . PHP_EOL;
 
         $string .= "Usages:" . PHP_EOL;
         $string .= "-------" . PHP_EOL;
-        foreach ($this->usages as $time => $usage) {
-            $string .= number_format($time, 5, '.', '') . "\t" . $this->formatMemoryToString($usage) . PHP_EOL;
+        foreach ($this->usages as $usage) {
+            $string .= number_format($usage['timestamp'], 5, '.', '') . "\t" .
+                ((!$this->actualBytes) ? $this->formatMemoryToString($usage['memory']) : $usage['memory']) . PHP_EOL;
         }
         $string .= PHP_EOL;
 
         $string .= "Peaks:" . PHP_EOL;
         $string .= "------" . PHP_EOL;
-        foreach ($this->peaks as $time => $peak) {
-            $string .= number_format($time, 5, '.', '') . "\t" . $this->formatMemoryToString($peak) . PHP_EOL;
+        foreach ($this->peaks as $peak) {
+            $string .= number_format($peak['timestamp'], 5, '.', '') . "\t" .
+                ((!$this->actualBytes) ? $this->formatMemoryToString($peak['memory']) : $peak['memory']) . PHP_EOL;
         }
         $string .= PHP_EOL;
 
         return $string;
+    }
+
+    /**
+     * Trigger handler logging
+     *
+     * @throws Exception
+     * @return void
+     */
+    public function log(): void
+    {
+        if (($this->hasLogger()) && ($this->hasLoggingParams())) {
+            $logLevel   = $this->loggingParams['level'] ?? null;
+            $usageLimit = $this->loggingParams['usage_limit'] ?? null;
+            $peakLimit  = $this->loggingParams['peak_limit'] ?? null;
+
+            if ($logLevel !== null) {
+                // Log general usage
+                if (($usageLimit === null) && ($peakLimit === null)) {
+                    foreach ($this->usages as $usage) {
+                        $this->logger->log($logLevel, 'Memory Usage: ' . $usage['memory'] . ' bytes.');
+                    }
+                    foreach ($this->peaks as $peak) {
+                        $this->logger->log($logLevel, 'Peak Memory Usage: ' . $peak['memory'] . ' bytes.');
+                    }
+                // Log if limits are exceeded
+                } else {
+                    if ($usageLimit !== null)  {
+                        foreach ($this->usages as $usage) {
+                            if ($usage['memory'] >= $usageLimit) {
+                                $this->logger->log($logLevel, 'Memory usage limit of ' . $usageLimit . ' has been exceeded by ' .
+                                    $usage['memory'] - $usageLimit. ' bytes. ' . $usage['memory'] . ' bytes were used.');
+                            }
+                        }
+                    }
+                    if ($peakLimit !== null) {
+                        foreach ($this->peaks as $peak) {
+                            if ($peak['memory'] >= $peakLimit) {
+                                $this->logger->log($logLevel, 'Memory peak limit of ' . $peakLimit . ' has been exceeded by ' .
+                                    $peak['memory'] - $peakLimit. ' bytes. ' . $peak['memory'] . ' bytes were used at the peak.');
+                            }
+                        }
+                    }
+                }
+            } else {
+                throw new Exception('Error: The log level parameter was not set.');
+            }
+        }
     }
 
     /**

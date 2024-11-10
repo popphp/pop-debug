@@ -15,6 +15,7 @@ namespace Pop\Debug;
 
 use Pop\Debug\Handler\HandlerInterface;
 use Pop\Debug\Storage\StorageInterface;
+use Pop\Log\Logger;
 use ArrayIterator;
 
 /**
@@ -175,6 +176,22 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
     }
 
     /**
+     * Add logger to handler(s)
+     *
+     * @param  Logger $logger
+     * @param  array  $loggingParams
+     * @return Debugger
+     */
+    public function addLogger(Logger $logger, array $loggingParams): Debugger
+    {
+        foreach ($this->handlers as $handler) {
+            $handler->setLogger($logger);
+            $handler->setLoggingParams($loggingParams);
+        }
+        return $this;
+    }
+
+    /**
      * Get all data from handlers
      *
      * @return array
@@ -250,8 +267,15 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
     public function save(): string
     {
         foreach ($this->handlers as $name => $handler) {
-            $data = ($this->storage->getFormat() == 'TEXT') ? $handler->prepareAsString() : $handler->prepare();
-            $this->storage->save($this->getRequestId() . '-' . $name, $data);
+            // Storage debug info
+            if ($this->hasStorage()) {
+                $data = ($this->storage->getFormat() == 'TEXT') ? $handler->prepareAsString() : $handler->prepare();
+                $this->storage->save($this->getRequestId() . '-' . $name, $data);
+            }
+            // Log debug events
+            if ($handler->hasLogger()) {
+                $handler->log();
+            }
         }
 
         return $this->getRequestId();

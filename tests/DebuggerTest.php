@@ -5,6 +5,7 @@ namespace Pop\Debug\Test;
 use Pop\Debug\Debugger;
 use Pop\Debug\Handler;
 use Pop\Debug\Storage;
+use Pop\Log;
 use PHPUnit\Framework\TestCase;
 
 class DebuggerTest extends TestCase
@@ -70,6 +71,16 @@ class DebuggerTest extends TestCase
         $this->assertInstanceOf('Pop\Debug\Handler\ExceptionHandler', $debugger->{'custom-exception'});
         unset($debugger->{'custom-exception'});
         $this->assertFalse($debugger->hasHandler('custom-exception'));
+    }
+
+    public function testAddLogger()
+    {
+        $debugger = new Debugger(
+            new Handler\ExceptionHandler(),
+            new Storage\File(__DIR__ . '/tmp')
+        );
+        $debugger->addLogger(new Log\Logger(new Log\Writer\File(__DIR__ . '/tmp')), ['level' => Log\Logger::NOTICE]);
+        $this->assertTrue($debugger['exception']->hasLogger());
     }
 
     public function testSetHandlerException()

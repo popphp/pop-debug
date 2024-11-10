@@ -13,6 +13,8 @@
  */
 namespace Pop\Debug\Handler;
 
+use Pop\Log\Logger;
+
 /**
  * Debug handler interface
  *
@@ -42,6 +44,57 @@ interface HandlerInterface
     public function getName(): ?string;
 
     /**
+     * Has name
+     *
+     * @return bool
+     */
+    public function hasName(): bool;
+
+    /**
+     * Set logger
+     *
+     * @param  Logger $logger
+     * @return HandlerInterface
+     */
+    public function setLogger(Logger $logger): HandlerInterface;
+
+    /**
+     * Get logger
+     *
+     * @return ?Logger
+     */
+    public function getLogger(): ?Logger;
+
+    /**
+     * Has logger
+     *
+     * @return bool
+     */
+    public function hasLogger(): bool;
+
+    /**
+     * Set logger
+     *
+     * @param  array $loggingParams
+     * @return HandlerInterface
+     */
+    public function setLoggingParams(array $loggingParams): HandlerInterface;
+
+    /**
+     * Get logging params
+     *
+     * @return array
+     */
+    public function getLoggingParams(): array;
+
+    /**
+     * Has logging parameters
+     *
+     * @return bool
+     */
+    public function hasLoggingParams(): bool;
+
+    /**
      * Prepare handler data for storage
      *
      * @return array
@@ -61,5 +114,12 @@ interface HandlerInterface
      * @return string
      */
     public function prepareAsString(): string;
+
+    /**
+     * Trigger handle logging
+     *
+     * @return void
+     */
+    public function log(): void;
 
 }

@@ -13,6 +13,8 @@
  */
 namespace Pop\Debug\Handler;
 
+use Pop\Log\Logger;
+
 /**
  * Debug exception handler class
  *
@@ -45,10 +47,12 @@ class ExceptionHandler extends AbstractHandler
      *
      * @param bool    $verbose
      * @param ?string $name
+     * @param ?Logger $logger
+     * @param array   $loggingParams
      */
-    public function __construct(bool $verbose = false, ?string $name = null)
+    public function __construct(bool $verbose = false, ?string $name = null, ?Logger $logger = null, array $loggingParams = [])
     {
-        parent::__construct($name);
+        parent::__construct($name, $logger, $loggingParams);
         $this->verbose = $verbose;
     }
 
@@ -60,7 +64,7 @@ class ExceptionHandler extends AbstractHandler
      */
     public function addException(\Exception $exception): ExceptionHandler
     {
-        $this->exceptions[(string)microtime(true)] = $exception;
+        $this->exceptions[] = ['exception' => $exception, 'timestamp' => (string)microtime(true)];
         return $this;
     }
 
@@ -91,13 +95,7 @@ class ExceptionHandler extends AbstractHandler
      */
     public function prepare(): array
     {
-        $data = [];
-
-        foreach ($this->exceptions as $time => $exception) {
-            $data[number_format($time, 5, '.', '')] = $exception;
-        }
-
-        return $data;
+        return $this->exceptions;
     }
 
     /**
@@ -122,22 +120,52 @@ class ExceptionHandler extends AbstractHandler
     {
         $string = '';
 
-        foreach ($this->exceptions as $time => $exception) {
+        foreach ($this->exceptions as $exception) {
             if ($this->verbose) {
-                $string .= number_format($time, 5, '.', '') .
-                    "\tCode: " . $exception->getCode() .
-                    "\tLine: " . $exception->getLine() .
-                    "\t" . $exception->getFile() .
-                    "\t" . $exception->getMessage() .
-                    "\t" . $exception->getTraceAsString() . PHP_EOL . PHP_EOL;
+                $string .= number_format($exception['timestamp'], 5, '.', '') . PHP_EOL .
+                    "Class: " . get_class($exception['exception']) . PHP_EOL .
+                    "Code: " . $exception['exception']->getCode() . PHP_EOL .
+                    "Line: " . $exception['exception']->getLine() . PHP_EOL .
+                    "File: " . $exception['exception']->getFile() . PHP_EOL .
+                    "Message: " . $exception['exception']->getMessage() . PHP_EOL .
+                    "Trace: " . $exception['exception']->getTraceAsString() . PHP_EOL;
             } else {
-                $string .= number_format($time, 5, '.', '') . "\t" . $exception->getMessage() . PHP_EOL;
+                $string .= number_format($exception['timestamp'], 5, '.', '') . "\t" . get_class($exception['exception']) .
+                    "\t" . $exception['exception']->getMessage() . PHP_EOL;
             }
 
         }
         $string .= PHP_EOL;
 
         return $string;
+    }
+
+    /**
+     * Trigger handler logging
+     *
+     * @throws Exception
+     * @return void
+     */
+    public function log(): void
+    {
+        if (($this->hasLogger()) && ($this->hasLoggingParams())) {
+            $logLevel = $this->loggingParams['level'] ?? null;
+
+            if ($logLevel !== null) {
+                $exceptionClasses = [];
+                foreach ($this->exceptions as $exception) {
+                    $exceptionClasses[] = get_class($exception['exception']);
+                }
+
+                $message = (count($exceptionClasses) > 1) ?
+                    'The following (' . count($exceptionClasses) . ') exceptions have been thrown: ' . implode(', ', $exceptionClasses) :
+                    'The following (1) exception has been thrown: ' . implode(', ', $exceptionClasses);
+
+                $this->logger->log($logLevel, $message);
+            } else {
+                throw new Exception('Error: The log level parameter was not set.');
+            }
+        }
     }
 
 }

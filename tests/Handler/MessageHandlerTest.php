@@ -1,8 +1,9 @@
 <?php
 
-namespace Pop\Debug\Test;
+namespace Pop\Debug\Test\Handler;
 
 use Pop\Debug\Handler;
+use Pop\Log;
 use PHPUnit\Framework\TestCase;
 
 class MessageHandlerTest extends TestCase
@@ -14,13 +15,24 @@ class MessageHandlerTest extends TestCase
         $this->assertInstanceOf('Pop\Debug\Handler\MessageHandler', $handler);
     }
 
+    public function testAddLogger()
+    {
+        $handler = new Handler\MessageHandler('message',
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp')), ['level' => Log\Logger::NOTICE]
+        );
+        $this->assertTrue($handler->hasLogger());
+        $this->assertTrue($handler->hasLoggingParams());
+        $this->assertInstanceOf('Pop\Log\Logger', $handler->getLogger());
+        $this->assertIsArray($handler->getLoggingParams());
+    }
+
     public function testAddMessage()
     {
         $handler = new Handler\MessageHandler();
         $handler->addMessage('Test Message');
         $this->assertTrue($handler->hasMessages());
 
-        $message = array_values($handler->getMessages())[0];
+        $message = $handler->getMessages()[0]['message'];
         $this->assertEquals('Test Message', $message);
     }
 
@@ -31,7 +43,7 @@ class MessageHandlerTest extends TestCase
 
         $data = $handler->prepare();
 
-        $message = array_values($data)[0];
+        $message = $data[0]['message'];
         $this->assertEquals('Test Message', $message);
     }
 
@@ -44,6 +56,40 @@ class MessageHandlerTest extends TestCase
 
         $this->assertStringContainsString('Message Handler', $string);
         $this->assertStringContainsString('Test Message', $string);
+    }
+
+    public function testLog1()
+    {
+        $handler = new Handler\MessageHandler('message',
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO]
+        );
+        $handler->addMessage("Here is a message!");
+        $handler->log();
+
+        $this->assertFileExists(__DIR__ . '/../tmp/debug.log');
+    }
+
+    public function testLog2()
+    {
+        $handler = new Handler\MessageHandler('message',
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO]
+        );
+        $handler->addMessage("Here is a message!");
+        $handler->addMessage("Here is another message!");
+        $handler->log();
+
+        $this->assertFileExists(__DIR__ . '/../tmp/debug.log');
+    }
+
+    public function testLogException()
+    {
+        $this->expectException('Pop\Debug\Handler\Exception');
+
+        $handler = new Handler\MessageHandler('message',
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['foo' => 'test']
+        );
+        $handler->addMessage("Here is a message!");
+        $handler->log();
     }
 
 }

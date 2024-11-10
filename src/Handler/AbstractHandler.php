@@ -13,6 +13,8 @@
  */
 namespace Pop\Debug\Handler;
 
+use Pop\Log\Logger;
+
 /**
  * Debug handler abstract class
  *
@@ -33,16 +35,34 @@ abstract class AbstractHandler implements HandlerInterface
     protected ?string $name = null;
 
     /**
+     * Logger object
+     * @var ?Logger
+     */
+    protected ?Logger $logger = null;
+
+    /**
+     * Logging params
+     * @var array
+     */
+    protected array $loggingParams = [];
+
+    /**
      * Constructor
      *
      * Instantiate a handler object
      *
      * @param ?string $name
+     * @param ?Logger $logger
+     * @param array   $loggingParams
      */
-    public function __construct(?string $name = null)
+    public function __construct(?string $name = null, ?Logger $logger = null, array $loggingParams = [])
     {
         if ($name !== null) {
             $this->setName($name);
+        }
+        if ($logger !== null) {
+            $this->setLogger($logger);
+            $this->setLoggingParams($loggingParams);
         }
     }
 
@@ -69,6 +89,80 @@ abstract class AbstractHandler implements HandlerInterface
     }
 
     /**
+     * Has name
+     *
+     * @return bool
+     */
+    public function hasName(): bool
+    {
+        return !empty($this->name);
+    }
+
+    /**
+     * Set logger
+     *
+     * @param  Logger $logger
+     * @return AbstractHandler
+     */
+    public function setLogger(Logger $logger): AbstractHandler
+    {
+        $this->logger = $logger;
+        return $this;
+    }
+
+    /**
+     * Get logger
+     *
+     * @return ?Logger
+     */
+    public function getLogger(): ?Logger
+    {
+        return $this->logger;
+    }
+
+    /**
+     * Has logger
+     *
+     * @return bool
+     */
+    public function hasLogger(): bool
+    {
+        return !empty($this->logger);
+    }
+
+    /**
+     * Set logger
+     *
+     * @param  array $loggingParams
+     * @return AbstractHandler
+     */
+    public function setLoggingParams(array $loggingParams): AbstractHandler
+    {
+        $this->loggingParams = $loggingParams;
+        return $this;
+    }
+
+    /**
+     * Get logging params
+     *
+     * @return array
+     */
+    public function getLoggingParams(): array
+    {
+        return $this->loggingParams;
+    }
+
+    /**
+     * Has logging parameters
+     *
+     * @return bool
+     */
+    public function hasLoggingParams(): bool
+    {
+        return !empty($this->loggingParams);
+    }
+
+    /**
      * Prepare handler data for storage
      *
      * @return array
@@ -88,5 +182,12 @@ abstract class AbstractHandler implements HandlerInterface
      * @return string
      */
     abstract public function prepareAsString(): string;
+
+    /**
+     * Trigger handle logging
+     *
+     * @return void
+     */
+    abstract public function log(): void;
 
 }
