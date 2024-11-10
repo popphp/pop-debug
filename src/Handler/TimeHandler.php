@@ -191,21 +191,41 @@ class TimeHandler extends AbstractHandler
     public function log(): void
     {
         if (($this->hasLogger()) && ($this->hasLoggingParams())) {
-            $logLevel  = $this->loggingParams['level'] ?? null;
-            $timeLimit = $this->loggingParams['limit'] ?? null;
+            $logLevel   = $this->loggingParams['level'] ?? null;
+            $useContext = $this->loggingParams['context'] ?? null;
+            $timeLimit  = $this->loggingParams['limit'] ?? null;
 
             if ($logLevel !== null) {
                 $elapsedTime = $this->getElapsed();
+                $context     = [];
                 if ($timeLimit !== null) {
                     if ($elapsedTime >= $timeLimit) {
+                        if (!empty($useContext)) {
+                            $context['start']        = $this->start;
+                            $context['stop']         = $this->stop;
+                            $context['time_limit']   = $timeLimit;
+                            $context['elapsed_time'] = $elapsedTime;
+                        }
+                        if (is_string($useContext)) {
+                            $context['format'] = $useContext;
+                        }
                         $this->logger->log(
                             $logLevel, 'The time limit of '. $timeLimit . ' second(s) has been exceeded by ' .
                             $elapsedTime - $timeLimit . ' second(s). The timed event was a total of ' .
-                            $elapsedTime . ' second(s).'
+                            $elapsedTime . ' second(s).', $context
                         );
                     }
                 } else {
-                    $this->logger->log($logLevel, 'A new ' . $elapsedTime . ' second event has been triggered.');
+                    if (!empty($useContext)) {
+                        $context['start']        = $this->start;
+                        $context['stop']         = $this->stop;
+                        $context['elapsed_time'] = $elapsedTime;
+                    }
+                    if (is_string($useContext)) {
+                        $context['format'] = $useContext;
+                    }
+
+                    $this->logger->log($logLevel, 'A new ' . $elapsedTime . ' second event has been triggered.', $context);
                 }
             } else {
                 throw new Exception('Error: The log level parameter was not set.');

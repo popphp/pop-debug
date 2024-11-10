@@ -22,6 +22,7 @@ pop-debug
   - [Database](#database)
 * [Formats](#formats)
 * [Retrieving](#retrieving)
+* [Logging](#logging)
 
 Overview
 --------
@@ -438,7 +439,7 @@ $fileStorage->setFormat('PHP');
 Retrieving
 ----------
 
-You can retrieve the stored debug content from the debugger. Calling the `save()` method returns the
+You can retrieve the stored debug content from the debugger's storage adapter. Calling the `save()` method returns the
 request ID generated from that method call.
 
 ```php
@@ -492,6 +493,70 @@ Array
     [2] => f5c21a372ba375bce9b2382f67e3b70d-message.log
 )
 
+```
+
+[Top](#pop-debug)
+
+Logging
+-------
+
+The debug component can also work with the `pop-log` component to deliver syslog-compatible logging messages
+to a logging resource using the standard BSD syslog protocol [RFC-3164](http://tools.ietf.org/html/rfc3164).
+Logging can be used in additional to the storage adapters, or by itself, sending the debug data and information
+to the logging resource only and without storing anything to a storage adapter.
+
+To work with a logger, a logger object must be passed to the debugger, along with logging parameters, which is an array
+of options. The minimum parameter required is a `level` value. The `context` option can also be used to log the body
+of the debug messaging results:
+
+```php
+use Pop\Debug\Debugger;
+use Pop\Debug\Handler\ExceptionHandler;
+use Pop\Debug\Storage\File;
+use Pop\Log;
+
+$debugger = new Debugger();
+$debugger->addHandler(new ExceptionHandler(true));
+$debugger->addLogger(
+    new Log\Logger(new Log\Writer\File(__DIR__ . '/log/debug.log')),
+    [
+        'level'   => Log\Logger::ERROR,
+        'context' => 'json'
+    ]
+);
+
+try {
+    throw new Pop\Debug\Exception('This is a test debug exception');
+} catch (\Exception $e) {
+    $debugger['exception']->addException($e);
+    $debugger->save();
+}
+```
+
+Other logging parameters options include:
+
+***Memory***
+
+The `usage_limit` and `peak_limit` are memory-specific limits to monitor is an operation goes above the specified limits.
+
+```php
+$loggingParams = [
+    'level'       => Log\Logger::WARNING,
+    'usage_limit' => '500000',  // Limit in bytes. If the usage goes above the limit, the log message is sent
+    'peak_limit'  => '1000000', // Limit in bytes. If the peak usage goes above the limit, the log message is sent
+];
+```
+
+***Query, Request & Time***
+
+The `limit` parameter is supported for the query, request and time handlers. It is a time limit. If any of those
+operations take longer than the time limit, a log message is sent.
+
+```php
+$loggingParams = [
+    'level' => Log\Logger::WARNING,
+    'limit' => 1, // Time limit in seconds. If the operation takes longer than the time limit, the log message is sent
+];
 ```
 
 [Top](#pop-debug)

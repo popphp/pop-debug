@@ -191,8 +191,9 @@ class QueryHandler extends AbstractHandler
     public function log(): void
     {
         if (($this->hasLogger()) && ($this->hasLoggingParams())) {
-            $logLevel  = $this->loggingParams['level'] ?? null;
-            $timeLimit = $this->loggingParams['limit'] ?? null;
+            $logLevel   = $this->loggingParams['level'] ?? null;
+            $useContext = $this->loggingParams['context'] ?? null;
+            $timeLimit  = $this->loggingParams['limit'] ?? null;
 
             if ($logLevel !== null) {
                 if ($timeLimit !== null) {
@@ -206,11 +207,19 @@ class QueryHandler extends AbstractHandler
                         }
                     }
                 } else {
+                    $context = [];
                     $message = (count($this->profiler->getSteps()) > 1) ?
                         '(' . count($this->profiler->getSteps()) . ') new queries have been executed.' :
                         '(1) new query has been executed.';
 
-                    $this->logger->log($logLevel, $message);
+                    $context['queries'] = (($useContext !== null) && (strtolower($useContext) == 'text')) ?
+                        $this->prepareAsString() : $this->prepare();
+
+                    if (is_string($useContext)) {
+                        $context['format'] = $useContext;
+                    }
+
+                    $this->logger->log($logLevel, $message, $context);
                 }
             } else {
                 throw new Exception('Error: The log level parameter was not set.');

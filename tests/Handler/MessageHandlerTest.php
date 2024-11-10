@@ -61,7 +61,7 @@ class MessageHandlerTest extends TestCase
     public function testLog1()
     {
         $handler = new Handler\MessageHandler('message',
-            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO]
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO, 'context' => 'json']
         );
         $handler->addMessage("Here is a message!");
         $handler->log();
@@ -72,7 +72,7 @@ class MessageHandlerTest extends TestCase
     public function testLog2()
     {
         $handler = new Handler\MessageHandler('message',
-            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO]
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO, 'context' => 'json']
         );
         $handler->addMessage("Here is a message!");
         $handler->addMessage("Here is another message!");

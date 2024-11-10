@@ -83,7 +83,7 @@ class MemoryHandlerTest extends TestCase
     public function testLog1()
     {
         $handler = new Handler\MemoryHandler(false, 'memory',
-            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO]
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO, 'context' => 'json']
         );
         $handler->updateUsage();
         $handler->log();
@@ -98,6 +98,7 @@ class MemoryHandlerTest extends TestCase
                 'level'       => Log\Logger::WARNING,
                 'usage_limit' => 1000000,
                 'peak_limit'  => 1000000,
+                'context' => 'json'
             ]
         );
         $handler->updateUsage();

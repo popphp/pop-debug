@@ -91,11 +91,27 @@ class ExceptionHandler extends AbstractHandler
     /**
      * Prepare handler data for storage
      *
+     * @param  bool $simpleData
      * @return array
      */
-    public function prepare(): array
+    public function prepare(bool $simpleData = false): array
     {
-        return $this->exceptions;
+        if ($simpleData) {
+            $exceptions = [];
+            foreach ($this->exceptions as $exception) {
+                $exceptions[] = [
+                    'class'   => get_class($exception['exception']),
+                    'code'    => $exception['exception']->getCode(),
+                    'line'    => $exception['exception']->getLine(),
+                    'file'    => $exception['exception']->getFile(),
+                    'message' => $exception['exception']->getMessage(),
+                    'trace'   => $exception['exception']->getTrace()
+                ];
+            }
+            return $exceptions;
+        } else {
+            return $this->exceptions;
+        }
     }
 
     /**
@@ -149,9 +165,11 @@ class ExceptionHandler extends AbstractHandler
     public function log(): void
     {
         if (($this->hasLogger()) && ($this->hasLoggingParams())) {
-            $logLevel = $this->loggingParams['level'] ?? null;
+            $logLevel   = $this->loggingParams['level'] ?? null;
+            $useContext = $this->loggingParams['context'] ?? null;
 
             if ($logLevel !== null) {
+                $context          = [];
                 $exceptionClasses = [];
                 foreach ($this->exceptions as $exception) {
                     $exceptionClasses[] = get_class($exception['exception']);
@@ -161,7 +179,16 @@ class ExceptionHandler extends AbstractHandler
                     'The following (' . count($exceptionClasses) . ') exceptions have been thrown: ' . implode(', ', $exceptionClasses) :
                     'The following (1) exception has been thrown: ' . implode(', ', $exceptionClasses);
 
-                $this->logger->log($logLevel, $message);
+                if (!empty($useContext)) {
+                    $context['exceptions'] = (($useContext !== null) && (strtolower($useContext) == 'text')) ?
+                        $this->prepareAsString() : $this->prepare(true);
+
+                    if (is_string($useContext)) {
+                        $context['format'] = $useContext;
+                    }
+                }
+
+                $this->logger->log($logLevel, $message, $context);
             } else {
                 throw new Exception('Error: The log level parameter was not set.');
             }

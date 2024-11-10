@@ -195,20 +195,30 @@ class RequestHandler extends AbstractHandler
     {
         if (($this->hasLogger()) && ($this->hasLoggingParams())) {
             $logLevel  = $this->loggingParams['level'] ?? null;
+            $useContext = $this->loggingParams['context'] ?? null;
             $timeLimit = $this->loggingParams['limit'] ?? null;
 
             if ($logLevel !== null) {
+                $context     = [];
+                $requestData = $this->prepare();
                 if ($timeLimit !== null) {
-                    $requestData = $this->prepare();
                     $elapsedTime = $requestData['elapsed'];
                     if ($elapsedTime >= $timeLimit) {
                         $this->logger->log($logLevel, 'The request \'' . $this->request->getUri()->getUri() .
                             '\' has exceeded the time limit of ' . $timeLimit . ' second(s) by ' .
-                            $elapsedTime - $timeLimit . ' second(s). The request was a total of ' . $elapsedTime . ' second(s).'
+                            $elapsedTime - $timeLimit . ' second(s). The request was a total of ' . $elapsedTime . ' second(s).',
+                            $context
                         );
                     }
                 } else {
-                    $this->logger->log($logLevel, "The request '" .  $this->request->getUri()->getUri() . "' was triggered.");
+                    $context['request'] = (($useContext !== null) && (strtolower($useContext) == 'text')) ?
+                        $this->prepareAsString() : $this->prepare();
+
+                    if (is_string($useContext)) {
+                        $context['format'] = $useContext;
+                    }
+
+                    $this->logger->log($logLevel, "The request '" .  $this->request->getUri()->getUri() . "' was triggered.", $context);
                 }
             } else {
                 throw new Exception('Error: The log level parameter was not set.');

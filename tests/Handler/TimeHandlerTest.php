@@ -62,7 +62,7 @@ class TimeHandlerTest extends TestCase
     public function testLog1()
     {
         $handler = new Handler\TimeHandler(true, 'time',
-            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO]
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO, 'context' => 'json']
         );
         $handler->stop();
         $handler->log();
@@ -73,7 +73,7 @@ class TimeHandlerTest extends TestCase
     public function testLog2()
     {
         $handler = new Handler\TimeHandler(true, 'time',
-            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::WARNING, 'limit' => 1]
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::WARNING, 'limit' => 1, 'context' => 'json']
         );
         sleep(2);
         $handler->stop();

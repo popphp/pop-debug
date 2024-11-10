@@ -62,7 +62,7 @@ class ExceptionHandlerTest extends TestCase
     public function testLog1()
     {
         $handler = new Handler\ExceptionHandler(false, 'exception',
-            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::ERROR]
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::ERROR, 'context' => 'json']
         );
         $handler->addException(new \Exception('Whoops!'));
         $handler->log();
@@ -73,7 +73,7 @@ class ExceptionHandlerTest extends TestCase
     public function testLog2()
     {
         $handler = new Handler\ExceptionHandler(false, 'exception',
-            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::ERROR]
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::ERROR, 'context' => 'json']
         );
         $handler->addException(new \Exception('Whoops 1!'));
         $handler->addException(new \Exception('Whoops 2!'));

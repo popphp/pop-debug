@@ -49,7 +49,7 @@ namespace Pop\Debug\Test\Handler {
         {
             $_SERVER['REQUEST_URI'] = '/page';
             $handler = new Handler\RequestHandler(null, 'request',
-                new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO]
+                new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO, 'context' => 'json']
             );
             $handler->request()->addHeader('Content-Type', 'text/plain');
             $handler->log();
@@ -61,7 +61,7 @@ namespace Pop\Debug\Test\Handler {
         {
             $_SERVER['REQUEST_URI'] = '/page';
             $handler = new Handler\RequestHandler(null, 'request',
-                new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO, 'limit' => 1]
+                new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO, 'limit' => 1, 'context' => 'json']
             );
             $handler->request()->addHeader('Content-Type', 'text/plain');
             sleep(2);

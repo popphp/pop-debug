@@ -112,14 +112,23 @@ class MessageHandler extends AbstractHandler
     public function log(): void
     {
         if (($this->hasLogger()) && ($this->hasLoggingParams())) {
-            $logLevel = $this->loggingParams['level'] ?? null;
+            $logLevel   = $this->loggingParams['level'] ?? null;
+            $useContext = $this->loggingParams['context'] ?? null;
 
             if ($logLevel !== null) {
+                $context = [];
                 $message = (count($this->messages) > 1) ?
                     '(' . count($this->messages) . ') new messages have been triggered.' :
                     'A new message has been triggered: ' . $this->messages[0]['message'];
 
-                $this->logger->log($logLevel, $message);
+                $context['messages'] = (($useContext !== null) && (($useContext !== null) && (strtolower($useContext) == 'text'))) ?
+                    $this->prepareAsString() : $this->prepare();
+
+                if (is_string($useContext)) {
+                    $context['format'] = $useContext;
+                }
+
+                $this->logger->log($logLevel, $message, $context);
             } else {
                 throw new Exception('Error: The log level parameter was not set.');
             }

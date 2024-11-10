@@ -53,7 +53,7 @@ class QueryHandlerTest extends TestCase
     {
         $profiler = new Profiler\Profiler();
         $handler = new Handler\QueryHandler($profiler, 'query',
-            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO]
+            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), ['level' => Log\Logger::INFO, 'context' => 'json']
         );
         $profiler->addStep();
         $profiler->current->setQuery('SELECT * FROM users');
@@ -69,7 +69,9 @@ class QueryHandlerTest extends TestCase
         $handler = new Handler\QueryHandler($profiler, 'query',
             new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), [
                 'level' => Log\Logger::WARNING,
-                'limit' => 0.001
+                'limit' => 0.001,
+                'context' => 'json'
+
             ]
         );
         $profiler->addStep();
