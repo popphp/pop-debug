@@ -559,4 +559,43 @@ $loggingParams = [
 ];
 ```
 
+##### Query Example:
+
+```php
+use Pop\Debug\Debugger;
+use Pop\Db\Db;
+use Pop\Db\Record;
+use Pop\Db\Adapter\Profiler\Profiler;
+use Pop\Log;
+
+$db = Db::mysqlConnect([
+    'database' => 'DATABASE',
+    'username' => 'DB_USER',
+    'password' => 'DB_PASS'
+]);
+
+class Users extends Record {}
+
+Record::setDb($db);
+
+// Register the debugger and query handler with the DB adapter
+$debugger = new Debugger();
+$db->listen('Pop\Debug\Handler\QueryHandler', null, new Profiler($debugger));
+
+// Add logger to the debugger
+$debugger->addLogger(new Log\Logger(new Log\Writer\File(__DIR__ . '/log/debug.log')), [
+    'level' => Log\Logger::INFO,
+    'limit' => 0.001
+]);
+
+// Save a user to the database - debugging and logging will automatically happen
+$user = new Users([
+    'username' => 'testuser',
+    'password' => 'password',
+    'email'    => 'testuser@test.com'
+]);
+
+$user->save();
+```
+
 [Top](#pop-debug)
