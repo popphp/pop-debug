@@ -595,7 +595,7 @@ $debugger->addLogger(
     new Log\Logger(new Log\Writer\File(__DIR__ . '/log/debug.log')),
     [
         'level' => Log\Logger::INFO,
-        'limit' => 0.001
+        'limit' => 1
     ]
 );
 
