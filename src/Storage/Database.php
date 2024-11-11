@@ -23,7 +23,7 @@ use Pop\Db\Adapter\AbstractAdapter;
  * @author     Nick Sagona, III <dev@nolainteractive.com>
  * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    2.0.0
+ * @version    2.2.0
  */
 class Database extends AbstractStorage
 {
