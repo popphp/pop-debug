@@ -14,6 +14,7 @@ pop-debug
   - [Exception](#exception)
   - [Memory](#memory)
   - [Message](#message)
+  - [PHP](#php)
   - [Query](#query)
   - [Request](#request)
   - [Time](#time)
@@ -181,6 +182,28 @@ The above code will save the following output to the `log` folder in a plain tex
 ```text
 1504213206.00000    Hey! Something happened!
 ```
+
+[Top](#pop-debug)
+
+PHP
+---
+
+The PHP handler provides a way to take a snapshot of common PHP info and INI values:
+
+```php
+use Pop\Debug\Debugger;
+use Pop\Debug\Handler\PhpHandler;
+use Pop\Debug\Storage\File;
+
+$debugger = new Debugger();
+$debugger->addHandler(new PhpHandler());
+$debugger->setStorage(new File(__DIR__ . '/log'));
+
+$debugger->save();
+```
+
+The above code will save the PHP info snapshot to the debug storage resource. When used in conjunction with
+the [logging](#logging) feature, it can be useful to monitor system requirements.
 
 [Top](#pop-debug)
 
