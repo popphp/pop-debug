@@ -203,7 +203,7 @@ $debugger->save();
 ```
 
 The above code will save the PHP info snapshot to the debug storage resource. When used in conjunction with
-the [logging](#logging) feature, it can be useful to monitor system requirements.
+the [logging](#logging) feature, it can be useful for monitoring system requirements.
 
 [Top](#pop-debug)
 
