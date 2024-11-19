@@ -4,7 +4,6 @@ pop-debug
 [![Build Status](https://github.com/popphp/pop-debug/workflows/phpunit/badge.svg)](https://github.com/popphp/pop-debug/actions)
 [![Coverage Status](http://cc.popphp.org/coverage.php?comp=pop-debug)](http://cc.popphp.org/pop-debug/)
 
-[![Join the chat at https://popphp.slack.com](https://media.popphp.org/img/slack.svg)](https://popphp.slack.com)
 [![Join the chat at https://discord.gg/TZjgT74U7E](https://media.popphp.org/img/discord.svg)](https://discord.gg/TZjgT74U7E)
 
 * [Overview](#overview)
@@ -31,7 +30,7 @@ Overview
 certain aspects of the application's lifecycle. It can help provide insight to an application's
 performance or any issues that may arise within an application.
 
-`pop-debug` is a component of the [Pop PHP Framework](http://www.popphp.org/).
+`pop-debug` is a component of the [Pop PHP Framework](https://www.popphp.org/).
 
 Install
 -------
