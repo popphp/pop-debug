@@ -42,7 +42,7 @@ Install `pop-debug` using Composer.
 Or, require it in your composer.json file
 
     "require": {
-        "popphp/pop-debug" : "^2.2.1"
+        "popphp/pop-debug" : "^2.2.2"
     }
 
 [Top](#pop-debug)
