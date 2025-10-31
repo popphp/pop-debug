@@ -103,18 +103,21 @@ class QueryHandler extends AbstractHandler
      */
     public function prepare(): array
     {
-        $elapsed = $this->profiler->getElapsed();
-        $data    = [
-            'start'   => number_format((float)$this->profiler->getStart(), 5, '.', ''),
-            'finish'  => number_format((float)$this->profiler->getFinish(), 5, '.', ''),
-            'elapsed' => $elapsed,
+        $this->setStart((float)$this->profiler->getStart());
+        $this->setEnd((float)$this->profiler->getFinish());
+        $this->setElapsed((float)$this->profiler->getElapsed());
+
+        $data = [
+            'start'   => number_format((float)$this->getStart(), 5, '.', ''),
+            'finish'  => number_format((float)$this->getEnd(), 5, '.', ''),
+            'elapsed' => $this->getElapsed(),
             'steps'   => []
         ];
 
         foreach ($this->profiler->getSteps() as $step) {
             $data['steps'][] = [
                 'start'   => number_format($step->getStart(), 5, '.', ''),
-                'finish'  => number_format($step->getFinish(), 5, '.', ''),
+                'end'     => number_format($step->getFinish(), 5, '.', ''),
                 'elapsed' => $step->getElapsed(),
                 'query'   => $step->getQuery(),
                 'params'  => $step->getParams(),
@@ -145,17 +148,20 @@ class QueryHandler extends AbstractHandler
      */
     public function prepareAsString(): string
     {
-        $elapsed = $this->profiler->getElapsed();
-        $string  = "Start:\t\t\t" . number_format((float)$this->profiler->getStart(), 5, '.', '') . PHP_EOL;
-        $string .= "Finish:\t\t\t" . number_format((float)$this->profiler->getFinish(), 5, '.', '') . PHP_EOL;
-        $string .= "Elapsed:\t\t" . $elapsed . ' seconds' . PHP_EOL . PHP_EOL;
+        $this->setStart((float)$this->profiler->getStart());
+        $this->setEnd((float)$this->profiler->getFinish());
+        $this->setElapsed((float)$this->profiler->getElapsed());
+
+        $string  = "Start:\t\t\t" . number_format((float)$this->getStart(), 5, '.', '') . PHP_EOL;
+        $string .= "End:\t\t\t" . number_format((float)$this->getEnd(), 5, '.', '') . PHP_EOL;
+        $string .= "Elapsed:\t\t" . $this->getElapsed() . ' seconds' . PHP_EOL . PHP_EOL;
 
         $string .= "Queries:" . PHP_EOL;
         $string .= "--------" . PHP_EOL;
         foreach ($this->profiler->getSteps() as $step) {
             $string .= $step->getQuery() . ' [' . $step->getElapsed() . ']' . PHP_EOL;
             $string .= "Start:\t\t\t" . number_format($step->getStart(), 5, '.', '') . PHP_EOL;
-            $string .= "Finish:\t\t\t" . number_format($step->getFinish(), 5, '.', '') . PHP_EOL;
+            $string .= "End:\t\t\t" . number_format($step->getFinish(), 5, '.', '') . PHP_EOL;
             if ($step->hasParams()) {
                 $string .= "Params:" . PHP_EOL;
                 foreach ($step->getParams() as $name => $value) {

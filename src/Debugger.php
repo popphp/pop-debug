@@ -269,8 +269,7 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
         foreach ($this->handlers as $name => $handler) {
             // Storage debug info
             if ($this->hasStorage()) {
-                $data = ($this->storage->getFormat() == 'TEXT') ? $handler->prepareAsString() : $handler->prepare();
-                $this->storage->save($this->getRequestId() . '-' . $name, $data);
+                $this->storage->save($this->getRequestId(), $name, $handler);
             }
             // Log debug events
             if ($handler->hasLogger()) {

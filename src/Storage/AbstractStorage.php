@@ -13,6 +13,8 @@
  */
 namespace Pop\Debug\Storage;
 
+use Pop\Debug\Handler\AbstractHandler;
+
 /**
  * Debug storage abstract class
  *
@@ -113,11 +115,12 @@ abstract class AbstractStorage implements StorageInterface
     /**
      * Save debug data
      *
-     * @param  string $id
-     * @param  mixed  $value
+     * @param  string          $id
+     * @param  string          $name
+     * @param  AbstractHandler $handler
      * @return void
      */
-    abstract public function save(string $id, mixed $value): void;
+    abstract public function save(string $id, string $name, AbstractHandler $handler): void;
 
     /**
      * Get debug data by ID

@@ -29,10 +29,28 @@ abstract class AbstractHandler implements HandlerInterface
 {
 
     /**
-     * Name of time measurement
+     * Name of handler
      * @var ?string
      */
     protected ?string $name = null;
+
+    /**
+     * Start time
+     * @var ?float
+     */
+    protected ?float $start = null;
+
+    /**
+     * End time
+     * @var ?float
+     */
+    protected ?float $end = null;
+
+    /**
+     * Elapsed time
+     * @var ?float
+     */
+    protected ?float $elapsed = null;
 
     /**
      * Logger object
@@ -57,6 +75,7 @@ abstract class AbstractHandler implements HandlerInterface
      */
     public function __construct(?string $name = null, ?Logger $logger = null, array $loggingParams = [])
     {
+        $this->setStart();
         if ($name !== null) {
             $this->setName($name);
         }
@@ -96,6 +115,125 @@ abstract class AbstractHandler implements HandlerInterface
     public function hasName(): bool
     {
         return !empty($this->name);
+    }
+
+    /**
+     * Start
+     *
+     * @return AbstractHandler
+     */
+    public function start(): AbstractHandler
+    {
+        return $this->setStart();
+    }
+
+    /**
+     * Stop
+     *
+     * @return AbstractHandler
+     */
+    public function stop(): AbstractHandler
+    {
+        return $this->setEnd();
+    }
+
+    /**
+     * Set start
+     *
+     * @param  ?float $start
+     * @return AbstractHandler
+     */
+    public function setStart(?float $start = null): AbstractHandler
+    {
+        $this->start = $start ?? microtime(true);
+        return $this;
+    }
+
+    /**
+     * Get start
+     *
+     * @return ?float
+     */
+    public function getStart(): ?float
+    {
+        return $this->start;
+    }
+
+    /**
+     * Has start
+     *
+     * @return bool
+     */
+    public function hasStart(): bool
+    {
+        return !empty($this->start);
+    }
+
+    /**
+     * Set end
+     *
+     * @param  ?float $end
+     * @return AbstractHandler
+     */
+    public function setEnd(?float $end = null): AbstractHandler
+    {
+        $this->end = $end ?? microtime(true);
+        if (!empty($this->start)) {
+            $this->setElapsed($this->end - $this->start);
+        }
+        return $this;
+    }
+
+    /**
+     * Get end
+     *
+     * @return ?float
+     */
+    public function getEnd(): ?float
+    {
+        return $this->end;
+    }
+
+    /**
+     * Has end
+     *
+     * @return bool
+     */
+    public function hasEnd(): bool
+    {
+        return !empty($this->end);
+    }
+
+    /**
+     * Set elapsed
+     *
+     * @param  float $elapsed
+     * @return AbstractHandler
+     */
+    public function setElapsed(float $elapsed): AbstractHandler
+    {
+        $this->elapsed = $elapsed;
+        return $this;
+    }
+
+    /**
+     * Get elapsed
+     *
+     * @return ?float
+     */
+    public function getElapsed(): ?float
+    {
+        return $this->elapsed;
+    }
+
+    /**
+     * Has elapsed
+     *
+     * @return bool
+     */
+    public function hasElapsed(): bool
+    {
+        return !empty($this->elapsed);
     }
 
     /**

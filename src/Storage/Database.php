@@ -14,6 +14,10 @@
 namespace Pop\Debug\Storage;
 
 use Pop\Db\Adapter\AbstractAdapter;
+use Pop\Db\Adapter\Pdo;
+use Pop\Db\Adapter\Sqlite;
+use Pop\Debug\Handler\AbstractHandler;
+use SQLite3;
 
 /**
  * Debug database storage class
@@ -54,7 +58,7 @@ class Database extends AbstractStorage
      * @param  string          $format
      * @param  string          $table
      */
-    public function __construct(AbstractAdapter $db, string $format = 'text', string $table = 'pop_debug')
+    public function __construct(AbstractAdapter $db, string $format = 'TEXT', string $table = 'pop_debug')
     {
         parent::__construct($format);
 
@@ -113,39 +117,76 @@ class Database extends AbstractStorage
     /**
      * Save debug data
      *
-     * @param  string $id
-     * @param  mixed  $value
+     * @param  string          $id
+     * @param  string          $name
+     * @param  AbstractHandler $handler
      * @return void
      */
-    public function save(string $id, mixed $value): void
+    public function save(string $id, string $name, AbstractHandler $handler): void
     {
-        $sql = $this->db->createSql();
+        $content = ($this->getFormat() == 'TEXT') ? $handler->prepareAsString() : $handler->prepare();
+        $sql     = $this->db->createSql();
         $sql->reset();
         $placeholder = $sql->getPlaceholder();
 
         if ($placeholder == ':') {
-            $placeholder1 = ':key';
-            $placeholder2 = ':value';
-            $placeholder3 = ':timestamp';
+            $placeholders = [
+                'parent_id' => ':parent_id',
+                'key'       => ':key',
+                'handler'   => ':handler',
+                'start'     => ':start',
+                'end'       => ':end',
+                'elapsed'   => ':elapsed',
+                'type'      => ':type',
+                'value'     => ':value',
+                'content'   => ':content',
+            ];
         } else if ($placeholder == '$') {
-            $placeholder1 = '$1';
-            $placeholder2 = '$2';
-            $placeholder3 = '$3';
+            $placeholders = [
+                'parent_id' => '$1',
+                'key'       => '$2',
+                'handler'   => '$3',
+                'start'     => '$4',
+                'end'       => '$5',
+                'elapsed'   => '$6',
+                'type'      => '$7',
+                'value'     => '$8',
+                'content'   => '$9',
+            ];
         } else {
-            $placeholder1 = $placeholder;
-            $placeholder2 = $placeholder;
-            $placeholder3 = $placeholder;
+            $placeholders = [
+                'parent_id' => '?',
+                'key'       => '?',
+                'handler'   => '?',
+                'start'     => '?',
+                'end'       => '?',
+                'elapsed'   => '?',
+                'type'      => '?',
+                'value'     => '?',
+                'content'   => '?',
+            ];
         }
 
-        $sql->insert($this->table)->values([
-            'key'       => $placeholder1,
-            'value'     => $placeholder2,
-            'timestamp' => $placeholder3
-        ]);
+        [$requestId, $handlerName] = explode('-', $id, 2);
+
+        $parentId = null;
+        $start    = $handler->getStart();
+        $end      = $handler->getEnd();
+        $elapsed  = $handler->getElapsed();
+        $type     = null;
+        $value    = null;
+
+        $sql->insert($this->table)->values($placeholders);
         $params = [
-            'key'       => $id,
-            'value'     => $this->encodeValue($value),
-            'timestamp' => date('Y-m-d H:i:s')
+            'parent_id' => $parentId,
+            'key'       => $requestId,
+            'handler'   => $handlerName,
+            'start'     => $start,
+            'end'       => $end,
+            'elapsed'   => $elapsed,
+            'type'      => $type,
+            'value'     => $value,
+            'content'   => $this->encodeValue($content),
         ];
 
         // Save value
@@ -165,33 +206,31 @@ class Database extends AbstractStorage
         $sql         = $this->db->createSql();
         $placeholder = $sql->getPlaceholder();
         $value       = false;
-        $isWildcard  = false;
+
+        [$requestId, $handlerName] = explode('-', $id, 2);
 
         if ($placeholder == ':') {
-            $placeholder .= 'key';
+            $placeholder1 = 'key';
+            $placeholder2 = 'handler';
         } else if ($placeholder == '$') {
-            $placeholder .= '1';
+            $placeholder1 = '1';
+            $placeholder2 = '2';
+        } else {
+            $placeholder1 = '?';
+            $placeholder2 = '?';
         }
 
-        if (str_ends_with($id, '*') || str_ends_with($id, '%')) {
-            $sql->select()->from($this->table)->where('key LIKE ' . $placeholder);
-            $id = substr($id, 0, -1) . '%';
-            $isWildcard = true;
-        } else {
-            $sql->select()->from($this->table)->where('key = ' . $placeholder);
-        }
+        $sql->select()->from($this->table)->where('key = ' . $placeholder1)->andWhere('handler = ' . $placeholder2);
 
         $this->db->prepare($sql)
-            ->bindParams(['key' => $id])
+            ->bindParams(['key' => $requestId, 'handler' => $handlerName])
             ->execute();
 
         $rows = $this->db->fetchAll();
 
         // If the value is found, return.
-        if (($isWildcard) && isset($rows[0])) {
-            $value = $rows;
-        } else if (isset($rows[0]) && isset($rows[0]['value'])) {
-            $value = $this->decodeValue($rows[0]['value']);
+        if (isset($rows[0]) && isset($rows[0]['content'])) {
+            $value = $this->decodeValue($rows[0]['content']);
         }
 
         return $value;
@@ -210,14 +249,16 @@ class Database extends AbstractStorage
         $value       = false;
 
         if ($placeholder == ':') {
-            $placeholder .= 'key';
+            $placeholder .= 'handler';
         } else if ($placeholder == '$') {
             $placeholder .= '1';
+        } else {
+            $placeholder = '?';
         }
 
-        $sql->select()->from($this->table)->where('key LIKE ' . $placeholder);
+        $sql->select()->from($this->table)->where('handler = ' . $placeholder);
         $this->db->prepare($sql)
-            ->bindParams(['key' => '%' . $type])
+            ->bindParams(['handler' => $type])
             ->execute();
 
         $rows = $this->db->fetchAll();
@@ -241,21 +282,28 @@ class Database extends AbstractStorage
         $sql         = $this->db->createSql();
         $placeholder = $sql->getPlaceholder();
 
+        [$requestId, $handlerName] = explode('-', $id, 2);
+
         if ($placeholder == ':') {
-            $placeholder .= 'key';
+            $placeholder1 = 'key';
+            $placeholder2 = 'handler';
         } else if ($placeholder == '$') {
-            $placeholder .= '1';
+            $placeholder1 = '1';
+            $placeholder2 = '2';
+        } else {
+            $placeholder1 = '?';
+            $placeholder2 = '?';
         }
 
-        $sql->select()->from($this->table)->where('key = ' . $placeholder);
+        $sql->select()->from($this->table)->where('key = ' . $placeholder1)->andWhere('handler = ' . $placeholder2);
 
         $this->db->prepare($sql)
-            ->bindParams(['key' => $id])
+            ->bindParams(['key' => $requestId, 'handler' => $handlerName])
             ->execute();
 
         $rows = $this->db->fetchAll();
 
-        return (isset($rows[0]) && isset($rows[0]['value']));
+        return (isset($rows[0]) && isset($rows[0]['content']));
     }
 
     /**
@@ -269,16 +317,23 @@ class Database extends AbstractStorage
         $sql         = $this->db->createSql();
         $placeholder = $sql->getPlaceholder();
 
+        [$requestId, $handlerName] = explode('-', $id, 2);
+
         if ($placeholder == ':') {
-            $placeholder .= 'key';
+            $placeholder1 = 'key';
+            $placeholder2 = 'handler';
         } else if ($placeholder == '$') {
-            $placeholder .= '1';
+            $placeholder1 = '1';
+            $placeholder2 = '2';
+        } else {
+            $placeholder1 = '?';
+            $placeholder2 = '?';
         }
 
-        $sql->delete($this->table)->where('key = ' . $placeholder);
+        $sql->delete($this->table)->where('key = ' . $placeholder1)->andWhere('handler = ' . $placeholder2);
 
         $this->db->prepare($sql)
-            ->bindParams(['key' => $id])
+            ->bindParams(['key' => $requestId, 'handler' => $handlerName])
             ->execute();
     }
 
@@ -341,12 +396,41 @@ class Database extends AbstractStorage
         $schema = $this->db->createSchema();
         $schema->create($this->table)
             ->int('id')->increment()
+            ->int('parent_id')->nullable()
             ->varchar('key', 255)
-            ->text('value')
-            ->datetime('timestamp')
+            ->varchar('handler', 255)
+            ->float('start')->nullable()
+            ->float('end')->nullable()
+            ->float('elapsed')->nullable()
+            ->varchar('type', 255)->nullable()
+            ->text('value')->nullable()
+            ->text('content')->nullable()
             ->primary('id');
 
-        $this->db->query($schema);
+        $schema->execute();
+
+        if ((!$this->db instanceof Sqlite) || (($this->db instanceof Pdo) && $this->db->getType() != 'sqlite')) {
+            $schema->alter($this->table)->foreignKey('parent_id')->references($this->table)->on('id')->onDelete('CASCADE');
+            $schema->execute();
+        }
+
+        $schema->alter($this->table)->index('key');
+        $schema->execute();
+
+        $schema->alter($this->table)->index('handler');
+        $schema->execute();
+
+        $schema->alter($this->table)->index('start');
+        $schema->execute();
+
+        $schema->alter($this->table)->index('end');
+        $schema->execute();
+
+        $schema->alter($this->table)->index('elapsed');
+        $schema->execute();
+
+        $schema->alter($this->table)->index('type');
+        $schema->execute();
     }
 
 }

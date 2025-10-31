@@ -38,12 +38,6 @@ class RequestHandler extends AbstractHandler
     protected ?Request $request = null;
 
     /**
-     * Request timestamp
-     * @var ?float
-     */
-    protected ?float $requestTimestamp = null;
-
-    /**
      * Constructor
      *
      * Instantiate a request handler object
@@ -58,8 +52,6 @@ class RequestHandler extends AbstractHandler
             $request = new Request(new Uri());
         }
         $this->setRequest($request);
-
-        $this->requestTimestamp = microtime(true);
     }
 
     /**
@@ -71,25 +63,32 @@ class RequestHandler extends AbstractHandler
     {
         Session::getInstance();
 
-        return [
-            'uri'       => $this->request->getUri()->getUri(),
-            'method'    => $this->request->getMethod(),
-            'headers'   => $this->request->getHeaders(),
-            'server'    => $this->request->getServer(),
-            'env'       => $this->request->getEnv(),
-            'get'       => $this->request->getQuery(),
-            'post'      => $this->request->getPost(),
-            'put'       => $this->request->getPut(),
-            'patch'     => $this->request->getPatch(),
-            'delete'    => $this->request->getDelete(),
-            'files'     => $this->request->getFiles(),
-            'cookie'    => (isset($_COOKIE)) ? $_COOKIE : [],
-            'session'   => (isset($_SESSION)) ? $_SESSION : [],
-            'raw'       => $this->request->getRawData(),
-            'parsed'    => $this->request->getParsedData(),
-            'timestamp' => number_format($this->requestTimestamp, 5, '.', ''),
-            'elapsed'   => number_format((microtime(true) - $this->requestTimestamp), 5, '.', '')
+        if (!$this->hasEnd()) {
+            $this->setEnd();
+        }
+
+        $requestData = [
+            'uri'     => $this->request->getUri()->getUri(),
+            'method'  => $this->request->getMethod(),
+            'headers' => $this->request->getHeaders(),
+            'server'  => $this->request->getServer(),
+            'env'     => $this->request->getEnv(),
+            'get'     => $this->request->getQuery(),
+            'post'    => $this->request->getPost(),
+            'put'     => $this->request->getPut(),
+            'patch'   => $this->request->getPatch(),
+            'delete'  => $this->request->getDelete(),
+            'files'   => $this->request->getFiles(),
+            'cookie'  => (isset($_COOKIE)) ? $_COOKIE : [],
+            'session' => (isset($_SESSION)) ? $_SESSION : [],
+            'raw'     => $this->request->getRawData(),
+            'parsed'  => $this->request->getParsedData(),
+            'start'   => number_format($this->getStart(), 5, '.', ''),
+            'end'     => number_format($this->getEnd(), 5, '.', ''),
+            'elapsed' => number_format($this->getElapsed(), 5, '.', ''),
         ];
+
+        return $requestData;
     }
 
     /**
@@ -159,7 +158,7 @@ class RequestHandler extends AbstractHandler
             $requestData = $this->prepare();
 
             $string .= $this->request->getMethod() . ' ' . $this->request->getUri()->getUri() . ' [' .
-                $requestData['timestamp'] . ' (' . $requestData['elapsed'] . ')]' . PHP_EOL . PHP_EOL;
+                $requestData['start'] . ' (' . $requestData['elapsed'] . ')]' . PHP_EOL . PHP_EOL;
 
             foreach ($requestData as $key => $data) {
                 if (is_array($data) && (count($data) > 0)) {
@@ -224,16 +223,6 @@ class RequestHandler extends AbstractHandler
                 throw new Exception('Error: The log level parameter was not set.');
             }
         }
-    }
-
-    /**
-     * Get request timestamp
-     *
-     * @return float
-     */
-    public function getRequestTimestamp(): float
-    {
-        return $this->requestTimestamp;
     }
 
 }

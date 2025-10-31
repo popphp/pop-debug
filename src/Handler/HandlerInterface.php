@@ -51,6 +51,86 @@ interface HandlerInterface
     public function hasName(): bool;
 
     /**
+     * Start
+     *
+     * @return HandlerInterface
+     */
+    public function start(): HandlerInterface;
+
+    /**
+     * Stop
+     *
+     * @return HandlerInterface
+     */
+    public function stop(): HandlerInterface;
+
+    /**
+     * Set start
+     *
+     * @param  ?float $start
+     * @return HandlerInterface
+     */
+    public function setStart(?float $start = null): HandlerInterface;
+
+    /**
+     * Get start
+     *
+     * @return ?float
+     */
+    public function getStart(): ?float;
+
+    /**
+     * Has start
+     *
+     * @return bool
+     */
+    public function hasStart(): bool;
+
+    /**
+     * Set end
+     *
+     * @param  ?float $end
+     * @return HandlerInterface
+     */
+    public function setEnd(?float $end = null): HandlerInterface;
+
+    /**
+     * Get end
+     *
+     * @return ?float
+     */
+    public function getEnd(): ?float;
+
+    /**
+     * Has end
+     *
+     * @return bool
+     */
+    public function hasEnd(): bool;
+
+    /**
+     * Set elapsed
+     *
+     * @param  float $elapsed
+     * @return HandlerInterface
+     */
+    public function setElapsed(float $elapsed): HandlerInterface;
+
+    /**
+     * Get elapsed
+     *
+     * @return ?float
+     */
+    public function getElapsed(): ?float;
+
+    /**
+     * Has elapsed
+     *
+     * @return bool
+     */
+    public function hasElapsed(): bool;
+
+    /**
      * Set logger
      *
      * @param  Logger $logger

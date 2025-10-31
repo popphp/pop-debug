@@ -20,7 +20,7 @@ namespace Pop\Debug\Test\Handler {
             $this->assertInstanceOf('Pop\Http\Server\Request', $request->getRequest());
             $this->assertInstanceOf('Pop\Http\Server\Request', $request->request());
             $this->assertTrue($request->hasRequest());
-            $this->assertNotEmpty($request->getRequestTimestamp());
+            $this->assertNotEmpty($request->getStart());
         }
 
         public function testPrepare()

@@ -13,6 +13,8 @@
  */
 namespace Pop\Debug\Storage;
 
+use Pop\Debug\Handler\AbstractHandler;
+
 /**
  * Debug file storage class
  *
@@ -79,13 +81,15 @@ class File extends AbstractStorage
     /**
      * Save debug data
      *
-     * @param  string $id
-     * @param  mixed  $value
+     * @param  string          $id
+     * @param  string          $name
+     * @param  AbstractHandler $handler
      * @return void
      */
-    public function save(string $id, mixed $value): void
+    public function save(string $id, string $name, AbstractHandler $handler): void
     {
-        $filename = $id;
+        $content  = ($this->getFormat() == 'TEXT') ? $handler->prepareAsString() : $handler->prepare();
+        $filename = $id . '-' . $name;
 
         if ($this->format == self::JSON) {
             $filename .= '.json';
@@ -95,7 +99,7 @@ class File extends AbstractStorage
             $filename .= '.log';
         }
 
-        file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename, $this->encodeValue($value));
+        file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename, $this->encodeValue($content));
     }
 
     /**

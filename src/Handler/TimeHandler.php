@@ -29,124 +29,19 @@ class TimeHandler extends AbstractHandler
 {
 
     /**
-     * Start time
-     * @var ?float
-     */
-    protected ?float $start = null;
-
-    /**
-     * Stop time
-     * @var ?float
-     */
-    protected ?float $stop = null;
-
-    /**
-     * Constructor
-     *
-     * Instantiate a time handler object
-     *
-     * @param  bool    $start
-     * @param  ?string $name
-     * @param  ?Logger $logger
-     * @param  array   $loggingParams
-     */
-    public function __construct(bool $start = true, ?string $name = null, ?Logger $logger = null, array $loggingParams = [])
-    {
-        parent::__construct($name, $logger, $loggingParams);
-        if ($start) {
-            $this->start();
-        }
-    }
-
-    /**
-     * Get start value
-     *
-     * @return ?float
-     */
-    public function getStart(): ?float
-    {
-        return $this->start;
-    }
-
-    /**
-     * Determined if the timer has started
-     *
-     * @return bool
-     */
-    public function hasStarted(): bool
-    {
-        return ($this->start !== null);
-    }
-
-    /**
-     * Get stop value
-     *
-     * @return float
-     */
-    public function getStop(): float
-    {
-        return $this->stop;
-    }
-
-    /**
-     * Determined if the timer has stopped
-     *
-     * @return bool
-     */
-    public function hasStopped(): bool
-    {
-        return ($this->stop !== null);
-    }
-
-    /**
-     * Start timer
-     *
-     * @return TimeHandler
-     */
-    public function start(): TimeHandler
-    {
-        $this->start = microtime(true);
-        return $this;
-    }
-
-    /**
-     * Stop timer
-     *
-     * @return TimeHandler
-     */
-    public function stop(): TimeHandler
-    {
-        $this->stop = microtime(true);
-        return $this;
-    }
-
-    /**
-     * Get elapsed time
-     *
-     * @return string
-     */
-    public function getElapsed(): string
-    {
-        if ($this->stop === null) {
-            $this->stop();
-        }
-        return number_format(($this->stop - $this->start), 5, '.', '');
-    }
-
-    /**
      * Prepare handler data for storage
      *
      * @return array
      */
     public function prepare(): array
     {
-        if ($this->stop === null) {
-            $this->stop();
+        if ($this->end === null) {
+            $this->setEnd();
         }
 
         return [
             'start'   => number_format($this->start, 5, '.', ''),
-            'stop'    => number_format($this->stop, 5, '.', ''),
+            'end'     => number_format($this->end, 5, '.', ''),
             'elapsed' => $this->getElapsed()
         ];
     }
@@ -171,12 +66,12 @@ class TimeHandler extends AbstractHandler
      */
     public function prepareAsString(): string
     {
-        if ($this->stop === null) {
-            $this->stop();
+        if (!$this->hasEnd()) {
+            $this->setEnd();
         }
 
-        $string  = "Start:\t\t\t" . number_format($this->start, 5, '.', '') . PHP_EOL;
-        $string .= "Stop:\t\t\t" . number_format($this->stop, 5, '.', '') . PHP_EOL;
+        $string  = "Start:\t\t\t" . number_format($this->getStart(), 5, '.', '') . PHP_EOL;
+        $string .= "Stop:\t\t\t" . number_format($this->getEnd(), 5, '.', '') . PHP_EOL;
         $string .= "Elapsed:\t\t" . $this->getElapsed() . ' seconds' . PHP_EOL . PHP_EOL;
 
         return $string;
@@ -201,10 +96,10 @@ class TimeHandler extends AbstractHandler
                 if ($timeLimit !== null) {
                     if ($elapsedTime >= $timeLimit) {
                         if (!empty($useContext)) {
-                            $context['start']        = $this->start;
-                            $context['stop']         = $this->stop;
-                            $context['time_limit']   = $timeLimit;
-                            $context['elapsed_time'] = $elapsedTime;
+                            $context['start']      = $this->getStart();
+                            $context['end']        = $this->getEnd();
+                            $context['elapsed']    = $elapsedTime;
+                            $context['time_limit'] = $timeLimit;
                         }
                         if (is_string($useContext)) {
                             $context['format'] = $useContext;
@@ -217,8 +112,8 @@ class TimeHandler extends AbstractHandler
                     }
                 } else {
                     if (!empty($useContext)) {
-                        $context['start']        = $this->start;
-                        $context['stop']         = $this->stop;
+                        $context['start']        = $this->getStart();
+                        $context['end']          = $this->getEnd();
                         $context['elapsed_time'] = $elapsedTime;
                     }
                     if (is_string($useContext)) {
