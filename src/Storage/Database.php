@@ -283,7 +283,7 @@ class Database extends AbstractStorage
             $sql->delete($this->table)->where('key = ' . $placeholder1)->andWhere('handler = ' . $placeholder2);
             $params['handler'] = $name;
         } else {
-            $sql->delete($this->table)->where('key = ' . $placeholder1)
+            $sql->delete($this->table)->where('key = ' . $placeholder1);
         }
 
         $this->db->prepare($sql)
