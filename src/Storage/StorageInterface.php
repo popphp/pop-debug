@@ -29,42 +29,6 @@ interface StorageInterface
 {
 
     /**
-     * Set the storage format
-     *
-     * @param  string $format
-     * @return StorageInterface
-     */
-    public function setFormat(string $format): StorageInterface;
-
-    /**
-     * Determine if the format is PHP
-     *
-     * @return bool
-     */
-    public function isText(): bool;
-
-    /**
-     * Determine if the format is PHP
-     *
-     * @return bool
-     */
-    public function isPhp(): bool;
-
-    /**
-     * Determine if the format is JSON
-     *
-     * @return bool
-     */
-    public function isJson(): bool;
-
-    /**
-     * Get the storage format
-     *
-     * @return ?string
-     */
-    public function getFormat(): ?string;
-
-    /**
      * Save debug data
      *
      * @param  string          $id
@@ -77,34 +41,29 @@ interface StorageInterface
     /**
      * Get debug data by ID
      *
-     * @param  string $id
+     * @param  string  $id
+     * @param  ?string $name
      * @return mixed
      */
-    public function getById(string $id): mixed;
-
-    /**
-     * Get debug data by type
-     *
-     * @param  string $type
-     * @return mixed
-     */
-    public function getByType(string $type): mixed;
+    public function getById(string $id, ?string $name = null): mixed;
 
     /**
      * Determine if debug data exists by ID
      *
-     * @param  string $id
+     * @param  string  $id
+     * @param  ?string $name
      * @return bool
      */
-    public function has(string $id): bool;
+    public function has(string $id, ?string $name = null): bool;
 
     /**
      * Delete debug data by ID
      *
-     * @param  string $id
+     * @param  string  $id
+     * @param  ?string $name
      * @return void
      */
-    public function delete(string $id): void;
+    public function delete(string $id, ?string $name = null): void;
 
     /**
      * Clear all debug data
@@ -112,21 +71,5 @@ interface StorageInterface
      * @return void
      */
     public function clear(): void;
-
-    /**
-     * Encode the value based on the format
-     *
-     * @param  mixed $value
-     * @return string
-     */
-    public function encodeValue(mixed $value): string;
-
-    /**
-     * Decode the value based on the format
-     *
-     * @param  mixed $value
-     * @return mixed
-     */
-    public function decodeValue(mixed $value): mixed;
 
 }

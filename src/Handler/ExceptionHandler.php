@@ -35,12 +35,6 @@ class ExceptionHandler extends AbstractHandler
     protected bool $verbose = false;
 
     /**
-     * Exceptions
-     * @var array
-     */
-    protected array $exceptions = [];
-
-    /**
      * Constructor
      *
      * Instantiate a handler object
@@ -53,8 +47,31 @@ class ExceptionHandler extends AbstractHandler
     public function __construct(bool $verbose = false, ?string $name = null, ?Logger $logger = null, array $loggingParams = [])
     {
         parent::__construct($name, $logger, $loggingParams);
-        $this->verbose = $verbose;
+        $this->setVerbose($verbose);
     }
+
+    /**
+     * Set verbose
+     *
+     * @param  bool $verbose
+     * @return ExceptionHandler
+     */
+    public function setVerbose(bool $verbose = true): ExceptionHandler
+    {
+        $this->verbose = $verbose;
+        return $this;
+    }
+
+    /**
+     * Is verbose
+     *
+     * @return bool
+     */
+    public function isVerbose(): bool
+    {
+        return $this->verbose;
+    }
+
 
     /**
      * Add exception
@@ -64,7 +81,7 @@ class ExceptionHandler extends AbstractHandler
      */
     public function addException(\Exception $exception): ExceptionHandler
     {
-        $this->exceptions[] = ['exception' => $exception, 'timestamp' => (string)microtime(true)];
+        $this->data[] = ['exception' => $exception, 'timestamp' => (string)microtime(true)];
         return $this;
     }
 
@@ -75,7 +92,7 @@ class ExceptionHandler extends AbstractHandler
      */
     public function hasExceptions(): bool
     {
-        return (count($this->exceptions) > 0);
+        return (count($this->data) > 0);
     }
 
     /**
@@ -85,75 +102,50 @@ class ExceptionHandler extends AbstractHandler
      */
     public function getExceptions(): array
     {
-        return $this->exceptions;
+        return $this->data;
     }
 
     /**
      * Prepare handler data for storage
      *
-     * @param  bool $simpleData
      * @return array
      */
-    public function prepare(bool $simpleData = false): array
+    public function prepare(): array
     {
-        if ($simpleData) {
+        if ($this->isVerbose()) {
             $exceptions = [];
-            foreach ($this->exceptions as $exception) {
+            foreach ($this->data as $exception) {
                 $exceptions[] = [
-                    'class'   => get_class($exception['exception']),
-                    'code'    => $exception['exception']->getCode(),
-                    'line'    => $exception['exception']->getLine(),
-                    'file'    => $exception['exception']->getFile(),
-                    'message' => $exception['exception']->getMessage(),
-                    'trace'   => $exception['exception']->getTrace()
+                    'class'     => get_class($exception['exception']),
+                    'code'      => $exception['exception']->getCode(),
+                    'line'      => $exception['exception']->getLine(),
+                    'file'      => $exception['exception']->getFile(),
+                    'message'   => $exception['exception']->getMessage(),
+                    'trace'     => $exception['exception']->getTrace(),
+                    'timestamp' => $exception['timestamp'],
                 ];
             }
             return $exceptions;
         } else {
-            return $this->exceptions;
+            return $this->data;
         }
     }
 
     /**
-     * Prepare header string
+     * Prepare handler message
      *
+     * @param  ?array $context
      * @return string
      */
-    public function prepareHeaderAsString(): string
+    public function prepareMessage(?array $context = null): string
     {
-        $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Exception Handler';
-        $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
-
-        return $string;
-    }
-
-    /**
-     * Prepare handler data as string
-     *
-     * @return string
-     */
-    public function prepareAsString(): string
-    {
-        $string = '';
-
-        foreach ($this->exceptions as $exception) {
-            if ($this->verbose) {
-                $string .= number_format($exception['timestamp'], 5, '.', '') . PHP_EOL .
-                    "Class: " . get_class($exception['exception']) . PHP_EOL .
-                    "Code: " . $exception['exception']->getCode() . PHP_EOL .
-                    "Line: " . $exception['exception']->getLine() . PHP_EOL .
-                    "File: " . $exception['exception']->getFile() . PHP_EOL .
-                    "Message: " . $exception['exception']->getMessage() . PHP_EOL .
-                    "Trace: " . $exception['exception']->getTraceAsString() . PHP_EOL;
-            } else {
-                $string .= number_format($exception['timestamp'], 5, '.', '') . "\t" . get_class($exception['exception']) .
-                    "\t" . $exception['exception']->getMessage() . PHP_EOL;
-            }
-
+        if ($context === null) {
+            $context = $this->prepare();
         }
-        $string .= PHP_EOL;
 
-        return $string;
+        return (count($context) > 1) ?
+            '(' . count($context) . ') exceptions have been thrown.' :
+            '(1) exception has been thrown.';
     }
 
     /**
@@ -165,30 +157,11 @@ class ExceptionHandler extends AbstractHandler
     public function log(): void
     {
         if (($this->hasLogger()) && ($this->hasLoggingParams())) {
-            $logLevel   = $this->loggingParams['level'] ?? null;
-            $useContext = $this->loggingParams['context'] ?? null;
+            $logLevel = $this->loggingParams['level'] ?? null;
 
             if ($logLevel !== null) {
-                $context          = [];
-                $exceptionClasses = [];
-                foreach ($this->exceptions as $exception) {
-                    $exceptionClasses[] = get_class($exception['exception']);
-                }
-
-                $message = (count($exceptionClasses) > 1) ?
-                    'The following (' . count($exceptionClasses) . ') exceptions have been thrown: ' . implode(', ', $exceptionClasses) :
-                    'The following (1) exception has been thrown: ' . implode(', ', $exceptionClasses);
-
-                if (!empty($useContext)) {
-                    $context['exceptions'] = (($useContext !== null) && (strtolower($useContext) == 'text')) ?
-                        $this->prepareAsString() : $this->prepare(true);
-
-                    if (is_string($useContext)) {
-                        $context['format'] = $useContext;
-                    }
-                }
-
-                $this->logger->log($logLevel, $message, $context);
+                $context = $this->prepare();
+                $this->logger->log($logLevel, $this->prepareMessage($context), $context);
             } else {
                 throw new Exception('Error: The log level parameter was not set.');
             }

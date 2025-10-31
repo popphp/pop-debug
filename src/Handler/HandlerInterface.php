@@ -31,7 +31,7 @@ interface HandlerInterface
     /**
      * Set name
      *
-     * @param  string  $name
+     * @param  string $name
      * @return HandlerInterface
      */
     public function setName(string $name): HandlerInterface;
@@ -49,6 +49,28 @@ interface HandlerInterface
      * @return bool
      */
     public function hasName(): bool;
+
+    /**
+     * Set data
+     *
+     * @param  array $data
+     * @return HandlerInterface
+     */
+    public function setData(array $data = []): HandlerInterface;
+
+    /**
+     * Get data
+     *
+     * @return array
+     */
+    public function getData(): array;
+
+    /**
+     * Has data
+     *
+     * @return bool
+     */
+    public function hasData(): bool;
 
     /**
      * Start
@@ -182,18 +204,12 @@ interface HandlerInterface
     public function prepare(): array;
 
     /**
-     * Prepare header string
+     * Prepare handler message
      *
+     * @param  ?array $context
      * @return string
      */
-    public function prepareHeaderAsString(): string;
-
-    /**
-     * Prepare handler data as string
-     *
-     * @return string
-     */
-    public function prepareAsString(): string;
+    public function prepareMessage(?array $context = null): string;
 
     /**
      * Trigger handle logging

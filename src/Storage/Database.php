@@ -14,10 +14,7 @@
 namespace Pop\Debug\Storage;
 
 use Pop\Db\Adapter\AbstractAdapter;
-use Pop\Db\Adapter\Pdo;
-use Pop\Db\Adapter\Sqlite;
 use Pop\Debug\Handler\AbstractHandler;
-use SQLite3;
 
 /**
  * Debug database storage class
@@ -55,13 +52,10 @@ class Database extends AbstractStorage
      *     value TEXT, VARCHAR, etc.
      *
      * @param  AbstractAdapter $db
-     * @param  string          $format
      * @param  string          $table
      */
-    public function __construct(AbstractAdapter $db, string $format = 'TEXT', string $table = 'pop_debug')
+    public function __construct(AbstractAdapter $db, string $table = 'pop_debug')
     {
-        parent::__construct($format);
-
         $this->setDb($db);
         $this->setTable($table);
 
@@ -124,69 +118,51 @@ class Database extends AbstractStorage
      */
     public function save(string $id, string $name, AbstractHandler $handler): void
     {
-        $content = ($this->getFormat() == 'TEXT') ? $handler->prepareAsString() : $handler->prepare();
-        $sql     = $this->db->createSql();
+        $sql = $this->db->createSql();
         $sql->reset();
         $placeholder = $sql->getPlaceholder();
 
         if ($placeholder == ':') {
             $placeholders = [
-                'parent_id' => ':parent_id',
-                'key'       => ':key',
-                'handler'   => ':handler',
-                'start'     => ':start',
-                'end'       => ':end',
-                'elapsed'   => ':elapsed',
-                'type'      => ':type',
-                'value'     => ':value',
-                'content'   => ':content',
+                'key'     => ':key',
+                'handler' => ':handler',
+                'start'   => ':start',
+                'end'     => ':end',
+                'elapsed' => ':elapsed',
+                'message' => ':message',
+                'context' => ':context',
             ];
         } else if ($placeholder == '$') {
             $placeholders = [
-                'parent_id' => '$1',
-                'key'       => '$2',
-                'handler'   => '$3',
-                'start'     => '$4',
-                'end'       => '$5',
-                'elapsed'   => '$6',
-                'type'      => '$7',
-                'value'     => '$8',
-                'content'   => '$9',
+                'key'     => '$1',
+                'handler' => '$2',
+                'start'   => '$3',
+                'end'     => '$4',
+                'elapsed' => '$5',
+                'message' => '$6',
+                'context' => '$7',
             ];
         } else {
             $placeholders = [
-                'parent_id' => '?',
-                'key'       => '?',
-                'handler'   => '?',
-                'start'     => '?',
-                'end'       => '?',
-                'elapsed'   => '?',
-                'type'      => '?',
-                'value'     => '?',
-                'content'   => '?',
+                'key'     => '?',
+                'handler' => '?',
+                'start'   => '?',
+                'end'     => '?',
+                'elapsed' => '?',
+                'message' => '?',
+                'context' => '?',
             ];
         }
 
-        [$requestId, $handlerName] = explode('-', $id, 2);
-
-        $parentId = null;
-        $start    = $handler->getStart();
-        $end      = $handler->getEnd();
-        $elapsed  = $handler->getElapsed();
-        $type     = null;
-        $value    = null;
-
         $sql->insert($this->table)->values($placeholders);
         $params = [
-            'parent_id' => $parentId,
-            'key'       => $requestId,
-            'handler'   => $handlerName,
-            'start'     => $start,
-            'end'       => $end,
-            'elapsed'   => $elapsed,
-            'type'      => $type,
-            'value'     => $value,
-            'content'   => $this->encodeValue($content),
+            'key'       => $id,
+            'handler'   => $name,
+            'start'     => $handler->getStart(),
+            'end'       => $handler->getEnd(),
+            'elapsed'   => $handler->getElapsed(),
+            'message'   => $handler->prepareMessage(),
+            'context'   => json_encode($handler->prepare()),
         ];
 
         // Save value
@@ -198,16 +174,16 @@ class Database extends AbstractStorage
     /**
      * Get debug data by ID
      *
-     * @param  string $id
+     * @param  string  $id
+     * @param  ?string $name
      * @return mixed
      */
-    public function getById(string $id): mixed
+    public function getById(string $id, ?string $name = null): mixed
     {
         $sql         = $this->db->createSql();
         $placeholder = $sql->getPlaceholder();
         $value       = false;
-
-        [$requestId, $handlerName] = explode('-', $id, 2);
+        $params      = ['key' => $id];
 
         if ($placeholder == ':') {
             $placeholder1 = 'key';
@@ -220,69 +196,42 @@ class Database extends AbstractStorage
             $placeholder2 = '?';
         }
 
-        $sql->select()->from($this->table)->where('key = ' . $placeholder1)->andWhere('handler = ' . $placeholder2);
-
-        $this->db->prepare($sql)
-            ->bindParams(['key' => $requestId, 'handler' => $handlerName])
-            ->execute();
-
-        $rows = $this->db->fetchAll();
-
-        // If the value is found, return.
-        if (isset($rows[0]) && isset($rows[0]['content'])) {
-            $value = $this->decodeValue($rows[0]['content']);
-        }
-
-        return $value;
-    }
-
-    /**
-     * Get debug data by type
-     *
-     * @param  string $type
-     * @return mixed
-     */
-    public function getByType(string $type): mixed
-    {
-        $sql         = $this->db->createSql();
-        $placeholder = $sql->getPlaceholder();
-        $value       = false;
-
-        if ($placeholder == ':') {
-            $placeholder .= 'handler';
-        } else if ($placeholder == '$') {
-            $placeholder .= '1';
+        if ($name !== null) {
+            $sql->select()->from($this->table)->where('key = ' . $placeholder1)->andWhere('handler = ' . $placeholder2);
+            $params['handler'] = $name;
         } else {
-            $placeholder = '?';
+            $sql->select()->from($this->table)->where('key = ' . $placeholder1);
         }
 
-        $sql->select()->from($this->table)->where('handler = ' . $placeholder);
         $this->db->prepare($sql)
-            ->bindParams(['handler' => $type])
+            ->bindParams($params)
             ->execute();
 
         $rows = $this->db->fetchAll();
 
         // If the value is found, return.
         if (isset($rows[0])) {
-            $value = $rows;
+            foreach ($rows as $i => $row) {
+                if (!empty($row['context'])) {
+                    $rows[$i]['context'] = json_decode($row['context'], true);
+                }
+            }
         }
 
-        return $value;
+        return $rows;
     }
 
     /**
      * Determine if debug data exists by ID
      *
-     * @param  string $id
+     * @param  string  $id
+     * @param  ?string $name
      * @return bool
      */
-    public function has(string $id): bool
+    public function has(string $id, ?string $name = null): bool
     {
         $sql         = $this->db->createSql();
         $placeholder = $sql->getPlaceholder();
-
-        [$requestId, $handlerName] = explode('-', $id, 2);
 
         if ($placeholder == ':') {
             $placeholder1 = 'key';
@@ -298,26 +247,26 @@ class Database extends AbstractStorage
         $sql->select()->from($this->table)->where('key = ' . $placeholder1)->andWhere('handler = ' . $placeholder2);
 
         $this->db->prepare($sql)
-            ->bindParams(['key' => $requestId, 'handler' => $handlerName])
+            ->bindParams(['key' => $id, 'handler' => $name])
             ->execute();
 
         $rows = $this->db->fetchAll();
 
-        return (isset($rows[0]) && isset($rows[0]['content']));
+        return !empty($rows);
     }
 
     /**
      * Delete debug data by ID
      *
-     * @param  string $id
+     * @param  string  $id
+     * @param  ?string $name
      * @return void
      */
-    public function delete(string $id): void
+    public function delete(string $id, ?string $name = null): void
     {
         $sql         = $this->db->createSql();
         $placeholder = $sql->getPlaceholder();
-
-        [$requestId, $handlerName] = explode('-', $id, 2);
+        $params      = ['key' => $id];
 
         if ($placeholder == ':') {
             $placeholder1 = 'key';
@@ -330,10 +279,15 @@ class Database extends AbstractStorage
             $placeholder2 = '?';
         }
 
-        $sql->delete($this->table)->where('key = ' . $placeholder1)->andWhere('handler = ' . $placeholder2);
+        if ($name !== null) {
+            $sql->delete($this->table)->where('key = ' . $placeholder1)->andWhere('handler = ' . $placeholder2);
+            $params['handler'] = $name;
+        } else {
+            $sql->delete($this->table)->where('key = ' . $placeholder1)
+        }
 
         $this->db->prepare($sql)
-            ->bindParams(['key' => $requestId, 'handler' => $handlerName])
+            ->bindParams($params)
             ->execute();
     }
 
@@ -350,43 +304,6 @@ class Database extends AbstractStorage
     }
 
     /**
-     * Encode the value based on the format
-     *
-     * @param  mixed  $value
-     * @throws Exception
-     * @return string
-     */
-    public function encodeValue(mixed $value): string
-    {
-        if ($this->format == self::JSON) {
-            $value = json_encode($value, JSON_PRETTY_PRINT);
-        } else if ($this->format == self::PHP) {
-            $value = serialize($value);
-        } else if (!is_string($value)) {
-            throw new Exception('Error: The value must be a string if storing in text format.');
-        }
-
-        return $value;
-    }
-
-    /**
-     * Decode the value based on the format
-     *
-     * @param  mixed  $value
-     * @return mixed
-     */
-    public function decodeValue(mixed $value): mixed
-    {
-        if ($this->format == self::JSON) {
-            $value = json_decode($value, true);
-        } else if ($this->format == self::PHP) {
-            $value = unserialize($value);
-        }
-
-        return $value;
-    }
-
-    /**
      * Create table in database
      *
      * @return void
@@ -396,23 +313,16 @@ class Database extends AbstractStorage
         $schema = $this->db->createSchema();
         $schema->create($this->table)
             ->int('id')->increment()
-            ->int('parent_id')->nullable()
             ->varchar('key', 255)
             ->varchar('handler', 255)
             ->float('start')->nullable()
             ->float('end')->nullable()
             ->float('elapsed')->nullable()
-            ->varchar('type', 255)->nullable()
-            ->text('value')->nullable()
-            ->text('content')->nullable()
+            ->text('message')->nullable()
+            ->text('context')->nullable()
             ->primary('id');
 
         $schema->execute();
-
-        if ((!$this->db instanceof Sqlite) || (($this->db instanceof Pdo) && $this->db->getType() != 'sqlite')) {
-            $schema->alter($this->table)->foreignKey('parent_id')->references($this->table)->on('id')->onDelete('CASCADE');
-            $schema->execute();
-        }
 
         $schema->alter($this->table)->index('key');
         $schema->execute();

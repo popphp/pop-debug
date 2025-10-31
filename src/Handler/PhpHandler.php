@@ -374,58 +374,14 @@ class PhpHandler extends AbstractHandler
     }
 
     /**
-     * Prepare header string
+     * Prepare handler message
      *
+     * @param  ?array $context
      * @return string
      */
-    public function prepareHeaderAsString(): string
+    public function prepareMessage(?array $context = null): string
     {
-        $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'PHP Handler';
-        $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
-
-        return $string;
-    }
-
-    /**
-     * Prepare handler data as string
-     *
-     * @return string
-     */
-    public function prepareAsString(): string
-    {
-        $string  = 'PHP Version: ' . $this->version . PHP_EOL . str_repeat('-', strlen($this->version) + 13) . PHP_EOL;
-        $string .= ' - Major Version: ' . $this->majorVersion . PHP_EOL;
-        $string .= ' - Minor Version: ' . $this->minorVersion . PHP_EOL;
-        $string .= ' - Release Version: ' . $this->releaseVersion . PHP_EOL;
-        $string .= ' - Extra Version: ' . $this->extraVersion . PHP_EOL . PHP_EOL;
-
-        $string .= 'Date/Time:' . PHP_EOL . str_repeat('-', 10) . PHP_EOL;
-        $string .= ' - ' . $this->dateTime . PHP_EOL . PHP_EOL;
-
-        $string .= 'Error Settings:' . PHP_EOL . str_repeat('-', 15) . PHP_EOL;
-        $string .= ' - Display Errors: ' . (($this->errorSettings['display_errors']) ? 'On' : 'Off') . PHP_EOL;
-        $string .= ' - Display Startup Errors: ' . (($this->errorSettings['display_startup_errors']) ? 'On' : 'Off') . PHP_EOL;
-        $string .= ' - Log Errors: ' . (($this->errorSettings['log_errors']) ? 'On' : 'Off') . PHP_EOL;
-        $string .= ' - Error Reporting: ' . $this->errorSettings['error_reporting'] . PHP_EOL;
-        $string .= ' - Error Reporting List: ' . implode(', ', $this->errorSettings['error_reporting_list']) . PHP_EOL . PHP_EOL;
-
-        $string .= 'Limits:' . PHP_EOL . str_repeat('-', 7) . PHP_EOL;
-        $string .= ' - Max Execution Time: ' . $this->limits['max_execution_time'] . PHP_EOL;
-        $string .= ' - Max Input Time: ' . $this->limits['max_input_time'] . PHP_EOL;
-        $string .= ' - Max Input Nesting Level: ' . $this->limits['max_input_nesting_level'] . PHP_EOL;
-        $string .= ' - Max Input Vars: ' . $this->limits['max_input_vars'] . PHP_EOL;
-        $string .= ' - Post Max Size: ' . $this->limits['post_max_size'] . PHP_EOL;
-        $string .= ' - File Uploads: ' . (($this->limits['file_uploads']) ? 'On' : 'Off') . PHP_EOL;
-        $string .= ' - Upload Max Filesize: ' . $this->limits['upload_max_filesize'] . PHP_EOL;
-        $string .= ' - Max File Uploads: ' . $this->limits['max_file_uploads'] . PHP_EOL . PHP_EOL;
-
-        $string .= 'Disabled Functions:' . PHP_EOL . str_repeat('-', 19) . PHP_EOL;
-        $string .= ' - ' . (!empty($this->disabledFunctions) ? implode(', ', $this->disabledFunctions) : '(None)') . PHP_EOL . PHP_EOL;
-
-        $string .= 'Disabled Classes:' . PHP_EOL . str_repeat('-', 17) . PHP_EOL;
-        $string .= ' - ' . (!empty($this->disabledClasses) ? implode(', ', $this->disabledClasses) : '(None)') . PHP_EOL . PHP_EOL;
-
-        return $string;
+        return 'PHP info has been logged.';
     }
 
     /**
@@ -440,10 +396,9 @@ class PhpHandler extends AbstractHandler
             $logLevel     = $this->loggingParams['level'] ?? null;
             $versionLimit = $this->loggingParams['version'] ?? null;
             $extensions   = $this->loggingParams['extensions'] ?? null;
-            $useContext   = $this->loggingParams['context'] ?? null;
 
             if ($logLevel !== null) {
-                $context = [];
+                $context = $this->prepare();
 
                 if (!empty($versionLimit) || !empty($extensions)) {
                     if (!empty($versionLimit)) {
@@ -473,14 +428,7 @@ class PhpHandler extends AbstractHandler
                         }
                     }
                 } else {
-                    $context['php_info'] = (($useContext !== null) && (strtolower($useContext) == 'text')) ?
-                        $this->prepareAsString() : $this->prepare();
-
-                    if (is_string($useContext)) {
-                        $context['format'] = $useContext;
-                    }
-
-                    $this->logger->log($logLevel, "PHP info has been logged", $context);
+                    $this->logger->log($logLevel, $this->prepareMessage(), $context);
                 }
             } else {
                 throw new Exception('Error: The log level parameter was not set.');

@@ -129,63 +129,20 @@ class QueryHandler extends AbstractHandler
     }
 
     /**
-     * Prepare header string
+     * Prepare handler message
      *
+     * @param  ?array $context
      * @return string
      */
-    public function prepareHeaderAsString(): string
+    public function prepareMessage(?array $context = null): string
     {
-        $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Query Handler';
-        $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
-
-        return $string;
-    }
-
-    /**
-     * Prepare handler data as string
-     *
-     * @return string
-     */
-    public function prepareAsString(): string
-    {
-        $this->setStart((float)$this->profiler->getStart());
-        $this->setEnd((float)$this->profiler->getFinish());
-        $this->setElapsed((float)$this->profiler->getElapsed());
-
-        $string  = "Start:\t\t\t" . number_format((float)$this->getStart(), 5, '.', '') . PHP_EOL;
-        $string .= "End:\t\t\t" . number_format((float)$this->getEnd(), 5, '.', '') . PHP_EOL;
-        $string .= "Elapsed:\t\t" . $this->getElapsed() . ' seconds' . PHP_EOL . PHP_EOL;
-
-        $string .= "Queries:" . PHP_EOL;
-        $string .= "--------" . PHP_EOL;
-        foreach ($this->profiler->getSteps() as $step) {
-            $string .= $step->getQuery() . ' [' . $step->getElapsed() . ']' . PHP_EOL;
-            $string .= "Start:\t\t\t" . number_format($step->getStart(), 5, '.', '') . PHP_EOL;
-            $string .= "End:\t\t\t" . number_format($step->getFinish(), 5, '.', '') . PHP_EOL;
-            if ($step->hasParams()) {
-                $string .= "Params:" . PHP_EOL;
-                foreach ($step->getParams() as $name => $value) {
-                    if (is_array($value)) {
-                        foreach ($value as $v) {
-                            $string .= "\t" . $name . ' => ' . $v . PHP_EOL;
-                        }
-                    } else {
-                        $string .= "\t" . $name . ' => ' . $value . PHP_EOL;
-                    }
-                }
-            }
-            if ($step->hasErrors()) {
-                $string .= "Errors:" . PHP_EOL;
-                foreach ($step->getErrors() as $time => $error) {
-                    $string .= "\t[" . number_format($time, 5, '.', '') . "]" . $error['error'] .
-                        ((!empty($error['number'])) ? ' [' . $error['number'] . ']' : '') . PHP_EOL;
-                }
-
-            }
-            $string .= PHP_EOL;
+        if ($context === null) {
+            $context = $this->prepare();
         }
 
-        return $string;
+        return (!empty($context['steps']) && (count($context['steps']) > 1)) ?
+            '(' . count($context['steps']) . ') new queries have been executed.' :
+            '(1) new query has been executed.';
     }
 
     /**
@@ -197,35 +154,23 @@ class QueryHandler extends AbstractHandler
     public function log(): void
     {
         if (($this->hasLogger()) && ($this->hasLoggingParams())) {
-            $logLevel   = $this->loggingParams['level'] ?? null;
-            $useContext = $this->loggingParams['context'] ?? null;
-            $timeLimit  = $this->loggingParams['limit'] ?? null;
+            $logLevel  = $this->loggingParams['level'] ?? null;
+            $timeLimit = $this->loggingParams['limit'] ?? null;
 
             if ($logLevel !== null) {
+                $context = $this->prepare();
                 if ($timeLimit !== null) {
-                    foreach ($this->profiler->getSteps() as $step) {
+                    foreach ($context['steps'] as $step) {
                         $elapsedTime = $step->getElapsed();
                         if ($elapsedTime >= $timeLimit) {
                             $this->logger->log($logLevel, 'A query has exceeded the time limit of ' . $timeLimit .
                                 ' second(s) by ' . $elapsedTime - $timeLimit . ' second(s). The query execution was a total of ' .
-                                $elapsedTime . ' second(s).'
+                                $elapsedTime . ' second(s).', $context
                             );
                         }
                     }
                 } else {
-                    $context = [];
-                    $message = (count($this->profiler->getSteps()) > 1) ?
-                        '(' . count($this->profiler->getSteps()) . ') new queries have been executed.' :
-                        '(1) new query has been executed.';
-
-                    $context['queries'] = (($useContext !== null) && (strtolower($useContext) == 'text')) ?
-                        $this->prepareAsString() : $this->prepare();
-
-                    if (is_string($useContext)) {
-                        $context['format'] = $useContext;
-                    }
-
-                    $this->logger->log($logLevel, $message, $context);
+                    $this->logger->log($logLevel, $this->prepareMessage($context), $context);
                 }
             } else {
                 throw new Exception('Error: The log level parameter was not set.');

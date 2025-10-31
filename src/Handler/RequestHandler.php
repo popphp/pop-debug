@@ -55,43 +55,6 @@ class RequestHandler extends AbstractHandler
     }
 
     /**
-     * Prepare handler data for storage
-     *
-     * @return array
-     */
-    public function prepare(): array
-    {
-        Session::getInstance();
-
-        if (!$this->hasEnd()) {
-            $this->setEnd();
-        }
-
-        $requestData = [
-            'uri'     => $this->request->getUri()->getUri(),
-            'method'  => $this->request->getMethod(),
-            'headers' => $this->request->getHeaders(),
-            'server'  => $this->request->getServer(),
-            'env'     => $this->request->getEnv(),
-            'get'     => $this->request->getQuery(),
-            'post'    => $this->request->getPost(),
-            'put'     => $this->request->getPut(),
-            'patch'   => $this->request->getPatch(),
-            'delete'  => $this->request->getDelete(),
-            'files'   => $this->request->getFiles(),
-            'cookie'  => (isset($_COOKIE)) ? $_COOKIE : [],
-            'session' => (isset($_SESSION)) ? $_SESSION : [],
-            'raw'     => $this->request->getRawData(),
-            'parsed'  => $this->request->getParsedData(),
-            'start'   => number_format($this->getStart(), 5, '.', ''),
-            'end'     => number_format($this->getEnd(), 5, '.', ''),
-            'elapsed' => number_format($this->getElapsed(), 5, '.', ''),
-        ];
-
-        return $requestData;
-    }
-
-    /**
      * Set request
      *
      * @param  Request $request
@@ -134,54 +97,50 @@ class RequestHandler extends AbstractHandler
     }
 
     /**
-     * Prepare header string
+     * Prepare handler data for storage
      *
-     * @return string
+     * @return array
      */
-    public function prepareHeaderAsString(): string
+    public function prepare(): array
     {
-        $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Request Handler';
-        $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
+        Session::getInstance();
 
-        return $string;
+        if (!$this->hasEnd()) {
+            $this->setEnd();
+        }
+
+        $requestData = [
+            'uri'     => $this->request->getUri()->getUri(),
+            'method'  => $this->request->getMethod(),
+            'headers' => $this->request->getHeaders(),
+            'server'  => $this->request->getServer(),
+            'env'     => $this->request->getEnv(),
+            'get'     => $this->request->getQuery(),
+            'post'    => $this->request->getPost(),
+            'put'     => $this->request->getPut(),
+            'patch'   => $this->request->getPatch(),
+            'delete'  => $this->request->getDelete(),
+            'files'   => $this->request->getFiles(),
+            'cookie'  => (isset($_COOKIE)) ? $_COOKIE : [],
+            'session' => (isset($_SESSION)) ? $_SESSION : [],
+            'raw'     => $this->request->getRawData(),
+            'parsed'  => $this->request->getParsedData(),
+        ];
+
+        return $requestData;
     }
 
     /**
-     * Prepare handler data as string
+     * Prepare handler message
      *
+     * @param  ?array $context
      * @return string
      */
-    public function prepareAsString(): string
+    public function prepareMessage(?array $context = null): string
     {
-        $string = '';
-        if (!empty($this->request->getUri()) && !empty($this->request->getUri()->getUri())) {
-            $requestData = $this->prepare();
-
-            $string .= $this->request->getMethod() . ' ' . $this->request->getUri()->getUri() . ' [' .
-                $requestData['start'] . ' (' . $requestData['elapsed'] . ')]' . PHP_EOL . PHP_EOL;
-
-            foreach ($requestData as $key => $data) {
-                if (is_array($data) && (count($data) > 0)) {
-                    $string .= str_replace('DATA', '', strtoupper($key)) . ":" . PHP_EOL;
-                    $string .= str_repeat('-', (strlen(str_replace('DATA', '', strtoupper($key))) + 1)) . PHP_EOL;
-                    foreach ($data as $k => $v) {
-                        $string .= $k . ": " . ((is_array($v)) ? http_build_query($v) : $v) . PHP_EOL;
-                    }
-                    $string .= PHP_EOL;
-                }
-            }
-            if (!empty($this->request->getRawData())) {
-                $string .= "RAW:" . PHP_EOL;
-                $string .= "----" . PHP_EOL;
-                $string .= $this->request->getRawData() . PHP_EOL;
-            }
-        } else {
-            $string .= "No Request URI Detected." . PHP_EOL;
-        }
-
-        $string .= PHP_EOL;
-
-        return $string;
+        return (!empty($this->request)) ?
+            "The HTTP request '" .  $this->request->getUri()->getUri() . "' was received." :
+            "An HTTP request was received.";
     }
 
     /**
@@ -194,14 +153,12 @@ class RequestHandler extends AbstractHandler
     {
         if (($this->hasLogger()) && ($this->hasLoggingParams())) {
             $logLevel  = $this->loggingParams['level'] ?? null;
-            $useContext = $this->loggingParams['context'] ?? null;
             $timeLimit = $this->loggingParams['limit'] ?? null;
 
             if ($logLevel !== null) {
-                $context     = [];
-                $requestData = $this->prepare();
+                $context = $this->prepare();
                 if ($timeLimit !== null) {
-                    $elapsedTime = $requestData['elapsed'];
+                    $elapsedTime = $this->getElapsed();
                     if ($elapsedTime >= $timeLimit) {
                         $this->logger->log($logLevel, 'The request \'' . $this->request->getUri()->getUri() .
                             '\' has exceeded the time limit of ' . $timeLimit . ' second(s) by ' .
@@ -210,14 +167,7 @@ class RequestHandler extends AbstractHandler
                         );
                     }
                 } else {
-                    $context['request'] = (($useContext !== null) && (strtolower($useContext) == 'text')) ?
-                        $this->prepareAsString() : $this->prepare();
-
-                    if (is_string($useContext)) {
-                        $context['format'] = $useContext;
-                    }
-
-                    $this->logger->log($logLevel, "The request '" .  $this->request->getUri()->getUri() . "' was triggered.", $context);
+                    $this->logger->log($logLevel, $this->prepareMessage(), $context);
                 }
             } else {
                 throw new Exception('Error: The log level parameter was not set.');

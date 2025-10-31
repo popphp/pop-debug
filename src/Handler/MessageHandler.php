@@ -27,12 +27,6 @@ class MessageHandler extends AbstractHandler
 {
 
     /**
-     * Messages
-     * @var array
-     */
-    protected array $messages = [];
-
-    /**
      * Add message
      *
      * @param  string $message
@@ -40,7 +34,7 @@ class MessageHandler extends AbstractHandler
      */
     public function addMessage(string $message): MessageHandler
     {
-        $this->messages[] = ['message' => $message, 'timestamp' => (string)microtime(true)];
+        $this->data[] = ['message' => $message, 'timestamp' => (string)microtime(true)];
         return $this;
     }
 
@@ -51,7 +45,7 @@ class MessageHandler extends AbstractHandler
      */
     public function hasMessages(): bool
     {
-        return (count($this->messages) > 0);
+        return (count($this->data) > 0);
     }
 
     /**
@@ -61,7 +55,7 @@ class MessageHandler extends AbstractHandler
      */
     public function getMessages(): array
     {
-        return $this->messages;
+        return $this->data;
     }
 
     /**
@@ -71,36 +65,24 @@ class MessageHandler extends AbstractHandler
      */
     public function prepare(): array
     {
-        return $this->messages;
+        return $this->data;
     }
 
     /**
-     * Prepare header string
+     * Prepare handler message
      *
+     * @param  ?array $context
      * @return string
      */
-    public function prepareHeaderAsString(): string
+    public function prepareMessage(?array $context = null): string
     {
-        $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Message Handler';
-        $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
-
-        return $string;
-    }
-
-    /**
-     * Prepare handler data as string
-     *
-     * @return string
-     */
-    public function prepareAsString(): string
-    {
-        $string = '';
-        foreach ($this->messages as $message) {
-            $string .= number_format($message['timestamp'], 5, '.', '') . "\t" . $message['message'] . PHP_EOL;
+        if ($context === null) {
+            $context = $this->prepare();
         }
-        $string .= PHP_EOL;
 
-        return $string;
+        return (count($context) > 1) ?
+            '(' . count($context) . ') new messages have been logged.' :
+            'A new message has been logged.';
     }
 
     /**
@@ -112,23 +94,11 @@ class MessageHandler extends AbstractHandler
     public function log(): void
     {
         if (($this->hasLogger()) && ($this->hasLoggingParams())) {
-            $logLevel   = $this->loggingParams['level'] ?? null;
-            $useContext = $this->loggingParams['context'] ?? null;
+            $logLevel = $this->loggingParams['level'] ?? null;
 
             if ($logLevel !== null) {
-                $context = [];
-                $message = (count($this->messages) > 1) ?
-                    '(' . count($this->messages) . ') new messages have been triggered.' :
-                    'A new message has been triggered: ' . $this->messages[0]['message'];
-
-                $context['messages'] = (($useContext !== null) && (($useContext !== null) && (strtolower($useContext) == 'text'))) ?
-                    $this->prepareAsString() : $this->prepare();
-
-                if (is_string($useContext)) {
-                    $context['format'] = $useContext;
-                }
-
-                $this->logger->log($logLevel, $message, $context);
+                $context = $this->prepare();
+                $this->logger->log($logLevel, $this->prepareMessage($context), $context);
             } else {
                 throw new Exception('Error: The log level parameter was not set.');
             }

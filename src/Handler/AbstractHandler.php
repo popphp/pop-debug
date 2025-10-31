@@ -34,6 +34,13 @@ abstract class AbstractHandler implements HandlerInterface
      */
     protected ?string $name = null;
 
+
+    /**
+     * Data
+     * @var array
+     */
+    protected array $data = [];
+
     /**
      * Start time
      * @var ?float
@@ -88,7 +95,7 @@ abstract class AbstractHandler implements HandlerInterface
     /**
      * Set name
      *
-     * @param  string  $name
+     * @param  string $name
      * @return AbstractHandler
      */
     public function setName(string $name): AbstractHandler
@@ -115,6 +122,38 @@ abstract class AbstractHandler implements HandlerInterface
     public function hasName(): bool
     {
         return !empty($this->name);
+    }
+
+    /**
+     * Set data
+     *
+     * @param  array $data
+     * @return AbstractHandler
+     */
+    public function setData(array $data = []): AbstractHandler
+    {
+        $this->data = $data;
+        return $this;
+    }
+
+    /**
+     * Get data
+     *
+     * @return array
+     */
+    public function getData(): array
+    {
+        return $this->data;
+    }
+
+    /**
+     * Has data
+     *
+     * @return bool
+     */
+    public function hasData(): bool
+    {
+        return !empty($this->data);
     }
 
     /**
@@ -179,7 +218,7 @@ abstract class AbstractHandler implements HandlerInterface
     {
         $this->end = $end ?? microtime(true);
         if (!empty($this->start)) {
-            $this->setElapsed($this->end - $this->start);
+            $this->setElapsed(($this->end - $this->start));
         }
         return $this;
     }
@@ -308,18 +347,12 @@ abstract class AbstractHandler implements HandlerInterface
     abstract public function prepare(): array;
 
     /**
-     * Prepare header string
+     * Prepare handler message
      *
+     * @param  ?array $context
      * @return string
      */
-    abstract public function prepareHeaderAsString(): string;
-
-    /**
-     * Prepare handler data as string
-     *
-     * @return string
-     */
-    abstract public function prepareAsString(): string;
+    abstract public function prepareMessage(?array $context = null): string;
 
     /**
      * Trigger handle logging

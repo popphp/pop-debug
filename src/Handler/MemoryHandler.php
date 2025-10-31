@@ -188,45 +188,30 @@ class MemoryHandler extends AbstractHandler
     }
 
     /**
-     * Prepare header string
+     * Prepare handler message
      *
+     * @param  ?array $context
      * @return string
      */
-    public function prepareHeaderAsString(): string
+    public function prepareMessage(?array $context = null): string
     {
-        $string  = ((!empty($this->name)) ? $this->name . ' ' : '') . 'Memory Handler';
-        $string .= PHP_EOL . str_repeat('=', strlen($string)) . PHP_EOL;
-
-        return $string;
-    }
-
-    /**
-     * Prepare handler data as string
-     *
-     * @return string
-     */
-    public function prepareAsString(): string
-    {
-        $string  = "Limit:\t\t\t" .
-            ((!$this->actualBytes) ? $this->formatMemoryToString($this->limit) : $this->limit) . PHP_EOL . PHP_EOL;
-
-        $string .= "Usages:" . PHP_EOL;
-        $string .= "-------" . PHP_EOL;
-        foreach ($this->usages as $usage) {
-            $string .= number_format($usage['timestamp'], 5, '.', '') . "\t" .
-                ((!$this->actualBytes) ? $this->formatMemoryToString($usage['memory']) : $usage['memory']) . PHP_EOL;
+        if ($context === null) {
+            $context = $this->prepare();
         }
-        $string .= PHP_EOL;
 
-        $string .= "Peaks:" . PHP_EOL;
-        $string .= "------" . PHP_EOL;
-        foreach ($this->peaks as $peak) {
-            $string .= number_format($peak['timestamp'], 5, '.', '') . "\t" .
-                ((!$this->actualBytes) ? $this->formatMemoryToString($peak['memory']) : $peak['memory']) . PHP_EOL;
+        $message = 'Memory limit: ' . $context['limit'];
+        if (!empty($context['usages'])) {
+            $message .= '; ' . ((count($context['usages']) > 1) ?
+                '(' . count($context['usages']) . ') memory usages have been logged.' :
+                '(1) memory usage has been logged.');
         }
-        $string .= PHP_EOL;
+        if (!empty($context['peaks'])) {
+            $message .= '; ' . ((count($context['peaks']) > 1) ?
+                '(' . count($context['peaks']) . ') memory peaks have been logged.' :
+                '(1) memory peak has been logged.');
+        }
 
-        return $string;
+        return $message;
     }
 
     /**
@@ -239,68 +224,34 @@ class MemoryHandler extends AbstractHandler
     {
         if (($this->hasLogger()) && ($this->hasLoggingParams())) {
             $logLevel   = $this->loggingParams['level'] ?? null;
-            $useContext = $this->loggingParams['context'] ?? null;
             $usageLimit = $this->loggingParams['usage_limit'] ?? null;
             $peakLimit  = $this->loggingParams['peak_limit'] ?? null;
 
             if ($logLevel !== null) {
+                $context = $this->prepare();
                 // Log general usage
                 if (($usageLimit === null) && ($peakLimit === null)) {
-                    foreach ($this->usages as $usage) {
-                        $context = [];
-                        if (!empty($useContext)) {
-                            $context['memory_limit'] = $this->limit;
-                            $context['memory_usage'] = $usage['memory'];
-                        }
-                        if (is_string($useContext)) {
-                            $context['format'] = $useContext;
-                        }
-                        $this->logger->log($logLevel, 'Memory Usage: ' . $usage['memory'] . ' bytes.', $context);
+                    foreach ($context['usages'] as $usage) {
+                        $this->logger->log($logLevel, 'Memory Usage: ' . $usage['memory'] . ' bytes.', $usage);
                     }
-                    foreach ($this->peaks as $peak) {
-                        $context = [];
-                        if (!empty($useContext)) {
-                            $context['memory_limit']      = $this->limit;
-                            $context['peak_memory_usage'] = $peak['memory'];
-                        }
-                        if (is_string($useContext)) {
-                            $context['format'] = $useContext;
-                        }
+                    foreach ($context['peaks'] as $peak) {
                         $this->logger->log($logLevel, 'Peak Memory Usage: ' . $peak['memory'] . ' bytes.', $context);
                     }
                 // Log if limits are exceeded
                 } else {
                     if ($usageLimit !== null)  {
-                        foreach ($this->usages as $usage) {
+                        foreach ($context['usages'] as $usage) {
                             if ($usage['memory'] >= $usageLimit) {
-                                $context = [];
-                                if (!empty($useContext)) {
-                                    $context['memory_limit'] = $this->limit;
-                                    $context['usage_limit']  = $usageLimit;
-                                    $context['memory_usage'] = $usage['memory'];
-                                }
-                                if (is_string($useContext)) {
-                                    $context['format'] = $useContext;
-                                }
                                 $this->logger->log($logLevel, 'Memory usage limit of ' . $usageLimit . ' has been exceeded by ' .
-                                    $usage['memory'] - $usageLimit. ' bytes. ' . $usage['memory'] . ' bytes were used.', $context);
+                                    $usage['memory'] - $usageLimit. ' bytes. ' . $usage['memory'] . ' bytes were used.', $usage);
                             }
                         }
                     }
                     if ($peakLimit !== null) {
-                        foreach ($this->peaks as $peak) {
+                        foreach ($context['peaks'] as $peak) {
                             if ($peak['memory'] >= $peakLimit) {
-                                $context = [];
-                                if (!empty($useContext)) {
-                                    $context['memory_limit'] = $this->limit;
-                                    $context['peak_limit']   = $peakLimit;
-                                    $context['peak_usage']   = $peak['memory'];
-                                }
-                                if (is_string($useContext)) {
-                                    $context['format'] = $useContext;
-                                }
                                 $this->logger->log($logLevel, 'Memory peak limit of ' . $peakLimit . ' has been exceeded by ' .
-                                    $peak['memory'] - $peakLimit. ' bytes. ' . $peak['memory'] . ' bytes were used at the peak.', $context);
+                                    $peak['memory'] - $peakLimit. ' bytes. ' . $peak['memory'] . ' bytes were used at the peak.', $peak);
                             }
                         }
                     }

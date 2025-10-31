@@ -40,11 +40,9 @@ class File extends AbstractStorage
      * Instantiate the file storage object
      *
      * @param  string  $dir
-     * @param  ?string $format
      */
-    public function __construct(string $dir, ?string $format = null)
+    public function __construct(string $dir)
     {
-        parent::__construct($format);
         $this->setDir($dir);
     }
 
@@ -88,49 +86,23 @@ class File extends AbstractStorage
      */
     public function save(string $id, string $name, AbstractHandler $handler): void
     {
-        $content  = ($this->getFormat() == 'TEXT') ? $handler->prepareAsString() : $handler->prepare();
-        $filename = $id . '-' . $name;
-
-        if ($this->format == self::JSON) {
-            $filename .= '.json';
-        } else if ($this->format == self::PHP) {
-            $filename .= '.php';
-        } else {
-            $filename .= '.log';
-        }
-
-        file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename, $this->encodeValue($content));
+        file_put_contents($this->dir . DIRECTORY_SEPARATOR . $id . '-' . $name . '.log', json_encode($handler->prepare(), JSON_PRETTY_PRINT));
     }
 
     /**
      * Get debug data by ID
      *
-     * @param  string $id
+     * @param  string  $id
+     * @param  ?string $name
      * @return mixed
      */
-    public function getById(string $id): mixed
+    public function getById(string $id, ?string $name = null): mixed
     {
-        if (str_ends_with($id, '*') || str_ends_with($id, '%')) {
-            $id = substr($id, 0, -1);
-            return array_values(array_filter(scandir($this->dir), function($value) use ($id) {
-                return (($value != '.') && ($value != '..')) && str_starts_with($value, $id);
-            }));
-        } else {
-            return $this->decodeValue($this->dir . DIRECTORY_SEPARATOR . $id);
+        if ($name !== null) {
+            $id .= '-' . $name;
         }
-    }
-
-    /**
-     * Get debug data by type
-     *
-     * @param  string $type
-     * @return mixed
-     */
-    public function getByType(string $type): mixed
-    {
-        return array_values(array_filter(scandir($this->dir), function($value) use ($type) {
-            return (($value != '.') && ($value != '..')) && str_contains($value, $type);
-        }));
+        return (file_exists($this->dir . DIRECTORY_SEPARATOR . $id . '.log')) ?
+             json_decode(file_get_contents($this->dir . DIRECTORY_SEPARATOR . $id . '.log'), true) : null;
     }
 
     /**
@@ -139,53 +111,28 @@ class File extends AbstractStorage
      * @param  string $id
      * @return bool
      */
-    public function has(string $id): bool
+    public function has(string $id, ?string $name = null): bool
     {
-        $fileId = $this->dir . DIRECTORY_SEPARATOR . $id;
-
-        if ($this->format == self::JSON) {
-            if (!str_ends_with($fileId, '.json')) {
-                $fileId .= '.json';
-            }
-        } else if ($this->format == self::PHP) {
-            if (!str_ends_with($fileId, '.php')) {
-                $fileId .= '.php';
-            }
-        } else {
-            if (!str_ends_with($fileId, '.log')) {
-                $fileId .= '.log';
-            }
+        if ($name !== null) {
+            $id .= '-' . $name;
         }
-
-        return (file_exists($fileId));
+        return (file_exists($this->dir . DIRECTORY_SEPARATOR . $id . '.log'));
     }
 
     /**
      * Delete debug data by ID
      *
-     * @param  string $id
+     * @param  string  $id
+     * @param  ?string $name
      * @return void
      */
-    public function delete(string $id): void
+    public function delete(string $id, ?string $name = null): void
     {
-        $fileId = $this->dir . DIRECTORY_SEPARATOR . $id;
-
-        if ($this->format == self::JSON) {
-            if (!str_ends_with($fileId, '.json')) {
-                $fileId .= '.json';
-            }
-        } else if ($this->format == self::PHP) {
-            if (!str_ends_with($fileId, '.php')) {
-                $fileId .= '.php';
-            }
-        } else {
-            if (!str_ends_with($fileId, '.log')) {
-                $fileId .= '.log';
-            }
+        if ($name !== null) {
+            $id .= '-' . $name;
         }
-
-        if (file_exists($fileId)) {
-            unlink($fileId);
+        if (file_exists($this->dir . DIRECTORY_SEPARATOR . $id . '.log')) {
+            unlink($this->dir . DIRECTORY_SEPARATOR . $id . '.log');
         }
     }
 
@@ -208,55 +155,6 @@ class File extends AbstractStorage
         }
 
         closedir($dh);
-    }
-
-    /**
-     * Encode the value based on the format
-     *
-     * @param  mixed  $value
-     * @throws Exception
-     * @return string
-     */
-    public function encodeValue(mixed $value): string
-    {
-        if ($this->format == self::JSON) {
-            $value = json_encode($value, JSON_PRETTY_PRINT);
-        } else if ($this->format == self::PHP) {
-            $value = "<?php" . PHP_EOL . "return unserialize(base64_decode('" .
-                base64_encode(serialize($value)) . "'));" . PHP_EOL;
-        } else if (!is_string($value)) {
-            throw new Exception('Error: The value must be a string if storing in text format.');
-        }
-
-        return $value;
-    }
-
-    /**
-     * Decode the value based on the format
-     *
-     * @param  mixed  $value
-     * @return mixed
-     */
-    public function decodeValue(mixed $value): mixed
-    {
-        if ($this->format == self::JSON) {
-            if (!str_ends_with($value, '.json')) {
-                $value .= '.json';
-            }
-            $value  = (file_exists($value)) ? json_decode(file_get_contents($value), true) : false;
-        } else if ($this->format == self::PHP) {
-            if (!str_ends_with($value, '.php')) {
-                $value .= '.php';
-            }
-            $value  = (file_exists($value)) ? include $value : false;
-        } else {
-            if (!str_ends_with($value, '.log')) {
-                $value .= '.log';
-            }
-            $value  = (file_exists($value)) ? file_get_contents($value) : false;
-        }
-
-        return $value;
     }
 
 }
