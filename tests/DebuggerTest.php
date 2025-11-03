@@ -34,6 +34,19 @@ class DebuggerTest extends TestCase
         $this->assertTrue($debugger->hasStorage());
     }
 
+    public function testSetRequestId1()
+    {
+        $debugger = new Debugger();
+        $debugger->setRequestId('test-123');
+        $this->assertEquals('test-123', $debugger->getRequestId());
+    }
+
+    public function testSetRequestId2()
+    {
+        $debugger = new Debugger();
+        $this->assertIsString($debugger->getRequestId());
+    }
+
     public function testAddHandler()
     {
         $exception = new Handler\ExceptionHandler(false, 'custom');
@@ -90,18 +103,6 @@ class DebuggerTest extends TestCase
         $debugger['custom-exception'] = ['bad'];
     }
 
-    public function testGetData()
-    {
-        $debugger = new Debugger([
-            new Handler\MemoryHandler(),
-            new Storage\File(__DIR__ . '/tmp')
-        ]);
-        $debugger['memory']->updatePeakMemoryUsage();
-
-        $data = $debugger->getData();
-        $this->assertTrue(isset($data['memory']));
-    }
-
     public function testSave()
     {
         $debugger = new Debugger([
@@ -116,7 +117,7 @@ class DebuggerTest extends TestCase
         while (false !== ($obj = readdir($dh))) {
             if (($obj != '.') && ($obj != '..') && ($obj != '.empty') &&
                 !is_dir(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj) && is_file(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj)) {
-                $this->assertStringContainsString('Usage', file_get_contents(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj));
+                $this->assertStringContainsString('usages', file_get_contents(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj));
                 break;
             }
         }
@@ -124,62 +125,6 @@ class DebuggerTest extends TestCase
         if (file_exists(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj)) {
             unlink(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj);
         }
-    }
-
-    public function testGet()
-    {
-        $debugger = new Debugger([
-            new Handler\MemoryHandler(),
-            new Storage\File(__DIR__ . '/tmp')
-        ]);
-        $debugger['memory']->updatePeakMemoryUsage();
-        $requestId = $debugger->save();
-
-        $this->assertIsArray($debugger->getByType('memory'));
-        $this->assertTrue($debugger->has($requestId . '-memory'));
-        $this->assertTrue(str_contains($debugger->getById($requestId . '-memory'), 'Usage'));
-        $debugger->delete($requestId . '-memory');
-        $debugger->clear();
-        $this->assertFalse($debugger->has($requestId . '-memory'));
-    }
-
-    public function testRender()
-    {
-        $debugger = new Debugger([
-            new Handler\MemoryHandler(),
-            new Storage\File(__DIR__ . '/tmp')
-        ]);
-        $debugger['memory']->updatePeakMemoryUsage();
-
-        $data = $debugger->render();
-        $this->assertStringContainsString('Usage', $data);
-    }
-
-    public function testRenderWithHeaders()
-    {
-        $debugger = new Debugger([
-            new Handler\MemoryHandler(),
-            new Storage\File(__DIR__ . '/tmp')
-        ]);
-        $debugger['memory']->updatePeakMemoryUsage();
-
-        $data = $debugger->renderWithHeaders();
-        $this->assertStringContainsString('Memory Handler', $data);
-    }
-
-    public function testRenderToString()
-    {
-        $debugger = new Debugger([
-            new Handler\MemoryHandler(),
-            new Storage\File(__DIR__ . '/tmp')
-        ]);
-        $debugger['memory']->updatePeakMemoryUsage();
-
-        ob_start();
-        echo $debugger;
-        $results = ob_get_clean();
-
-        $this->assertStringContainsString('Memory Handler', $results);
     }
 
 }

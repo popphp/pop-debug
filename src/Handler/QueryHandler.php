@@ -161,7 +161,7 @@ class QueryHandler extends AbstractHandler
                 $context = $this->prepare();
                 if ($timeLimit !== null) {
                     foreach ($context['steps'] as $step) {
-                        $elapsedTime = $step->getElapsed();
+                        $elapsedTime = $step['elapsed'] ?? 0;
                         if ($elapsedTime >= $timeLimit) {
                             $this->logger->log($logLevel, 'A query has exceeded the time limit of ' . $timeLimit .
                                 ' second(s) by ' . $elapsedTime - $timeLimit . ' second(s). The query execution was a total of ' .

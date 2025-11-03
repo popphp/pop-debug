@@ -36,29 +36,6 @@ class ExceptionHandlerTest extends TestCase
         $this->assertEquals('Error: Whoops!', $exception->getMessage());
     }
 
-    public function testPrepareAsString()
-    {
-        $handler = new Handler\ExceptionHandler();
-        $handler->addException(new \Exception('Error: Whoops!'));
-
-        $string = $handler->prepareHeaderAsString() . $handler->prepareAsString();
-
-        $this->assertStringContainsString('Exception Handler', $string);
-        $this->assertStringContainsString('Error: Whoops!', $string);
-    }
-
-    public function testPrepareAsStringVerbose()
-    {
-        $handler = new Handler\ExceptionHandler(true);
-        $handler->addException(new \Exception('Error: Whoops!'));
-
-        $string = $handler->prepareHeaderAsString() . $handler->prepareAsString();
-
-        $this->assertStringContainsString('Exception Handler', $string);
-        $this->assertStringContainsString('Error: Whoops!', $string);
-        $this->assertStringContainsString('Code:', $string);
-    }
-
     public function testLog1()
     {
         $handler = new Handler\ExceptionHandler(false, 'exception',

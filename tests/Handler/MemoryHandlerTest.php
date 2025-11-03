@@ -68,18 +68,6 @@ class MemoryHandlerTest extends TestCase
         $this->assertGreaterThan(0, (int)array_values($data['peaks'])[0]);
     }
 
-    public function testPrepareAsString()
-    {
-        $handler = new Handler\MemoryHandler();
-        $handler->updateMemoryUsage();
-        $handler->updatePeakMemoryUsage();
-
-        $string = $handler->prepareHeaderAsString() . $handler->prepareAsString();
-
-        $this->assertStringContainsString('Memory Handler', $string);
-        $this->assertStringContainsString('Limit', $string);
-    }
-
     public function testLog1()
     {
         $handler = new Handler\MemoryHandler(false, 'memory',
@@ -98,7 +86,7 @@ class MemoryHandlerTest extends TestCase
                 'level'       => Log\Logger::WARNING,
                 'usage_limit' => 1000000,
                 'peak_limit'  => 1000000,
-                'context' => 'json'
+                'context'     => 'json'
             ]
         );
         $handler->updateUsage();

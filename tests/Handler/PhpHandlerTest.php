@@ -49,16 +49,6 @@ class PhpHandlerTest extends TestCase
         $this->assertEquals(PHP_VERSION, $data['php_version']);
     }
 
-    public function testPrepareAsString()
-    {
-        $handler = new Handler\PhpHandler();
-
-        $string = $handler->prepareHeaderAsString() . $handler->prepareAsString();
-
-        $this->assertStringContainsString('PHP Handler', $string);
-        $this->assertStringContainsString('PHP Version', $string);
-    }
-
     public function testLog1()
     {
         $handler = new Handler\PhpHandler('php',

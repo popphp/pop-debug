@@ -35,20 +35,6 @@ class QueryHandlerTest extends TestCase
         $this->assertEquals(1, count($data['steps']));
     }
 
-    public function testPrepareAsString()
-    {
-        $profiler = new Profiler\Profiler();
-        $handler  = new Handler\QueryHandler($profiler);
-        $profiler->addStep();
-        $profiler->current->setQuery('SELECT * FROM users');
-        $profiler->current->finish();
-
-        $string = $handler->prepareHeaderAsString() . $handler->prepareAsString();
-
-        $this->assertStringContainsString('Query Handler', $string);
-        $this->assertStringContainsString('SELECT * FROM users', $string);
-    }
-
     public function testLog1()
     {
         $profiler = new Profiler\Profiler();

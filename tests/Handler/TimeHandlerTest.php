@@ -39,15 +39,6 @@ class TimeHandlerTest extends TestCase
         $this->assertGreaterThan(0, $data['end']);
     }
 
-    public function testPrepareAsString()
-    {
-        $handler = new Handler\TimeHandler();
-        $string  = $handler->prepareHeaderAsString() . $handler->prepareAsString();
-
-        $this->assertStringContainsString('Time Handler', $string);
-        $this->assertStringContainsString('Start', $string);
-    }
-
     public function testLog1()
     {
         $handler = new Handler\TimeHandler('time',

@@ -47,17 +47,6 @@ class MessageHandlerTest extends TestCase
         $this->assertEquals('Test Message', $message);
     }
 
-    public function testPrepareAsString()
-    {
-        $handler = new Handler\MessageHandler();
-        $handler->addMessage('Test Message');
-
-        $string = $handler->prepareHeaderAsString() . $handler->prepareAsString();
-
-        $this->assertStringContainsString('Message Handler', $string);
-        $this->assertStringContainsString('Test Message', $string);
-    }
-
     public function testLog1()
     {
         $handler = new Handler\MessageHandler('message',

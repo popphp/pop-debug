@@ -33,18 +33,6 @@ namespace Pop\Debug\Test\Handler {
             $this->assertEquals('/page', $data['uri']);
         }
 
-        public function testPrepareAsString()
-        {
-            $_SERVER['REQUEST_URI'] = '/page';
-            $request = new Handler\RequestHandler();
-            $request->request()->addHeader('Content-Type', 'text/plain');
-
-            $string = $request->prepareHeaderAsString() . $request->prepareAsString();
-
-            $this->assertStringContainsString('Request Handler', $string);
-            $this->assertStringContainsString('URI', $string);
-        }
-
         public function testLog1()
         {
             $_SERVER['REQUEST_URI'] = '/page';

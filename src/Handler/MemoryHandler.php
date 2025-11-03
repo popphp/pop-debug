@@ -231,16 +231,16 @@ class MemoryHandler extends AbstractHandler
                 $context = $this->prepare();
                 // Log general usage
                 if (($usageLimit === null) && ($peakLimit === null)) {
-                    foreach ($context['usages'] as $usage) {
+                    foreach ($this->usages as $usage) {
                         $this->logger->log($logLevel, 'Memory Usage: ' . $usage['memory'] . ' bytes.', $usage);
                     }
-                    foreach ($context['peaks'] as $peak) {
+                    foreach ($this->peaks as $peak) {
                         $this->logger->log($logLevel, 'Peak Memory Usage: ' . $peak['memory'] . ' bytes.', $context);
                     }
                 // Log if limits are exceeded
                 } else {
                     if ($usageLimit !== null)  {
-                        foreach ($context['usages'] as $usage) {
+                        foreach ($this->usages as $usage) {
                             if ($usage['memory'] >= $usageLimit) {
                                 $this->logger->log($logLevel, 'Memory usage limit of ' . $usageLimit . ' has been exceeded by ' .
                                     $usage['memory'] - $usageLimit. ' bytes. ' . $usage['memory'] . ' bytes were used.', $usage);
@@ -248,7 +248,7 @@ class MemoryHandler extends AbstractHandler
                         }
                     }
                     if ($peakLimit !== null) {
-                        foreach ($context['peaks'] as $peak) {
+                        foreach ($this->peaks as $peak) {
                             if ($peak['memory'] >= $peakLimit) {
                                 $this->logger->log($logLevel, 'Memory peak limit of ' . $peakLimit . ' has been exceeded by ' .
                                     $peak['memory'] - $peakLimit. ' bytes. ' . $peak['memory'] . ' bytes were used at the peak.', $peak);
