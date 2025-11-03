@@ -39,36 +39,10 @@ abstract class AbstractStorage implements StorageInterface
     abstract public function save(string $id, string $name, AbstractHandler $handler): void;
 
     /**
-     * Get debug data by ID
-     *
-     * @param  string  $id
-     * @param  ?string $name
-     * @return mixed
-     */
-    abstract public function getById(string $id, ?string $name = null): mixed;
-
-    /**
-     * Determine if debug data exists by
-     *
-     * @param  string  $id
-     * @param  ?string $name
-     * @return bool
-     */
-    abstract public function has(string $id, ?string $name = null): bool;
-
-    /**
-     * Delete debug data by id
-     *
-     * @param  string  $id
-     * @param  ?string $name
-     * @return void
-     */
-    abstract public function delete(string $id, ?string $name = null): void;
-
-    /**
      * Clear all debug data
      *
      * @return void
      */
     abstract public function clear(): void;
+
 }

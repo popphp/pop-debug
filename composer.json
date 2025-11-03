@@ -19,6 +19,7 @@
     ],
     "require": {
         "php": ">=8.2.0",
+        "popphp/pop-csv": "^4.2.1",
         "popphp/pop-db": "^6.7.0",
         "popphp/pop-http": "^5.3.8",
         "popphp/pop-log": "^4.0.4",

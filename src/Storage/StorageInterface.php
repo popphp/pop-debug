@@ -39,33 +39,6 @@ interface StorageInterface
     public function save(string $id, string $name, AbstractHandler $handler): void;
 
     /**
-     * Get debug data by ID
-     *
-     * @param  string  $id
-     * @param  ?string $name
-     * @return mixed
-     */
-    public function getById(string $id, ?string $name = null): mixed;
-
-    /**
-     * Determine if debug data exists by ID
-     *
-     * @param  string  $id
-     * @param  ?string $name
-     * @return bool
-     */
-    public function has(string $id, ?string $name = null): bool;
-
-    /**
-     * Delete debug data by ID
-     *
-     * @param  string  $id
-     * @param  ?string $name
-     * @return void
-     */
-    public function delete(string $id, ?string $name = null): void;
-
-    /**
      * Clear all debug data
      *
      * @return void

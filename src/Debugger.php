@@ -76,6 +76,60 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
     }
 
     /**
+     * Set request ID
+     *
+     * @param  string $requestId
+     * @return Debugger
+     */
+    public function setRequestId(string $requestId): Debugger
+    {
+        $this->requestId = $requestId;
+        return $this;
+    }
+
+    /**
+     * Get current request ID
+     *
+     * @return string
+     */
+    public function getRequestId(): string
+    {
+        if (!$this->hasRequestId()) {
+            $this->setRequestId($this->generateId());
+        }
+
+        return $this->requestId;
+    }
+
+    /**
+     * Has request ID
+     *
+     * @return bool
+     */
+    public function hasRequestId(): bool
+    {
+        if ($this->requestId === null) {
+            $this->requestId = $this->generateId();
+        }
+
+        return !empty($this->requestId);
+    }
+
+    /**
+     * Generate unique ID
+     *
+     * @return string
+     */
+    public function generateId(): string
+    {
+        if (function_exists('random_bytes')) {
+            return bin2hex(random_bytes(16));
+        } else {
+            return md5(uniqid());
+        }
+    }
+
+    /**
      * Add handlers
      *
      * @param  array $handlers
@@ -192,74 +246,6 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
     }
 
     /**
-     * Get all data from handlers
-     *
-     * @return array
-     */
-    public function getData(): array
-    {
-        $data = [];
-        foreach ($this->handlers as $name => $handler) {
-            $data[$name] = ($this->storage->getFormat() == 'TEXT') ? $handler->prepareAsString() : $handler->prepare();
-        }
-        return $data;
-    }
-
-    /**
-     * Get stored request by ID
-     *
-     * @param  string $id
-     * @return mixed
-     */
-    public function getById(string $id): mixed
-    {
-        return $this->storage->getById($id);
-    }
-
-    /**
-     * Get stored request by type
-     *
-     * @param  string $type
-     * @return mixed
-     */
-    public function getByType(string $type): mixed
-    {
-        return $this->storage->getByType($type);
-    }
-
-    /**
-     * Determine if debug data exists by ID
-     *
-     * @param  string $id
-     * @return bool
-     */
-    public function has(string $id): bool
-    {
-        return $this->storage->has($id);
-    }
-
-    /**
-     * Delete debug data by ID
-     *
-     * @param  string $id
-     * @return void
-     */
-    public function delete(string $id): void
-    {
-        $this->storage->delete($id);
-    }
-
-    /**
-     * Clear storage
-     *
-     * @return void
-     */
-    public function clear(): void
-    {
-        $this->storage->clear();
-    }
-
-    /**
      * Save the debug handlers' data to storage
      *
      * @return string
@@ -281,66 +267,15 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
     }
 
     /**
-     * Render the debug handlers' data to string
+     * Clear storage
      *
-     * @return string
+     * @return void
      */
-    public function render(): string
+    public function clear(): void
     {
-        $output = '';
-
-        foreach ($this->handlers as $handler) {
-            $output .= $handler->prepareAsString();
-        }
-
-        return $output;
+        $this->storage->clear();
     }
 
-    /**
-     * Get current request ID
-     *
-     * @return string
-     */
-    public function getRequestId(): string
-    {
-        if ($this->requestId === null) {
-            $this->requestId = $this->generateId();
-        }
-
-        return $this->requestId;
-    }
-
-    /**
-     * Render the debug handlers' data to string with headers
-     *
-     * @return string
-     */
-    public function renderWithHeaders(): string
-    {
-        $output = '';
-
-        foreach ($this->handlers as $handler) {
-            $output .= $handler->prepareHeaderAsString() . $handler->prepareAsString();
-        }
-
-        return $output;
-    }
-
-    /**
-     * Generate unique ID
-     *
-     * @return string
-     */
-    public function generateId(): string
-    {
-        if (function_exists('random_bytes')) {
-            return bin2hex(random_bytes(16));
-        } else if (function_exists('openssl_random_pseudo_bytes')) {
-            return bin2hex(openssl_random_pseudo_bytes(16));
-        } else {
-            return md5(uniqid());
-        }
-    }
     /**
      * Method to get the count of the handlers
      *
@@ -456,16 +391,6 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
         if (isset($this->handlers[$offset])) {
             unset($this->handlers[$offset]);
         }
-    }
-
-    /**
-     * Render to string
-     *
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->renderWithHeaders();
     }
 
 }

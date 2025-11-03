@@ -13,6 +13,7 @@
  */
 namespace Pop\Debug\Storage;
 
+use Pop\Csv\Csv;
 use Pop\Debug\Handler\AbstractHandler;
 
 /**
@@ -35,15 +36,23 @@ class File extends AbstractStorage
     protected ?string $dir = null;
 
     /**
+     * Format (csv or tsv))
+     * @var string
+     */
+    protected string $format = 'csv';
+
+    /**
      * Constructor
      *
      * Instantiate the file storage object
      *
-     * @param  string  $dir
+     * @param string $dir
+     * @param string $format
      */
-    public function __construct(string $dir)
+    public function __construct(string $dir, string $format = 'csv')
     {
         $this->setDir($dir);
+        $this->setFormat($format);
     }
 
     /**
@@ -77,6 +86,46 @@ class File extends AbstractStorage
     }
 
     /**
+     * Has storage dir
+     *
+     * @return bool
+     */
+    public function hasDir(): bool
+    {
+        return (!empty($this->dir) && file_exists($this->dir));
+    }
+
+    /**
+     * Set the format
+     *
+     * @param  string $format
+     * @throws \InvalidArgumentException
+     * @return File
+     */
+    public function setFormat(string $format): File
+    {
+        $format = strtolower($format);
+
+        if (!in_array($format, ['csv', 'tsv'])) {
+            throw new \InvalidArgumentException('Error: The format must be either "csv" or "tsv".');
+        }
+
+        $this->format = $format;
+
+        return $this;
+    }
+
+    /**
+     * Get the format
+     *
+     * @return string
+     */
+    public function getFormat(): string
+    {
+        return $this->format;
+    }
+
+    /**
      * Save debug data
      *
      * @param  string          $id
@@ -87,53 +136,6 @@ class File extends AbstractStorage
     public function save(string $id, string $name, AbstractHandler $handler): void
     {
         file_put_contents($this->dir . DIRECTORY_SEPARATOR . $id . '-' . $name . '.log', json_encode($handler->prepare(), JSON_PRETTY_PRINT));
-    }
-
-    /**
-     * Get debug data by ID
-     *
-     * @param  string  $id
-     * @param  ?string $name
-     * @return mixed
-     */
-    public function getById(string $id, ?string $name = null): mixed
-    {
-        if ($name !== null) {
-            $id .= '-' . $name;
-        }
-        return (file_exists($this->dir . DIRECTORY_SEPARATOR . $id . '.log')) ?
-             json_decode(file_get_contents($this->dir . DIRECTORY_SEPARATOR . $id . '.log'), true) : null;
-    }
-
-    /**
-     * Determine if debug data exists by ID
-     *
-     * @param  string $id
-     * @return bool
-     */
-    public function has(string $id, ?string $name = null): bool
-    {
-        if ($name !== null) {
-            $id .= '-' . $name;
-        }
-        return (file_exists($this->dir . DIRECTORY_SEPARATOR . $id . '.log'));
-    }
-
-    /**
-     * Delete debug data by ID
-     *
-     * @param  string  $id
-     * @param  ?string $name
-     * @return void
-     */
-    public function delete(string $id, ?string $name = null): void
-    {
-        if ($name !== null) {
-            $id .= '-' . $name;
-        }
-        if (file_exists($this->dir . DIRECTORY_SEPARATOR . $id . '.log')) {
-            unlink($this->dir . DIRECTORY_SEPARATOR . $id . '.log');
-        }
     }
 
     /**
