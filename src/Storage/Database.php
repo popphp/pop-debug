@@ -118,8 +118,7 @@ class Database extends AbstractStorage
      */
     public function save(string $id, string $name, AbstractHandler $handler): void
     {
-        $sql = $this->db->createSql();
-        $sql->reset();
+        $sql         = $this->db->createSql();
         $placeholder = $sql->getPlaceholder();
 
         if ($placeholder == ':') {
@@ -129,6 +128,7 @@ class Database extends AbstractStorage
                 'start'   => ':start',
                 'end'     => ':end',
                 'elapsed' => ':elapsed',
+                'type'    => ':type',
                 'message' => ':message',
                 'context' => ':context',
             ];
@@ -139,8 +139,9 @@ class Database extends AbstractStorage
                 'start'   => '$3',
                 'end'     => '$4',
                 'elapsed' => '$5',
-                'message' => '$6',
-                'context' => '$7',
+                'type'    => '$6',
+                'message' => '$7',
+                'context' => '$8',
             ];
         } else {
             $placeholders = [
@@ -149,26 +150,24 @@ class Database extends AbstractStorage
                 'start'   => '?',
                 'end'     => '?',
                 'elapsed' => '?',
+                'type'    => '?',
                 'message' => '?',
                 'context' => '?',
             ];
         }
 
-        $sql->insert($this->table)->values($placeholders);
-        $params = [
-            'key'       => $id,
-            'handler'   => $name,
-            'start'     => $handler->getStart(),
-            'end'       => $handler->getEnd(),
-            'elapsed'   => $handler->getElapsed(),
-            'message'   => $handler->prepareMessage(),
-            'context'   => json_encode($handler->prepare()),
-        ];
+        $events = $this->prepareEvents($id, $name, $handler);
 
-        // Save value
-        $this->db->prepare($sql)
-            ->bindParams($params)
-            ->execute();
+        foreach ($events as $event) {
+            $sql->reset()
+                ->insert($this->table)
+                ->values($placeholders);
+
+            // Save value
+            $this->db->prepare($sql)
+                ->bindParams($event)
+                ->execute();
+        }
     }
 
     /**
@@ -195,9 +194,10 @@ class Database extends AbstractStorage
             ->int('id')->increment()
             ->varchar('key', 255)
             ->varchar('handler', 255)
-            ->float('start')->nullable()
-            ->float('end')->nullable()
-            ->float('elapsed')->nullable()
+            ->decimal('start', 16, 6)->nullable()
+            ->decimal('end', 16, 6)->nullable()
+            ->decimal('elapsed', 16, 6)->nullable()
+            ->varchar('type', 255)
             ->text('message')->nullable()
             ->text('context')->nullable()
             ->primary('id');

@@ -60,7 +60,7 @@ class TimeHandler extends AbstractHandler
     {
         $elapsedTime = $this->getElapsed();
         return (!empty($elapsedTime)) ?
-            'A new ' . $elapsedTime . ' second event has been triggered.' :
+            'A new ' . (int)$elapsedTime . ' second event has been triggered.' :
             'A new timed event has been triggered.';
     }
 
@@ -84,7 +84,7 @@ class TimeHandler extends AbstractHandler
                         $context['time_limit'] = $timeLimit;
                         $this->logger->log(
                             $logLevel, 'The time limit of '. $timeLimit . ' second(s) has been exceeded by ' .
-                            $elapsedTime - $timeLimit . ' second(s). The timed event was a total of ' .
+                            (int)($elapsedTime - $timeLimit) . ' second(s). The timed event was a total of ' .
                             $elapsedTime . ' second(s).', $context
                         );
                     }

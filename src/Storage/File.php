@@ -135,7 +135,15 @@ class File extends AbstractStorage
      */
     public function save(string $id, string $name, AbstractHandler $handler): void
     {
-        file_put_contents($this->dir . DIRECTORY_SEPARATOR . $id . '-' . $name . '.log', json_encode($handler->prepare(), JSON_PRETTY_PRINT));
+
+        $events   = $this->prepareEvents($id, $name, $handler);
+        $filename = $this->dir . DIRECTORY_SEPARATOR . $id . '-' . $name . '.' . $this->format;
+
+        if (!file_exists($filename) && isset($events[0])) {
+            file_put_contents($filename, Csv::getFieldHeaders($events[0], (($this->format == 'tsv') ? "\t" : ',')));
+        }
+
+        Csv::appendDataToFile($filename, $events, ['delimiter' => (($this->format == 'tsv') ? "\t" : ',')]);
     }
 
     /**

@@ -109,7 +109,7 @@ class QueryHandler extends AbstractHandler
 
         $data = [
             'start'   => number_format((float)$this->getStart(), 5, '.', ''),
-            'finish'  => number_format((float)$this->getEnd(), 5, '.', ''),
+            'end'     => number_format((float)$this->getEnd(), 5, '.', ''),
             'elapsed' => $this->getElapsed(),
             'steps'   => []
         ];

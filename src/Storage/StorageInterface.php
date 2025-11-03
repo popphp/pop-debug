@@ -29,6 +29,16 @@ interface StorageInterface
 {
 
     /**
+     * Prepare events
+     *
+     * @param  string          $id
+     * @param  string          $name
+     * @param  AbstractHandler $handler
+     * @return array
+     */
+    public function prepareEvents(string $id, string $name, AbstractHandler $handler): array;
+
+    /**
      * Save debug data
      *
      * @param  string          $id

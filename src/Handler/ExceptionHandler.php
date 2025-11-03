@@ -116,7 +116,7 @@ class ExceptionHandler extends AbstractHandler
             $exceptions = [];
             foreach ($this->data as $exception) {
                 $exceptions[] = [
-                    'class'     => get_class($exception['exception']),
+                    'exception' => get_class($exception['exception']),
                     'code'      => $exception['exception']->getCode(),
                     'line'      => $exception['exception']->getLine(),
                     'file'      => $exception['exception']->getFile(),
