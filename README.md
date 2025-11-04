@@ -20,13 +20,11 @@ pop-debug
 * [Storage](#storage)
   - [File](#file)
   - [Database](#database)
-* [Formats](#formats)
-* [Retrieving](#retrieving)
 * [Logging](#logging)
 
 Overview
 --------
-`pop-debug` is a debugging component that can be used to hooked into an application to track
+`pop-debug` is a debugging component that can be used to hook into an application to track
 certain aspects of the application's lifecycle. It can help provide insight to an application's
 performance or any issues that may arise within an application.
 
@@ -70,10 +68,11 @@ $debugger['message']->addMessage('Hey! Something happened!');
 $debugger->save();
 ```
 
-The above code will save the following output to the `log` folder in a plain text file:
+The above code will save the following output to the `log` folder in a CSV file:
 
 ```text
-1504213206.00000    Hey! Something happened!
+key,handler,start,end,elapsed,type,message,context
+b8c00658be2aee93703deea23e58b99f,message,1762216971.7394,,,message,Hey! Something happened!,
 ```
 
 [Top](#pop-debug)
@@ -105,12 +104,6 @@ try {
 }
 ```
 
-The above code will save the following output to the `log` folder in a plain text file:
-
-```text
-1698699170.22920	Error: This is a test exception
-```
-
 [Top](#pop-debug)
 
 ### Memory
@@ -138,22 +131,6 @@ $debugger['memory']->updatePeakMemoryUsage();
 $debugger->save();
 ```
 
-The above code will save the following output to the `log` folder in a plain text file:
-
-```text
-Limit:			128MB
-
-Usages:
--------
-1698699589.59750	1.19MB
-1698699591.59760	1.19MB
-
-Peaks:
-------
-1698699589.59750	1.5MB
-1698699591.59770	1.5MB
-```
-
 [Top](#pop-debug)
 
 Message
@@ -176,12 +153,6 @@ $debugger['message']->addMessage('Hey! Something happened!');
 $debugger->save();
 ```
 
-The above code will save the following output to the `log` folder in a plain text file:
-
-```text
-1504213206.00000    Hey! Something happened!
-```
-
 [Top](#pop-debug)
 
 PHP
@@ -200,9 +171,6 @@ $debugger->setStorage(new File(__DIR__ . '/log'));
 
 $debugger->save();
 ```
-
-The above code will save the PHP info snapshot to the debug storage resource. When used in conjunction with
-the [logging](#logging) feature, it can be useful for monitoring system requirements.
 
 [Top](#pop-debug)
 
@@ -248,23 +216,6 @@ $user->save();
 $debugger->save();
 ```
 
-The above code will save the following output to the `log` folder in a plain text file:
-
-```text
-Start:			1698720970.03826
-Finish:			1698720970.05190
-Elapsed:		0.01364 seconds
-
-Queries:
---------
-INSERT INTO `users` (`username`, `password`) VALUES (?, ?) [0.00743]
-Start:			1698720970.04443
-Finish:			1698720970.05187
-Params:
-	username => admin
-	password => password
-```
-
 [Top](#pop-debug)
 
 ### Request
@@ -282,67 +233,6 @@ $debugger = new Debugger();
 $debugger->addHandler(new RequestHandler());
 $debugger->setStorage(new File(__DIR__ . '/log'));
 $debugger->save();
-```
-
-The above code will save the following output to the `log` folder in a plain text file:
-
-```text
-GET /http.php?foo=bar [1698703989.32316]
-
-HEADERS:
---------
-Host: Host: localhost:8000
-User-Agent: User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0
-Accept: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
-Accept-Language: Accept-Language: en-US,en;q=0.5
-Accept-Encoding: Accept-Encoding: gzip, deflate, br
-Connection: Connection: keep-alive
-Cookie: Cookie: PHPSESSID=gm6schd82drhemu71isp26355b
-
-SERVER:
--------
-DOCUMENT_ROOT: /path/to/repo/public
-REMOTE_ADDR: 127.0.0.1
-REMOTE_PORT: 43394
-SERVER_SOFTWARE: PHP 8.2.11 Development Server
-SERVER_PROTOCOL: HTTP/1.1
-SERVER_NAME: localhost
-SERVER_PORT: 8000
-REQUEST_URI: /http.php?foo=bar
-REQUEST_METHOD: GET
-SCRIPT_NAME: /http.php
-SCRIPT_FILENAME: /path/to/repo/public/http.php
-PHP_SELF: /http.php
-QUERY_STRING: foo=bar
-HTTP_HOST: localhost:8000
-HTTP_USER_AGENT: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0
-HTTP_ACCEPT: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
-HTTP_ACCEPT_LANGUAGE: en-US,en;q=0.5
-HTTP_ACCEPT_ENCODING: gzip, deflate, br
-HTTP_CONNECTION: keep-alive
-HTTP_COOKIE: PHPSESSID=gm6schd82drhemu71isp26355b
-REQUEST_TIME_FLOAT: 1698703590.0842
-REQUEST_TIME: 1698703590
-
-GET:
-----
-foo: bar
-
-COOKIE:
--------
-PHPSESSID: gm6schd82drhemu71isp26355b
-
-SESSION:
---------
-_POP_SESSION_: 
-
-PARSED:
--------
-foo: bar
-
-RAW:
-----
-foo=bar
 ```
 
 [Top](#pop-debug)
@@ -366,20 +256,15 @@ sleep(2);
 $debugger->save();
 ```
 
-The above code will save the following output to the `log` folder in a plain text file:
-
-```text
-Start:			1698704121.29484
-Stop:			1698704123.29532
-Elapsed:		2.00048 seconds
-```
-
 [Top](#pop-debug)
 
 Storage
 -------
 
-There are a few different storage options are available to store the output of the debugger.
+There are two different storage options are available to store the output of the debugger:
+
+- CSV (or TSV) File
+- Database Table
 
 ### File
 
@@ -417,106 +302,6 @@ $db = Db::mysqlConnect([
 $debugger = new Debugger();
 $debugger->addHandler(new TimeHandler());
 $debugger->setStorage(new Database($db, 'text', 'my_debug_table'));
-```
-
-[Top](#pop-debug)
-
-Formats
--------
-
-Three different formats are available for the storing of the debugger output:
-
-- Text (Default)
-- JSON
-- Serialized PHP
-
-You can set it via the constructor:
-
-```php
-use Pop\Debug\Storage\File;
-
-$fileStorage = new File(__DIR__ . '/log', 'TEXT');
-// OR
-$fileStorage = new File(__DIR__ . '/log', 'JSON');
-// OR
-$fileStorage = new File(__DIR__ . '/log', 'PHP');
-```
-
-Also, the format can be set via the `setFormat()` method:
-
-```php
-use Pop\Debug\Storage\File;
-
-$fileStorage = new File(__DIR__ . '/log');
-
-$fileStorage->setFormat('TEXT');
-// OR
-$fileStorage->setFormat('JSON');
-// OR
-$fileStorage->setFormat('PHP');
-```
-
-[Top](#pop-debug)
-
-Retrieving
-----------
-
-You can retrieve the stored debug content from the debugger's storage adapter. Calling the `save()` method returns the
-request ID generated from that method call.
-
-```php
-use Pop\Debug\Debugger;
-use Pop\Debug\Handler\MessageHandler;
-use Pop\Debug\Storage\File;
-
-$debugger = new Debugger(
-    new MessageHandler(), new MemoryHandler(), new File(__DIR__ . '/logs')
-);
-$debugger['message']->addMessage('Hey! Something happened!');
-$requestId = $debugger->save();
-```
-
-The auto-generated request ID will look like:
-
-```text
-857f0869d00b64db7c9dbdee4194781a
-```
-
-From there, you can call `getById` to retrieve stored debug content:
-
-```php
-// A wildcard search
-print_r($debugger->getById($requestId . '*'));
-```
-
-```text
-Array
-(
-    [0] => 857f0869d00b64db7c9dbdee4194781a-message.log
-)
-```
-```php
-// An exact search by ID
-print_r($debugger->getById('857f0869d00b64db7c9dbdee4194781a-message'));
-```
-```text
-1698773755.86070	Hey! Something happened!
-```
-
-The method `getByType` is also available to get groups of debug content by type:
-
-```php
-print_r($debugger->getByType('message'));
-```
-
-```text
-Array
-(
-    [0] => 857f0869d00b64db7c9dbdee4194781a-message.log
-    [1] => 966dc22f1c34489d7d61de295aa008a9-message.log
-    [2] => f5c21a372ba375bce9b2382f67e3b70d-message.log
-)
-
 ```
 
 [Top](#pop-debug)
