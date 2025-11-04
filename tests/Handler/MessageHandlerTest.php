@@ -36,6 +36,16 @@ class MessageHandlerTest extends TestCase
         $this->assertEquals('Test Message', $message);
     }
 
+    public function testPrepareMessage()
+    {
+        $handler = new Handler\MessageHandler();
+        $handler->addMessage('Test Message');
+
+        $message = $handler->prepareMessage();
+
+        $this->assertStringContainsString('been logged', $message);
+    }
+
     public function testPrepare()
     {
         $handler = new Handler\MessageHandler();

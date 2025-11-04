@@ -110,6 +110,7 @@ class DebuggerTest extends TestCase
             new Storage\File(__DIR__ . '/tmp')
         ]);
         $debugger['memory']->updatePeakMemoryUsage();
+        $debugger->addLogger(new Log\Logger(new Log\Writer\File(__DIR__ . '/tmp/debug.log')), ['level' => Log\Logger::NOTICE]);
         $debugger->save();
 
         $dh = @opendir(__DIR__ . '/tmp');
@@ -122,8 +123,14 @@ class DebuggerTest extends TestCase
             }
         }
 
+        $debugger->clear();
+
         if (file_exists(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj)) {
             unlink(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . $obj);
+        }
+
+        if (file_exists(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . 'debug.log')) {
+            unlink(__DIR__ . '/tmp' . DIRECTORY_SEPARATOR . 'debug.log');
         }
     }
 

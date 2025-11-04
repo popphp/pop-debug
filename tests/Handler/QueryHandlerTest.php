@@ -2,7 +2,9 @@
 
 namespace Pop\Debug\Test\Handler;
 
+use Pop\Debug;
 use Pop\Debug\Handler;
+use Pop\Debug\Storage;
 use Pop\Db\Adapter\Profiler;
 use Pop\Log;
 use PHPUnit\Framework\TestCase;
@@ -24,7 +26,21 @@ class QueryHandlerTest extends TestCase
         $this->assertInstanceOf('Pop\Db\Adapter\Profiler\Profiler', $handler->profiler);
     }
 
-    public function testPrepare()
+    public function testPrepareEvents()
+    {
+        $debugger = new Debug\Debugger();
+        $debugger->setStorage(new Storage\File(__DIR__ . '/../tmp'));
+        $profiler = new Profiler\Profiler($debugger);
+        $handler  = new Handler\QueryHandler($profiler);
+        $debugger->addHandler($handler);
+        $profiler->addStep();
+        $profiler->current->setQuery('SELECT * FROM users');
+        $profiler->current->finish();
+        $events = $debugger->getStorage()->prepareEvents($debugger->getRequestId(), 'query', $handler);
+        $this->assertCount(2, $events);
+    }
+
+    public function testPrepare1()
     {
         $profiler = new Profiler\Profiler();
         $handler  = new Handler\QueryHandler($profiler);
@@ -33,6 +49,22 @@ class QueryHandlerTest extends TestCase
         $profiler->current->finish();
         $data = $handler->prepare();
         $this->assertEquals(1, count($data['steps']));
+    }
+
+    public function testPrepare2()
+    {
+        $profiler = new Profiler\Profiler();
+        $handler  = new Handler\QueryHandler($profiler);
+        $profiler->addStep();
+        $profiler->current->setQuery('SELECT * FROM users');
+        $profiler->current->finish();
+        $profiler->addStep();
+        $profiler->current->setQuery('SELECT * FROM users WHERE id = 1');
+        $profiler->current->finish();
+        $message = $handler->prepareMessage();
+        $data    = $handler->prepare();
+        $this->assertStringContainsString('been executed', $message);
+        $this->assertEquals(2, count($data['steps']));
     }
 
     public function testLog1()

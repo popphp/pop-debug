@@ -55,6 +55,31 @@ class MemoryHandlerTest extends TestCase
         $this->assertEquals(512, $handler->formatMemoryToInt('512B'));
     }
 
+    public function testPrepareMessage1()
+    {
+        $handler = new Handler\MemoryHandler();
+        $handler->updateMemoryUsage();
+        $handler->updatePeakMemoryUsage();
+
+        $message = $handler->prepareMessage();
+
+        $this->assertStringContainsString('been logged', $message);
+    }
+
+    public function testPrepareMessage2()
+    {
+        $handler = new Handler\MemoryHandler();
+        $handler->updateMemoryUsage();
+        $handler->updatePeakMemoryUsage();
+        sleep(1);
+        $handler->updateMemoryUsage();
+        $handler->updatePeakMemoryUsage();
+
+        $message = $handler->prepareMessage();
+
+        $this->assertStringContainsString('been logged', $message);
+    }
+
     public function testPrepare()
     {
         $handler = new Handler\MemoryHandler();

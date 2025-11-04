@@ -17,6 +17,8 @@ class TimeHandlerTest extends TestCase
         $this->assertInstanceOf('Pop\Debug\Handler\TimeHandler', $handler);
         $this->assertTrue($handler->hasName());
         $this->assertEquals('test2', $handler->getName());
+        $this->assertTrue($handler->hasStart());
+        $this->assertFalse($handler->hasElapsed());
     }
 
     public function testGetElapsed()
@@ -27,12 +29,23 @@ class TimeHandlerTest extends TestCase
         $this->assertGreaterThan(0, $handler->getElapsed());
     }
 
-    public function testPrepare()
+    public function testPrepare1()
     {
         $handler = new Handler\TimeHandler();
         $handler->start();
         sleep(1);
         $handler->stop();
+        $data = $handler->prepare();
+
+        $this->assertGreaterThan(0, $data['start']);
+        $this->assertGreaterThan(0, $data['end']);
+    }
+
+    public function testPrepare2()
+    {
+        $handler = new Handler\TimeHandler();
+        $handler->start();
+        sleep(1);
         $data = $handler->prepare();
 
         $this->assertGreaterThan(0, $data['start']);
