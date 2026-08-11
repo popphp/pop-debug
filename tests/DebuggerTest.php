@@ -47,6 +47,14 @@ class DebuggerTest extends TestCase
         $this->assertIsString($debugger->getRequestId());
     }
 
+    public function testGetRequestIdRegeneratesWhenFalsy()
+    {
+        $debugger = new Debugger();
+        $debugger->setRequestId('');
+        $this->assertFalse($debugger->hasRequestId());
+        $this->assertNotEmpty($debugger->getRequestId());
+    }
+
     public function testAddHandler()
     {
         $exception = new Handler\ExceptionHandler(false, 'custom');

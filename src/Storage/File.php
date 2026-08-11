@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
  */
 
@@ -22,9 +22,9 @@ use Pop\Debug\Handler\AbstractHandler;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
- * @version    3.0.0
+ * @version    4.0.0
  */
 class File extends AbstractStorage
 {
@@ -36,7 +36,13 @@ class File extends AbstractStorage
     protected ?string $dir = null;
 
     /**
-     * Format (csv or tsv))
+     * Supported formats
+     * @var array
+     */
+    protected const array FORMATS = ['csv', 'tsv', 'ndjson'];
+
+    /**
+     * Format (csv, tsv or ndjson)
      * @var string
      */
     protected string $format = 'csv';
@@ -106,8 +112,8 @@ class File extends AbstractStorage
     {
         $format = strtolower($format);
 
-        if (!in_array($format, ['csv', 'tsv'])) {
-            throw new \InvalidArgumentException('Error: The format must be either "csv" or "tsv".');
+        if (!in_array($format, self::FORMATS)) {
+            throw new \InvalidArgumentException('Error: The format must be "csv", "tsv" or "ndjson".');
         }
 
         $this->format = $format;
@@ -139,11 +145,47 @@ class File extends AbstractStorage
         $events   = $this->prepareEvents($id, $name, $handler);
         $filename = $this->dir . DIRECTORY_SEPARATOR . $id . '-' . $name . '.' . $this->format;
 
+        if ($this->format === 'ndjson') {
+            $this->appendNdJsonToFile($filename, $events);
+            return;
+        }
+
         if (!file_exists($filename) && isset($events[0])) {
             file_put_contents($filename, Csv::getFieldHeaders($events[0], (($this->format == 'tsv') ? "\t" : ',')));
         }
 
         Csv::appendDataToFile($filename, $events, ['delimiter' => (($this->format == 'tsv') ? "\t" : ',')]);
+    }
+
+    /**
+     * Append events to an NDJSON (JSON Lines) file, one self-contained JSON object per line
+     *
+     * The 'context' field of each event is already a json_encode()'d string (see
+     * AbstractStorage::prepareEvents(), shared with the CSV/TSV formats, where it needs to be a
+     * flat scalar cell). For NDJSON it's decoded back into a real nested value first, so it comes
+     * out as proper nested JSON instead of a doubly-escaped string.
+     *
+     * @param  string $filename
+     * @param  array  $events
+     * @return void
+     */
+    protected function appendNdJsonToFile(string $filename, array $events): void
+    {
+        $lines = '';
+
+        foreach ($events as $event) {
+            if (isset($event['context']) && is_string($event['context'])) {
+                $context = json_decode($event['context'], true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $event['context'] = $context;
+                }
+            }
+
+            $encoded = json_encode($event, JSON_INVALID_UTF8_SUBSTITUTE | JSON_PARTIAL_OUTPUT_ON_ERROR);
+            $lines  .= (($encoded !== false) ? $encoded : '{}') . PHP_EOL;
+        }
+
+        file_put_contents($filename, $lines, FILE_APPEND);
     }
 
     /**

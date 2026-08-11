@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
  */
 
@@ -13,7 +13,7 @@
  */
 namespace Pop\Debug\Handler;
 
-use Pop\Log\Logger;
+use Psr\Log\LoggerInterface;
 
 /**
  * Debug handler interface
@@ -21,9 +21,9 @@ use Pop\Log\Logger;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
- * @version    3.0.0
+ * @version    4.0.0
  */
 interface HandlerInterface
 {
@@ -155,17 +155,17 @@ interface HandlerInterface
     /**
      * Set logger
      *
-     * @param  Logger $logger
+     * @param  LoggerInterface $logger
      * @return HandlerInterface
      */
-    public function setLogger(Logger $logger): HandlerInterface;
+    public function setLogger(LoggerInterface $logger): HandlerInterface;
 
     /**
      * Get logger
      *
-     * @return ?Logger
+     * @return ?LoggerInterface
      */
-    public function getLogger(): ?Logger;
+    public function getLogger(): ?LoggerInterface;
 
     /**
      * Has logger

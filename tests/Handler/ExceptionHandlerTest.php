@@ -89,4 +89,13 @@ class ExceptionHandlerTest extends TestCase
         $handler->log();
     }
 
+    public function testLogNoLogger()
+    {
+        $handler = new Handler\ExceptionHandler();
+        $handler->addException(new \Exception('Whoops!'));
+        $handler->log();
+
+        $this->assertFalse($handler->hasLogger());
+    }
+
 }

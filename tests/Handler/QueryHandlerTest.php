@@ -83,11 +83,12 @@ class QueryHandlerTest extends TestCase
 
     public function testLog2()
     {
+        $logFile = __DIR__ . '/../tmp/debug.log';
         $profiler = new Profiler\Profiler();
         $handler = new Handler\QueryHandler($profiler, 'query',
-            new Log\Logger(new Log\Writer\File(__DIR__ . '/../tmp/debug.log')), [
+            new Log\Logger(new Log\Writer\File($logFile)), [
                 'level' => Log\Logger::WARNING,
-                'limit' => 0.001,
+                'limit' => 0, // any elapsed time is >= 0, so this deterministically exceeds the limit
                 'context' => 'json'
 
             ]
@@ -97,7 +98,19 @@ class QueryHandlerTest extends TestCase
         $profiler->current->finish();
         $handler->log();
 
-        $this->assertFileExists(__DIR__ . '/../tmp/debug.log');
+        $this->assertStringContainsString('has exceeded the time limit', file_get_contents($logFile));
+    }
+
+    public function testLogNoLogger()
+    {
+        $profiler = new Profiler\Profiler();
+        $handler  = new Handler\QueryHandler($profiler);
+        $profiler->addStep();
+        $profiler->current->setQuery('SELECT * FROM users');
+        $profiler->current->finish();
+        $handler->log();
+
+        $this->assertFalse($handler->hasLogger());
     }
 
     public function testLogException()

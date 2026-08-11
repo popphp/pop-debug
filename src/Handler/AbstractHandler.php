@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
  */
 
@@ -13,7 +13,7 @@
  */
 namespace Pop\Debug\Handler;
 
-use Pop\Log\Logger;
+use Psr\Log\LoggerInterface;
 
 /**
  * Debug handler abstract class
@@ -21,9 +21,9 @@ use Pop\Log\Logger;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
- * @version    3.0.0
+ * @version    4.0.0
  */
 abstract class AbstractHandler implements HandlerInterface
 {
@@ -61,9 +61,9 @@ abstract class AbstractHandler implements HandlerInterface
 
     /**
      * Logger object
-     * @var ?Logger
+     * @var ?LoggerInterface
      */
-    protected ?Logger $logger = null;
+    protected ?LoggerInterface $logger = null;
 
     /**
      * Logging params
@@ -76,11 +76,11 @@ abstract class AbstractHandler implements HandlerInterface
      *
      * Instantiate a handler object
      *
-     * @param ?string $name
-     * @param ?Logger $logger
-     * @param array   $loggingParams
+     * @param ?string         $name
+     * @param ?LoggerInterface $logger
+     * @param array           $loggingParams
      */
-    public function __construct(?string $name = null, ?Logger $logger = null, array $loggingParams = [])
+    public function __construct(?string $name = null, ?LoggerInterface $logger = null, array $loggingParams = [])
     {
         $this->setStart();
         if ($name !== null) {
@@ -278,10 +278,10 @@ abstract class AbstractHandler implements HandlerInterface
     /**
      * Set logger
      *
-     * @param  Logger $logger
+     * @param  LoggerInterface $logger
      * @return AbstractHandler
      */
-    public function setLogger(Logger $logger): AbstractHandler
+    public function setLogger(LoggerInterface $logger): AbstractHandler
     {
         $this->logger = $logger;
         return $this;
@@ -290,9 +290,9 @@ abstract class AbstractHandler implements HandlerInterface
     /**
      * Get logger
      *
-     * @return ?Logger
+     * @return ?LoggerInterface
      */
-    public function getLogger(): ?Logger
+    public function getLogger(): ?LoggerInterface
     {
         return $this->logger;
     }
@@ -337,6 +337,31 @@ abstract class AbstractHandler implements HandlerInterface
     public function hasLoggingParams(): bool
     {
         return !empty($this->loggingParams);
+    }
+
+    /**
+     * Resolve the configured log level, guarding the shared log() preconditions
+     *
+     * Returns null (and does nothing else) when no logger or logging params are set, so
+     * subclasses can bail out of log() early without duplicating that check. Throws when a
+     * logger and logging params are present but no 'level' param was configured.
+     *
+     * @throws Exception
+     * @return mixed
+     */
+    protected function resolveLogLevel(): mixed
+    {
+        if (!$this->hasLogger() || !$this->hasLoggingParams()) {
+            return null;
+        }
+
+        $logLevel = $this->loggingParams['level'] ?? null;
+
+        if ($logLevel === null) {
+            throw new Exception('Error: The log level parameter was not set.');
+        }
+
+        return $logLevel;
     }
 
     /**

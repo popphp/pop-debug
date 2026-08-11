@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
  */
 
@@ -15,7 +15,7 @@ namespace Pop\Debug;
 
 use Pop\Debug\Handler\HandlerInterface;
 use Pop\Debug\Storage\StorageInterface;
-use Pop\Log\Logger;
+use Psr\Log\LoggerInterface;
 use ArrayIterator;
 
 /**
@@ -24,9 +24,9 @@ use ArrayIterator;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
- * @version    3.0.0
+ * @version    4.0.0
  */
 class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
 {
@@ -232,11 +232,11 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
     /**
      * Add logger to handler(s)
      *
-     * @param  Logger $logger
-     * @param  array  $loggingParams
+     * @param  LoggerInterface $logger
+     * @param  array           $loggingParams
      * @return Debugger
      */
-    public function addLogger(Logger $logger, array $loggingParams): Debugger
+    public function addLogger(LoggerInterface $logger, array $loggingParams): Debugger
     {
         foreach ($this->handlers as $handler) {
             $handler->setLogger($logger);

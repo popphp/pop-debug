@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
  */
 
@@ -13,7 +13,7 @@
  */
 namespace Pop\Debug\Handler;
 
-use Pop\Log\Logger;
+use Psr\Log\LoggerInterface;
 
 /**
  * Debug memory handler class
@@ -21,9 +21,9 @@ use Pop\Log\Logger;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
- * @version    3.0.0
+ * @version    4.0.0
  */
 class MemoryHandler extends AbstractHandler
 {
@@ -57,12 +57,12 @@ class MemoryHandler extends AbstractHandler
      *
      * Instantiate a memory handler object
      *
-     * @param bool    $actualBytes
-     * @param ?string $name
-     * @param ?Logger $logger
-     * @param array   $loggingParams
+     * @param bool             $actualBytes
+     * @param ?string          $name
+     * @param ?LoggerInterface $logger
+     * @param array            $loggingParams
      */
-    public function __construct(bool $actualBytes = false, ?string $name = null, ?Logger $logger = null, array $loggingParams = [])
+    public function __construct(bool $actualBytes = false, ?string $name = null, ?LoggerInterface $logger = null, array $loggingParams = [])
     {
         parent::__construct($name, $logger, $loggingParams);
         $this->actualBytes = $actualBytes;
@@ -222,42 +222,40 @@ class MemoryHandler extends AbstractHandler
      */
     public function log(): void
     {
-        if (($this->hasLogger()) && ($this->hasLoggingParams())) {
-            $logLevel   = $this->loggingParams['level'] ?? null;
-            $usageLimit = $this->loggingParams['usage_limit'] ?? null;
-            $peakLimit  = $this->loggingParams['peak_limit'] ?? null;
+        $logLevel = $this->resolveLogLevel();
+        if ($logLevel === null) {
+            return;
+        }
 
-            if ($logLevel !== null) {
-                $context = $this->prepare();
-                // Log general usage
-                if (($usageLimit === null) && ($peakLimit === null)) {
-                    foreach ($this->usages as $usage) {
-                        $this->logger->log($logLevel, 'Memory Usage: ' . $usage['memory'] . ' bytes.', $usage);
-                    }
-                    foreach ($this->peaks as $peak) {
-                        $this->logger->log($logLevel, 'Peak Memory Usage: ' . $peak['memory'] . ' bytes.', $context);
-                    }
-                // Log if limits are exceeded
-                } else {
-                    if ($usageLimit !== null)  {
-                        foreach ($this->usages as $usage) {
-                            if ($usage['memory'] >= $usageLimit) {
-                                $this->logger->log($logLevel, 'Memory usage limit of ' . $usageLimit . ' has been exceeded by ' .
-                                    $usage['memory'] - $usageLimit. ' bytes. ' . $usage['memory'] . ' bytes were used.', $usage);
-                            }
-                        }
-                    }
-                    if ($peakLimit !== null) {
-                        foreach ($this->peaks as $peak) {
-                            if ($peak['memory'] >= $peakLimit) {
-                                $this->logger->log($logLevel, 'Memory peak limit of ' . $peakLimit . ' has been exceeded by ' .
-                                    $peak['memory'] - $peakLimit. ' bytes. ' . $peak['memory'] . ' bytes were used at the peak.', $peak);
-                            }
-                        }
+        $usageLimit = $this->loggingParams['usage_limit'] ?? null;
+        $peakLimit  = $this->loggingParams['peak_limit'] ?? null;
+        $context    = $this->prepare();
+
+        // Log general usage
+        if (($usageLimit === null) && ($peakLimit === null)) {
+            foreach ($this->usages as $usage) {
+                $this->logger->log($logLevel, 'Memory Usage: ' . $usage['memory'] . ' bytes.', $usage);
+            }
+            foreach ($this->peaks as $peak) {
+                $this->logger->log($logLevel, 'Peak Memory Usage: ' . $peak['memory'] . ' bytes.', $context);
+            }
+        // Log if limits are exceeded
+        } else {
+            if ($usageLimit !== null)  {
+                foreach ($this->usages as $usage) {
+                    if ($usage['memory'] >= $usageLimit) {
+                        $this->logger->log($logLevel, 'Memory usage limit of ' . $usageLimit . ' has been exceeded by ' .
+                            $usage['memory'] - $usageLimit. ' bytes. ' . $usage['memory'] . ' bytes were used.', $usage);
                     }
                 }
-            } else {
-                throw new Exception('Error: The log level parameter was not set.');
+            }
+            if ($peakLimit !== null) {
+                foreach ($this->peaks as $peak) {
+                    if ($peak['memory'] >= $peakLimit) {
+                        $this->logger->log($logLevel, 'Memory peak limit of ' . $peakLimit . ' has been exceeded by ' .
+                            $peak['memory'] - $peakLimit. ' bytes. ' . $peak['memory'] . ' bytes were used at the peak.', $peak);
+                    }
+                }
             }
         }
     }

@@ -40,7 +40,7 @@ Install `pop-debug` using Composer.
 Or, require it in your composer.json file
 
     "require": {
-        "popphp/pop-debug" : "^3.0.0"
+        "popphp/pop-debug" : "^4.0.0"
     }
 
 [Top](#pop-debug)
@@ -75,13 +75,40 @@ key,handler,start,end,elapsed,type,message,context
 b8c00658be2aee93703deea23e58b99f,message,1762216971.7394,,,message,Hey! Something happened!,
 ```
 
+The `key` column is the debugger's **request ID** - a unique ID auto-generated the first time it's needed
+(`Debugger::getRequestId()`) that's shared by every handler's output for that `Debugger` instance, so events from
+the same request can be correlated later. It can also be set explicitly with `setRequestId()` if you want it to
+match an ID from elsewhere in the app (e.g. a request/trace ID from upstream middleware).
+
+Handlers and storage can also be passed directly into the constructor instead of calling `addHandler()`/
+`setStorage()` afterward - as individual arguments or as a single array:
+
+```php
+$debugger = new Debugger(new MessageHandler(), new File(__DIR__ . '/log'));
+// or
+$debugger = new Debugger([new MessageHandler(), new File(__DIR__ . '/log')]);
+```
+
 [Top](#pop-debug)
 
 Handlers
 ----------
 
-There are a total of 6 available handlers. More handlers can be added, provided they implement the
-`Pop\Debug\Handler\HandlerInterface` interface.
+There are a total of 7 available handlers. More handlers can be added by extending
+`Pop\Debug\Handler\AbstractHandler` (which provides the shared timing, name and logger plumbing that
+`HandlerInterface` requires) rather than implementing the interface from scratch.
+
+Each handler is keyed on the debugger (e.g. `$debugger['message']`) by its class name, lowercased, with `Handler`
+stripped off. To register more than one instance of the same handler type, pass a `$name` to the constructor - it's
+prefixed onto the key, e.g. `new MessageHandler('custom')` is registered as `custom-message`:
+
+```php
+$debugger->addHandler(new MessageHandler('requests'));
+$debugger->addHandler(new MessageHandler('background-jobs'));
+
+$debugger['requests-message']->addMessage('Handled an inbound request');
+$debugger['background-jobs-message']->addMessage('Ran a queued job');
+```
 
 ### Exception
 
@@ -133,8 +160,7 @@ $debugger->save();
 
 [Top](#pop-debug)
 
-Message
--------
+### Message
 
 The message handler provides simple and generic messaging to record debug events from
 within the application:
@@ -155,8 +181,7 @@ $debugger->save();
 
 [Top](#pop-debug)
 
-PHP
----
+### PHP
 
 The PHP handler provides a way to take a snapshot of common PHP info and INI values:
 
@@ -216,6 +241,10 @@ $user->save();
 $debugger->save();
 ```
 
+Unlike the request handler (below), the query handler has no redaction - bound query parameters are captured
+as-is, including anything sensitive passed into them (the `password` value bound above, for example). Keep that
+in mind before wiring a logger or persistent storage to it in an environment where that matters.
+
 [Top](#pop-debug)
 
 ### Request
@@ -235,11 +264,26 @@ $debugger->setStorage(new File(__DIR__ . '/log'));
 $debugger->save();
 ```
 
+By default, the request handler redacts values for keys that look sensitive (`password`, `token`, `secret`,
+`authorization`, `cookie`, etc., matched case- and separator-insensitively) out of the headers, `$_SERVER`,
+`$_ENV`, and post/put/patch/parsed data it captures, and redacts the entirety of `$_COOKIE` and `$_SESSION`.
+This keeps secrets out of whatever storage or logger the debugger is wired to. Redaction can be turned off, or
+its key list customized, per handler instance:
+
+```php
+use Pop\Debug\Handler\RequestHandler;
+
+$requestHandler = new RequestHandler();
+$requestHandler->setRedactSensitiveData(false);       // capture raw values, unredacted
+$requestHandler->setRedactedKeys(['password', 'pin']); // replace the default key list entirely
+$requestHandler->addRedactedKey('x-internal-id');      // add one more key to the current list
+```
+
 [Top](#pop-debug)
 
 ### Time
 
-The time handler provides a simple way to track how long a application request takes, which is useful
+The time handler provides a simple way to track how long an application request takes, which is useful
 for performance metrics.
 
 ```php
@@ -261,14 +305,20 @@ $debugger->save();
 Storage
 -------
 
-There are two different storage options are available to store the output of the debugger:
+There are two different storage options available to store the output of the debugger:
 
-- CSV (or TSV) File
+- CSV (or TSV, or NDJSON) File
 - Database Table
+
+Whichever is set, calling `$debugger->clear()` proxies to that storage's own `clear()` method to wipe out
+whatever it's accumulated - see the caveats about what exactly gets cleared in each section below.
 
 ### File
 
-Store the debugger output into a file in a folder location:
+Store the debugger output into a file in a folder location. The folder must already exist and be writable -
+it's not created automatically, and the constructor throws `Pop\Debug\Storage\Exception` if it's missing or
+not writable. The default format is CSV, but TSV and NDJSON (newline-delimited JSON, one self-contained JSON
+object per line) are also supported via the second constructor argument:
 
 ```php
 use Pop\Debug\Debugger;
@@ -277,15 +327,24 @@ use Pop\Debug\Storage\File;
 
 $debugger = new Debugger();
 $debugger->addHandler(new TimeHandler());
-$debugger->setStorage(new File(__DIR__ . '/log'));
+$debugger->setStorage(new File(__DIR__ . '/log'));       // CSV (default)
+$debugger->setStorage(new File(__DIR__ . '/log', 'tsv'));
+$debugger->setStorage(new File(__DIR__ . '/log', 'ndjson'));
 ```
+
+NDJSON is well-suited to log-aggregator/`jq`-style tooling: unlike the CSV/TSV formats, where the `context`
+column is a `json_encode()`d string in a flat cell, NDJSON output keeps `context` as real nested JSON.
+
+`clear()` deletes **every file** directly inside the storage directory, not just ones the debugger wrote - so
+give it a dedicated folder rather than pointing it at a directory anything else writes to.
 
 [Top](#pop-debug)
 
 ### Database
 
 Store the debugger output into a table in a database. The default table name is `pop_debug` but that
-can be changed with the database storage object.
+can be changed via the second constructor argument. If the table doesn't already exist, it's created
+automatically (along with several indexes) the first time the storage object is constructed.
 
 ```php
 use Pop\Debug\Debugger;
@@ -301,18 +360,22 @@ $db = Db::mysqlConnect([
 
 $debugger = new Debugger();
 $debugger->addHandler(new TimeHandler());
-$debugger->setStorage(new Database($db, 'text', 'my_debug_table'));
+$debugger->setStorage(new Database($db, 'my_debug_table'));
 ```
+
+`clear()` runs an unconditional `DELETE` against the whole table - it's not scoped to a single request or run.
 
 [Top](#pop-debug)
 
 Logging
 -------
 
-The debug component can also work with the `pop-log` component to deliver syslog-compatible logging messages
-to a logging resource using the standard BSD syslog protocol [RFC-3164](http://tools.ietf.org/html/rfc3164).
-Logging can be used in additional to the storage adapters, or by itself, sending the debug data and information
-to the logging resource only and without storing anything to a storage adapter.
+The debug component can also work with the `pop-log` component (or any other [PSR-3](https://www.php-fig.org/psr/psr-3/)
+logger) to deliver log messages as debug events happen. `pop-log`'s `Logger` supports several interchangeable
+writers - `File`, `Database`, `Mail`, `Http`, `Stream`, and `Syslog` (for standard BSD syslog / [RFC-3164](http://tools.ietf.org/html/rfc3164)
+delivery) - so where the messages actually go depends entirely on which writer you configure it with; the examples
+below use `Log\Writer\File`. Logging can be used in addition to the storage adapters, or by itself, sending the
+debug data and information to the logging resource only and without storing anything to a storage adapter.
 
 To work with a logger, a logger object must be passed to the debugger, along with logging parameters, which is an array
 of options. The minimum parameter required is a `level` value. The `context` option can also be used to log the body
@@ -346,7 +409,7 @@ Other logging parameters options include:
 
 ***Memory***
 
-The `usage_limit` and `peak_limit` are memory-specific limits to monitor is an operation goes above the specified limits.
+The `usage_limit` and `peak_limit` are memory-specific limits to monitor if an operation goes above the specified limits.
 
 ```php
 $loggingParams = [
@@ -375,6 +438,10 @@ $loggingParams = [
 ```
 
 ##### Query Example:
+
+Note this is set up a little differently than the [Query handler example](#query) above: passing a `Profiler`
+that's already wired to the `$debugger` into `listen()` makes it register the resulting `QueryHandler` on that
+debugger automatically, so there's no separate `$debugger->addHandler(...)` call needed here.
 
 ```php
 use Pop\Debug\Debugger;

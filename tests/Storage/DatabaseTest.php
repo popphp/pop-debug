@@ -4,6 +4,7 @@ namespace Pop\Debug\Test\Storage;
 
 use Pop\Db\Db;
 use Pop\Debug;
+use Pop\Debug\Test\Storage\Fixtures;
 use PHPUnit\Framework\TestCase;
 
 class DatabaseTest extends TestCase
@@ -51,6 +52,38 @@ class DatabaseTest extends TestCase
         $this->assertCount(0, $rows);
 
         unlink(__DIR__ . '/../tmp/debug.sqlite');
+    }
+
+    /**
+     * Database::save() branches its SQL placeholder style on the adapter's class name (via
+     * pop-db's Sql::init(), which stripos()'s it for 'mysql'/'pgsql'/'sqlite'/'sqlsrv'/'pdo').
+     * There's no live MySQL/Postgres server in this test environment, so no-op adapter fixtures
+     * named after those drivers (see tests/Storage/Fixtures) stand in to exercise the '$' and
+     * '?' placeholder branches that the SQLite-backed tests above can't reach (SQLite always
+     * resolves to ':').
+     */
+    public function testSaveWithPgsqlPlaceholder()
+    {
+        $adapter = new Fixtures\PgsqlTestAdapter();
+        $storage = new Debug\Storage\Database($adapter);
+
+        $handler = new Debug\Handler\MessageHandler();
+        $handler->addMessage('Hey! Something happened!');
+
+        $storage->save('request-id', 'message', $handler);
+        $this->assertStringContainsString('$1', (string)$adapter->lastPreparedSql);
+    }
+
+    public function testSaveWithQuestionMarkPlaceholder()
+    {
+        $adapter = new Fixtures\GenericTestAdapter();
+        $storage = new Debug\Storage\Database($adapter);
+
+        $handler = new Debug\Handler\MessageHandler();
+        $handler->addMessage('Hey! Something happened!');
+
+        $storage->save('request-id', 'message', $handler);
+        $this->assertStringContainsString('?', (string)$adapter->lastPreparedSql);
     }
 
 }

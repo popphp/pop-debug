@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
  */
 
@@ -13,7 +13,7 @@
  */
 namespace Pop\Debug\Handler;
 
-use Pop\Log\Logger;
+use Psr\Log\LoggerInterface;
 
 /**
  * Debug exception handler class
@@ -21,9 +21,9 @@ use Pop\Log\Logger;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
- * @version    3.0.0
+ * @version    4.0.0
  */
 class ExceptionHandler extends AbstractHandler
 {
@@ -39,12 +39,12 @@ class ExceptionHandler extends AbstractHandler
      *
      * Instantiate a handler object
      *
-     * @param bool    $verbose
-     * @param ?string $name
-     * @param ?Logger $logger
-     * @param array   $loggingParams
+     * @param bool             $verbose
+     * @param ?string          $name
+     * @param ?LoggerInterface $logger
+     * @param array            $loggingParams
      */
-    public function __construct(bool $verbose = false, ?string $name = null, ?Logger $logger = null, array $loggingParams = [])
+    public function __construct(bool $verbose = false, ?string $name = null, ?LoggerInterface $logger = null, array $loggingParams = [])
     {
         parent::__construct($name, $logger, $loggingParams);
         $this->setVerbose($verbose);
@@ -156,16 +156,13 @@ class ExceptionHandler extends AbstractHandler
      */
     public function log(): void
     {
-        if (($this->hasLogger()) && ($this->hasLoggingParams())) {
-            $logLevel = $this->loggingParams['level'] ?? null;
-
-            if ($logLevel !== null) {
-                $context = $this->prepare();
-                $this->logger->log($logLevel, $this->prepareMessage($context), $context);
-            } else {
-                throw new Exception('Error: The log level parameter was not set.');
-            }
+        $logLevel = $this->resolveLogLevel();
+        if ($logLevel === null) {
+            return;
         }
+
+        $context = $this->prepare();
+        $this->logger->log($logLevel, $this->prepareMessage($context), $context);
     }
 
 }

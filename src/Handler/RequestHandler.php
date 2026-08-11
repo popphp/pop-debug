@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
  */
 
@@ -15,8 +15,8 @@ namespace Pop\Debug\Handler;
 
 use Pop\Http\Server\Request;
 use Pop\Http\Uri;
-use Pop\Log\Logger;
 use Pop\Session\Session;
+use Psr\Log\LoggerInterface;
 
 /**
  * Debug request handler class
@@ -24,9 +24,9 @@ use Pop\Session\Session;
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
- * @version    3.0.0
+ * @version    4.0.0
  */
 class RequestHandler extends AbstractHandler
 {
@@ -38,14 +38,47 @@ class RequestHandler extends AbstractHandler
     protected ?Request $request = null;
 
     /**
+     * Default keys (case-insensitive, separator-insensitive substring match) whose values get redacted
+     * @var array
+     */
+    protected const array DEFAULT_REDACTED_KEYS = [
+        'pass', 'pwd', 'secret', 'token', 'apikey', 'accesstoken', 'refreshtoken',
+        'clientsecret', 'privatekey', 'authorization', 'auth', 'cookie', 'csrf',
+        'xsrf', 'sessionid', 'creditcard', 'cardnumber', 'cvv', 'cvc', 'ssn', 'pin',
+    ];
+
+    /**
+     * Value substituted in for anything matched by $redactedKeys or held in $_COOKIE/$_SESSION
+     * @var string
+     */
+    protected const string REDACTED_VALUE = '[REDACTED]';
+
+    /**
+     * Whether to redact sensitive request data (headers, server/env vars, post/put/patch/parsed
+     * data matching $redactedKeys, plus the entirety of $_COOKIE and $_SESSION) before it is
+     * returned from prepare() and, in turn, logged or written to storage. Defaults to true so
+     * secrets aren't captured in plaintext by default.
+     * @var bool
+     */
+    protected bool $redactSensitiveData = true;
+
+    /**
+     * Keys whose values are redacted when $redactSensitiveData is true
+     * @var array
+     */
+    protected array $redactedKeys = self::DEFAULT_REDACTED_KEYS;
+
+    /**
      * Constructor
      *
      * Instantiate a request handler object
      *
-     * @param ?Request $request
-     * @param ?string  $name
+     * @param ?Request         $request
+     * @param ?string          $name
+     * @param ?LoggerInterface $logger
+     * @param array            $loggingParams
      */
-    public function __construct(?Request $request = null, ?string $name = null, ?Logger $logger = null, array $loggingParams = [])
+    public function __construct(?Request $request = null, ?string $name = null, ?LoggerInterface $logger = null, array $loggingParams = [])
     {
         parent::__construct($name, $logger, $loggingParams);
         if ($request === null) {
@@ -97,6 +130,62 @@ class RequestHandler extends AbstractHandler
     }
 
     /**
+     * Set whether to redact sensitive request data before it's returned from prepare()
+     *
+     * @param  bool $redact
+     * @return RequestHandler
+     */
+    public function setRedactSensitiveData(bool $redact = true): RequestHandler
+    {
+        $this->redactSensitiveData = $redact;
+        return $this;
+    }
+
+    /**
+     * Determine if sensitive request data is being redacted
+     *
+     * @return bool
+     */
+    public function isRedactingSensitiveData(): bool
+    {
+        return $this->redactSensitiveData;
+    }
+
+    /**
+     * Set the keys (case-insensitive, separator-insensitive substring match) whose values get redacted
+     *
+     * @param  array $keys
+     * @return RequestHandler
+     */
+    public function setRedactedKeys(array $keys): RequestHandler
+    {
+        $this->redactedKeys = $keys;
+        return $this;
+    }
+
+    /**
+     * Add a key whose value should be redacted
+     *
+     * @param  string $key
+     * @return RequestHandler
+     */
+    public function addRedactedKey(string $key): RequestHandler
+    {
+        $this->redactedKeys[] = $key;
+        return $this;
+    }
+
+    /**
+     * Get the keys whose values get redacted
+     *
+     * @return array
+     */
+    public function getRedactedKeys(): array
+    {
+        return $this->redactedKeys;
+    }
+
+    /**
      * Prepare handler data for storage
      *
      * @return array
@@ -109,25 +198,112 @@ class RequestHandler extends AbstractHandler
             $this->setEnd();
         }
 
-        $requestData = [
+        $headers = $this->request->getHeaders();
+        $server  = $this->request->getServer();
+        $env     = $this->request->getEnv();
+        $get     = $this->request->getQuery();
+        $post    = $this->request->getPost();
+        $put     = $this->request->getPut();
+        $patch   = $this->request->getPatch();
+        $delete  = $this->request->getDelete();
+        $cookie  = (isset($_COOKIE)) ? $_COOKIE : [];
+        $session = (isset($_SESSION)) ? $_SESSION : [];
+        $parsed  = $this->request->getParsedData();
+
+        if ($this->redactSensitiveData) {
+            $headers = $this->redactKeys($headers);
+            $server  = $this->redactKeys($server);
+            $env     = $this->redactKeys($env);
+            $get     = $this->redactKeys($get);
+            $post    = $this->redactKeys($post);
+            $put     = $this->redactKeys($put);
+            $patch   = $this->redactKeys($patch);
+            $delete  = $this->redactKeys($delete);
+            $cookie  = $this->redactAll($cookie);
+            $session = $this->redactAll($session);
+            $parsed  = $this->redactKeys($parsed);
+        }
+
+        return [
             'uri'     => $this->request->getUri()->getUri(),
             'method'  => $this->request->getMethod(),
-            'headers' => $this->request->getHeaders(),
-            'server'  => $this->request->getServer(),
-            'env'     => $this->request->getEnv(),
-            'get'     => $this->request->getQuery(),
-            'post'    => $this->request->getPost(),
-            'put'     => $this->request->getPut(),
-            'patch'   => $this->request->getPatch(),
-            'delete'  => $this->request->getDelete(),
+            'headers' => $headers,
+            'server'  => $server,
+            'env'     => $env,
+            'get'     => $get,
+            'post'    => $post,
+            'put'     => $put,
+            'patch'   => $patch,
+            'delete'  => $delete,
             'files'   => $this->request->getFiles(),
-            'cookie'  => (isset($_COOKIE)) ? $_COOKIE : [],
-            'session' => (isset($_SESSION)) ? $_SESSION : [],
+            'cookie'  => $cookie,
+            'session' => $session,
             'raw'     => $this->request->getRawData(),
-            'parsed'  => $this->request->getParsedData(),
+            'parsed'  => $parsed,
         ];
+    }
 
-        return $requestData;
+    /**
+     * Recursively redact array values whose key matches one of $redactedKeys
+     *
+     * @param  mixed $data
+     * @return mixed
+     */
+    protected function redactKeys(mixed $data): mixed
+    {
+        if (!is_array($data)) {
+            return $data;
+        }
+
+        foreach ($data as $key => $value) {
+            if ($this->isRedactedKey((string)$key)) {
+                $data[$key] = self::REDACTED_VALUE;
+            } else if (is_array($value)) {
+                $data[$key] = $this->redactKeys($value);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Redact every value in a flat array, regardless of key (used for $_COOKIE/$_SESSION,
+     * whose contents are treated as sensitive-by-nature)
+     *
+     * @param  mixed $data
+     * @return mixed
+     */
+    protected function redactAll(mixed $data): mixed
+    {
+        if (!is_array($data)) {
+            return $data;
+        }
+
+        foreach ($data as $key => $value) {
+            $data[$key] = self::REDACTED_VALUE;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Determine if a key matches one of $redactedKeys (case- and separator-insensitive)
+     *
+     * @param  string $key
+     * @return bool
+     */
+    protected function isRedactedKey(string $key): bool
+    {
+        $normalizedKey = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $key));
+
+        foreach ($this->redactedKeys as $redactedKey) {
+            $normalizedRedactedKey = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', (string)$redactedKey));
+            if (($normalizedRedactedKey !== '') && str_contains($normalizedKey, $normalizedRedactedKey)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -151,27 +327,25 @@ class RequestHandler extends AbstractHandler
      */
     public function log(): void
     {
-        if (($this->hasLogger()) && ($this->hasLoggingParams())) {
-            $logLevel  = $this->loggingParams['level'] ?? null;
-            $timeLimit = $this->loggingParams['limit'] ?? null;
+        $logLevel = $this->resolveLogLevel();
+        if ($logLevel === null) {
+            return;
+        }
 
-            if ($logLevel !== null) {
-                $context = $this->prepare();
-                if ($timeLimit !== null) {
-                    $elapsedTime = $this->getElapsed();
-                    if ($elapsedTime >= $timeLimit) {
-                        $this->logger->log($logLevel, 'The request \'' . $this->request->getUri()->getUri() .
-                            '\' has exceeded the time limit of ' . $timeLimit . ' second(s) by ' .
-                            $elapsedTime - $timeLimit . ' second(s). The request was a total of ' . $elapsedTime . ' second(s).',
-                            $context
-                        );
-                    }
-                } else {
-                    $this->logger->log($logLevel, $this->prepareMessage(), $context);
-                }
-            } else {
-                throw new Exception('Error: The log level parameter was not set.');
+        $timeLimit = $this->loggingParams['limit'] ?? null;
+        $context   = $this->prepare();
+
+        if ($timeLimit !== null) {
+            $elapsedTime = $this->getElapsed();
+            if ($elapsedTime >= $timeLimit) {
+                $this->logger->log($logLevel, 'The request \'' . $this->request->getUri()->getUri() .
+                    '\' has exceeded the time limit of ' . $timeLimit . ' second(s) by ' .
+                    $elapsedTime - $timeLimit . ' second(s). The request was a total of ' . $elapsedTime . ' second(s).',
+                    $context
+                );
             }
+        } else {
+            $this->logger->log($logLevel, $this->prepareMessage(), $context);
         }
     }
 

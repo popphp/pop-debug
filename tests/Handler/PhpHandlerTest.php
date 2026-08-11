@@ -89,4 +89,64 @@ class PhpHandlerTest extends TestCase
         $handler->log();
     }
 
+    public function testLogNoLogger()
+    {
+        $handler = new Handler\PhpHandler();
+        $handler->log();
+
+        $this->assertFalse($handler->hasLogger());
+    }
+
+    public function testLogVersionExceeded()
+    {
+        $logFile = __DIR__ . '/../tmp/debug.log';
+        $handler = new Handler\PhpHandler('php',
+            new Log\Logger(new Log\Writer\File($logFile)),
+            ['level' => Log\Logger::WARNING, 'version' => '99.0.0', 'context' => 'json']
+        );
+        $handler->log();
+
+        $this->assertStringContainsString('is less than the required version', file_get_contents($logFile));
+    }
+
+    public function testParseErrorSettingsWithErrorReportingAll()
+    {
+        $original = ini_set('error_reporting', (string)E_ALL);
+
+        try {
+            $handler = new Handler\PhpHandler();
+            $this->assertEquals(['E_ALL'], $handler->getErrorReportingList());
+        } finally {
+            ini_set('error_reporting', $original);
+        }
+    }
+
+    /**
+     * disable_functions/disable_classes are PHP_INI_SYSTEM settings - they can only be set at
+     * process startup (php.ini or a -d flag), not at runtime via ini_set(), so parseDisabled()'s
+     * non-empty branches can't be exercised in-process. A subprocess started with both set is
+     * the only way to reach them.
+     */
+    public function testParseDisabledInSubprocess()
+    {
+        $autoload = __DIR__ . '/../../vendor/autoload.php';
+        $script   = 'require ' . var_export($autoload, true) . ';'
+            . '$h = new Pop\Debug\Handler\PhpHandler();'
+            . 'echo json_encode(["functions" => $h->getDisabledFunctions(), "classes" => $h->getDisabledClasses()]);';
+
+        $command = sprintf(
+            'php -d disable_functions=%s -d disable_classes=%s -r %s',
+            escapeshellarg('chgrp,chown'),
+            escapeshellarg('FakeDisabledTestClass'),
+            escapeshellarg($script)
+        );
+
+        $output = shell_exec($command);
+        $result = json_decode((string)$output, true);
+
+        $this->assertIsArray($result);
+        $this->assertEquals(['chgrp', 'chown'], $result['functions']);
+        $this->assertEquals(['FakeDisabledTestClass'], $result['classes']);
+    }
+
 }

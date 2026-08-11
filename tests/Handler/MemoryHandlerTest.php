@@ -131,4 +131,13 @@ class MemoryHandlerTest extends TestCase
         $handler->log();
     }
 
+    public function testLogNoLogger()
+    {
+        $handler = new Handler\MemoryHandler();
+        $handler->updateUsage();
+        $handler->log();
+
+        $this->assertFalse($handler->hasLogger());
+    }
+
 }

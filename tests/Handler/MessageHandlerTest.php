@@ -22,7 +22,7 @@ class MessageHandlerTest extends TestCase
         );
         $this->assertTrue($handler->hasLogger());
         $this->assertTrue($handler->hasLoggingParams());
-        $this->assertInstanceOf('Pop\Log\Logger', $handler->getLogger());
+        $this->assertInstanceOf('Psr\Log\LoggerInterface', $handler->getLogger());
         $this->assertIsArray($handler->getLoggingParams());
     }
 
@@ -89,6 +89,15 @@ class MessageHandlerTest extends TestCase
         );
         $handler->addMessage("Here is a message!");
         $handler->log();
+    }
+
+    public function testLogNoLogger()
+    {
+        $handler = new Handler\MessageHandler();
+        $handler->addMessage('Test Message');
+        $handler->log();
+
+        $this->assertFalse($handler->hasLogger());
     }
 
 }

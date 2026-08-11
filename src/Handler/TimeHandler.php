@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
  */
 
@@ -13,17 +13,15 @@
  */
 namespace Pop\Debug\Handler;
 
-use Pop\Log\Logger;
-
 /**
  * Debug time handler class
  *
  * @category   Pop
  * @package    Pop\Debug
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
- * @version    3.0.0
+ * @version    4.0.0
  */
 class TimeHandler extends AbstractHandler
 {
@@ -72,28 +70,26 @@ class TimeHandler extends AbstractHandler
      */
     public function log(): void
     {
-        if (($this->hasLogger()) && ($this->hasLoggingParams())) {
-            $logLevel  = $this->loggingParams['level'] ?? null;
-            $timeLimit = $this->loggingParams['limit'] ?? null;
+        $logLevel = $this->resolveLogLevel();
+        if ($logLevel === null) {
+            return;
+        }
 
-            if ($logLevel !== null) {
-                $elapsedTime = $this->getElapsed();
-                $context     = $this->prepare();
-                if ($timeLimit !== null) {
-                    if ($elapsedTime >= $timeLimit) {
-                        $context['time_limit'] = $timeLimit;
-                        $this->logger->log(
-                            $logLevel, 'The time limit of '. $timeLimit . ' second(s) has been exceeded by ' .
-                            (int)($elapsedTime - $timeLimit) . ' second(s). The timed event was a total of ' .
-                            $elapsedTime . ' second(s).', $context
-                        );
-                    }
-                } else {
-                    $this->logger->log($logLevel, $this->prepareMessage(), $context);
-                }
-            } else {
-                throw new Exception('Error: The log level parameter was not set.');
+        $timeLimit   = $this->loggingParams['limit'] ?? null;
+        $elapsedTime = $this->getElapsed();
+        $context     = $this->prepare();
+
+        if ($timeLimit !== null) {
+            if ($elapsedTime >= $timeLimit) {
+                $context['time_limit'] = $timeLimit;
+                $this->logger->log(
+                    $logLevel, 'The time limit of '. $timeLimit . ' second(s) has been exceeded by ' .
+                    (int)($elapsedTime - $timeLimit) . ' second(s). The timed event was a total of ' .
+                    $elapsedTime . ' second(s).', $context
+                );
             }
+        } else {
+            $this->logger->log($logLevel, $this->prepareMessage(), $context);
         }
     }
 
