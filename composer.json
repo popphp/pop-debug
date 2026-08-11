@@ -20,10 +20,11 @@
     "require": {
         "php": ">=8.4.0",
         "popphp/pop-csv": "^4.2.1",
-        "popphp/pop-db": "^7.0.0-beta.1",
-        "popphp/pop-http": "^6.0.0-beta.4",
+        "popphp/pop-db": "^7.0.0-beta.3",
+        "popphp/pop-http": "^6.0.0-beta.6",
         "popphp/pop-log": "^5.0.0-beta-1",
-        "popphp/pop-session": "^5.0.0-beta-1",
+        "popphp/pop-session": "^5.0.0-beta.1",
+        "popphp/pop-utils": "^3.0.0-beta.1",
         "psr/log": "^3.0"
     },
     "require-dev": {
@@ -42,6 +43,18 @@
     "scripts": {
         "test": "vendor/bin/phpunit"
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../*",
+            "canonical": false,
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "extra": {
         "branch-alias": {
             "dev-master": "4.0.x-dev"

@@ -13,6 +13,7 @@
  */
 namespace Pop\Debug\Handler;
 
+use Pop\Utils\DebuggerHandlerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -25,7 +26,7 @@ use Psr\Log\LoggerInterface;
  * @license    https://www.popphp.org/license     New BSD License
  * @version    4.0.0
  */
-abstract class AbstractHandler implements HandlerInterface
+abstract class AbstractHandler implements DebuggerHandlerInterface
 {
 
     /**

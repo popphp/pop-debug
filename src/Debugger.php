@@ -13,9 +13,10 @@
  */
 namespace Pop\Debug;
 
-use Pop\Debug\Handler\HandlerInterface;
 use Pop\Debug\Storage\StorageInterface;
 use Psr\Log\LoggerInterface;
+use Pop\Utils\DebuggerInterface;
+use Pop\Utils\DebuggerHandlerInterface;
 use ArrayIterator;
 
 /**
@@ -28,7 +29,7 @@ use ArrayIterator;
  * @license    https://www.popphp.org/license     New BSD License
  * @version    4.0.0
  */
-class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
+class Debugger implements DebuggerInterface, \ArrayAccess, \Countable, \IteratorAggregate
 {
 
     /**
@@ -61,13 +62,13 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
         foreach ($args as $arg) {
             if (is_array($arg)) {
                 foreach ($arg as $a) {
-                    if ($a instanceof HandlerInterface) {
+                    if ($a instanceof DebuggerHandlerInterface) {
                         $this->addHandler($a);
                     } else if ($a instanceof StorageInterface) {
                         $this->setStorage($a);
                     }
                 }
-            } else if ($arg instanceof HandlerInterface) {
+            } else if ($arg instanceof DebuggerHandlerInterface) {
                 $this->addHandler($arg);
             } else if ($arg instanceof StorageInterface) {
                 $this->setStorage($arg);
@@ -147,10 +148,10 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
     /**
      * Add a handler
      *
-     * @param  HandlerInterface $handler
+     * @param  DebuggerHandlerInterface $handler
      * @return Debugger
      */
-    public function addHandler(HandlerInterface $handler): Debugger
+    public function addHandler(DebuggerHandlerInterface $handler): Debugger
     {
         $type = strtolower(str_replace('Handler', '', get_class($handler)));
         if (strrpos($type, '\\') !== false) {
@@ -180,9 +181,9 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      * Get a handler
      *
      * @param  string $name
-     * @return ?HandlerInterface
+     * @return ?DebuggerHandlerInterface
      */
-    public function getHandler(string $name): ?HandlerInterface
+    public function getHandler(string $name): ?DebuggerHandlerInterface
     {
         return $this->handlers[$name] ?? null;
     }
@@ -352,8 +353,8 @@ class Debugger implements \ArrayAccess, \Countable, \IteratorAggregate
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        if (!($value instanceof HandlerInterface)) {
-            throw new Exception('Error: The value passed must be an instance of HandlerInterface');
+        if (!($value instanceof DebuggerHandlerInterface)) {
+            throw new Exception('Error: The value passed must be an instance of DebuggerHandlerInterface');
         }
         $this->handlers[$offset] = $value;
     }
