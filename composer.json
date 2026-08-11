@@ -43,18 +43,6 @@
     "scripts": {
         "test": "vendor/bin/phpunit"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../*",
-            "canonical": false,
-            "options": {
-                "symlink": true
-            }
-        }
-    ],
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "extra": {
         "branch-alias": {
             "dev-master": "4.0.x-dev"
