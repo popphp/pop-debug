@@ -24,7 +24,7 @@
         "popphp/pop-http": "^6.0.0-beta.6",
         "popphp/pop-log": "^5.0.0-beta-1",
         "popphp/pop-session": "^5.0.0-beta.1",
-        "popphp/pop-utils": "^3.0.0-beta.3",
+        "popphp/pop-utils": "^3.0.0-beta.4",
         "psr/log": "^3.0"
     },
     "require-dev": {
