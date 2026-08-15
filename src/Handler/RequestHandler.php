@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Pop PHP Framework (https://www.popphp.org/)
  *
@@ -206,7 +207,7 @@ class RequestHandler extends AbstractHandler
         $put     = $this->request->getPut();
         $patch   = $this->request->getPatch();
         $delete  = $this->request->getDelete();
-        $cookie  = (isset($_COOKIE)) ? $_COOKIE : [];
+        $cookie  = $_COOKIE;
         $session = (isset($_SESSION)) ? $_SESSION : [];
         $parsed  = $this->request->getParsedData();
 

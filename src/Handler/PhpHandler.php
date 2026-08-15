@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Pop PHP Framework (https://www.popphp.org/)
  *
@@ -449,8 +450,9 @@ class PhpHandler extends AbstractHandler
             if ($this->errorSettings['error_reporting'] == E_ALL) {
                 $this->errorSettings['error_reporting_list'][] = $this->errorReporting[E_ALL];
             } else {
+                $errorReportingValue = (int)$this->errorSettings['error_reporting'];
                 foreach($this->errorReporting as $errorNumber => $errorName) {
-                    if (($this->errorSettings['error_reporting'] & $errorNumber) == $errorNumber) {
+                    if (($errorReportingValue & (int)$errorNumber) == $errorNumber) {
                         $this->errorSettings['error_reporting_list'][] = $errorName;
                     }
                 }

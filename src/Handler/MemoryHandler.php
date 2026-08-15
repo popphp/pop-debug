@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Pop PHP Framework (https://www.popphp.org/)
  *
@@ -173,14 +174,14 @@ class MemoryHandler extends AbstractHandler
         foreach ($this->usages as $usage) {
             $data['usages'][] = [
                 'memory'    => (!$this->actualBytes) ? $this->formatMemoryToString($usage['memory']) : $usage['memory'],
-                'timestamp' => number_format($usage['timestamp'], 5, '.', '')
+                'timestamp' => number_format((float)$usage['timestamp'], 5, '.', '')
             ];
         }
 
         foreach ($this->peaks as $peak) {
             $data['peaks'][] = [
                 'memory'    => (!$this->actualBytes) ? $this->formatMemoryToString($peak['memory']) : $peak['memory'],
-                'timestamp' => number_format($peak['timestamp'], 5, '.', '')
+                'timestamp' => number_format((float)$peak['timestamp'], 5, '.', '')
             ];
         }
 
