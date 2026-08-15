@@ -248,7 +248,7 @@ class Debugger implements DebuggerInterface, \ArrayAccess, \Countable, \Iterator
     }
 
     /**
-     * Save the debug handlers' data to storage
+     * Save the debug handlers' data to storage (returns the request ID of what was saved)
      *
      * @return string
      */
