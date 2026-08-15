@@ -70,6 +70,13 @@ class RequestHandler extends AbstractHandler
     protected array $redactedKeys = self::DEFAULT_REDACTED_KEYS;
 
     /**
+     * Cached, normalized (lowercased, non-alphanumeric stripped) version of $redactedKeys,
+     * rebuilt lazily on next use whenever $redactedKeys changes
+     * @var ?array
+     */
+    protected ?array $normalizedRedactedKeys = null;
+
+    /**
      * Constructor
      *
      * Instantiate a request handler object
@@ -160,7 +167,8 @@ class RequestHandler extends AbstractHandler
      */
     public function setRedactedKeys(array $keys): RequestHandler
     {
-        $this->redactedKeys = $keys;
+        $this->redactedKeys           = $keys;
+        $this->normalizedRedactedKeys = null;
         return $this;
     }
 
@@ -172,7 +180,8 @@ class RequestHandler extends AbstractHandler
      */
     public function addRedactedKey(string $key): RequestHandler
     {
-        $this->redactedKeys[] = $key;
+        $this->redactedKeys[]         = $key;
+        $this->normalizedRedactedKeys = null;
         return $this;
     }
 
@@ -295,11 +304,20 @@ class RequestHandler extends AbstractHandler
      */
     protected function isRedactedKey(string $key): bool
     {
+        if ($this->normalizedRedactedKeys === null) {
+            $this->normalizedRedactedKeys = [];
+            foreach ($this->redactedKeys as $redactedKey) {
+                $normalizedRedactedKey = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', (string)$redactedKey));
+                if ($normalizedRedactedKey !== '') {
+                    $this->normalizedRedactedKeys[] = $normalizedRedactedKey;
+                }
+            }
+        }
+
         $normalizedKey = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $key));
 
-        foreach ($this->redactedKeys as $redactedKey) {
-            $normalizedRedactedKey = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', (string)$redactedKey));
-            if (($normalizedRedactedKey !== '') && str_contains($normalizedKey, $normalizedRedactedKey)) {
+        foreach ($this->normalizedRedactedKeys as $normalizedRedactedKey) {
+            if (str_contains($normalizedKey, $normalizedRedactedKey)) {
                 return true;
             }
         }

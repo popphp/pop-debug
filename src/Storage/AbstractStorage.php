@@ -69,7 +69,7 @@ abstract class AbstractStorage implements StorageInterface
                     'elapsed'   => null,
                     'type'      => 'limit',
                     'message'   => $data['limit'],
-                    'context'   => json_encode($handler->prepare()),
+                    'context'   => json_encode($data),
                 ];
                 foreach ($data['usages'] as $usage) {
                     $events[] = [
@@ -121,7 +121,7 @@ abstract class AbstractStorage implements StorageInterface
                     'elapsed'   => $data['elapsed'] ?? $handler->getElapsed(),
                     'type'      => 'query-set',
                     'message'   => $handler->prepareMessage(),
-                    'context'   => json_encode($handler->prepare()),
+                    'context'   => json_encode($data),
                 ];
                 foreach ($data['steps'] as $step) {
                     $events[] = [
@@ -131,8 +131,8 @@ abstract class AbstractStorage implements StorageInterface
                         'end'       => $step['end'] ?? null,
                         'elapsed'   => $step['elapsed'] ?? null,
                         'type'      => 'query',
-                        'message'   => $data['query'] ?? null,
-                        'context'   => json_encode($data),
+                        'message'   => $step['query'] ?? null,
+                        'context'   => json_encode($step),
                     ];
                 }
                 break;

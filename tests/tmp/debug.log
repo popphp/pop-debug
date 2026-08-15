@@ -1,0 +1,18 @@
+2026-08-15 17:49:53	error	ERROR	(1) exception has been thrown.	0=[Array];
+2026-08-15 17:49:53	error	ERROR	(2) exceptions have been thrown.	0=[Array];1=[Array];
+1786834194.5391	info	INFO	Memory Usage: 17122752 bytes.	memory=17122752;
+2026-08-15 17:49:54	info	INFO	Peak Memory Usage: 17123384 bytes.	limit=256MB;usages=[Array];peaks=[Array];
+1786834194.5432	warning	WARNING	Memory usage limit of 1000000 has been exceeded by 16123312 bytes. 17123312 bytes were used.	memory=17123312;
+1786834194.5432	warning	WARNING	Memory peak limit of 1000000 has been exceeded by 16123944 bytes. 17123944 bytes were used at the peak.	memory=17123944;
+2026-08-15 17:49:54	info	INFO	A new message has been logged.	0=[Array];
+2026-08-15 17:49:54	info	INFO	(2) new messages have been logged.	0=[Array];1=[Array];
+2026-08-15 17:49:54	info	INFO	PHP info has been logged.	php_version=8.4.11;php_major_version=8;php_minor_version=4;php_release_version=11;php_extra_version=;data_time=America/Chicago;error_settings=[Array];limits=[Array];extensions=[Array];disabled_functions=[Array];disabled_classes=[Array];
+2026-08-15 17:49:54	warning	WARNING	The current of PHP extensions are required but not active: abc	php_version=8.4.11;php_major_version=8;php_minor_version=4;php_release_version=11;php_extra_version=;data_time=America/Chicago;error_settings=[Array];limits=[Array];extensions=[Array];disabled_functions=[Array];disabled_classes=[Array];
+2026-08-15 17:49:54	warning	WARNING	The current of PHP extensions are required but not active: abc, xyz	php_version=8.4.11;php_major_version=8;php_minor_version=4;php_release_version=11;php_extra_version=;data_time=America/Chicago;error_settings=[Array];limits=[Array];extensions=[Array];disabled_functions=[Array];disabled_classes=[Array];
+2026-08-15 17:49:54	warning	WARNING	The current version of PHP 8.4.11 is less than the required version 99.0.0.	php_version=8.4.11;php_major_version=8;php_minor_version=4;php_release_version=11;php_extra_version=;data_time=America/Chicago;error_settings=[Array];limits=[Array];extensions=[Array];disabled_functions=[Array];disabled_classes=[Array];
+2026-08-15 17:49:54	info	INFO	(1) new query has been executed.	start=1786834194.60073;end=0.00000;elapsed=5.0E-5;steps=[Array];
+2026-08-15 17:49:54	warning	WARNING	A query has exceeded the time limit of 0 second(s) by 0 second(s). The query execution was a total of 0.00000 second(s).	start=1786834194.60191;end=0.00000;elapsed=4.0E-5;steps=[Array];
+2026-08-15 17:49:54	info	INFO	The HTTP request '/page' was received.	uri=/page;method=GET;headers=[Array];server=[Array];env=[Array];get=[Array];post=[Array];put=[Array];patch=[Array];delete=[Array];files=[Array];cookie=[Array];session=[Array];raw=;parsed=;
+2026-08-15 17:49:56	info	INFO	The request '/page' has exceeded the time limit of 1 second(s) by 1.0004041194916 second(s). The request was a total of 2.0004041194916 second(s).	uri=/page;method=GET;headers=[Array];server=[Array];env=[Array];get=[Array];post=[Array];put=[Array];patch=[Array];delete=[Array];files=[Array];cookie=[Array];session=[Array];raw=;parsed=;
+2026-08-15 17:50:00	info	INFO	A new 0 second event has been triggered.	start=1786834200.65712;end=1786834200.65715;elapsed=2.288818359375E-5;
+2026-08-15 17:50:02	warning	WARNING	The time limit of 1 second(s) has been exceeded by 1 second(s). The timed event was a total of 2.0001571178436 second(s).	start=1786834200.66124;end=1786834202.66140;elapsed=2.0001571178436;time_limit=1;
