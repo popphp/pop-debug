@@ -134,19 +134,22 @@ class PhpHandlerTest extends TestCase
             . '$h = new Pop\Debug\Handler\PhpHandler();'
             . 'echo json_encode(["functions" => $h->getDisabledFunctions(), "classes" => $h->getDisabledClasses()]);';
 
-        $command = sprintf(
-            'php -d disable_functions=%s -d disable_classes=%s -r %s',
-            escapeshellarg('chgrp,chown'),
-            escapeshellarg('FakeDisabledTestClass'),
-            escapeshellarg($script)
-        );
+        // The disable_classes ini directive was removed in PHP 8.5 (https://wiki.php.net/rfc/deprecations_php_8_5),
+        // so ini_get('disable_classes') always returns false there and PhpHandler can never report disabled
+        // classes on 8.5+. Only pass and assert it on PHP versions where it still exists.
+        $iniFlags = '-d ' . escapeshellarg('disable_functions=chgrp,chown');
+        if (PHP_VERSION_ID < 80500) {
+            $iniFlags .= ' -d ' . escapeshellarg('disable_classes=FakeDisabledTestClass');
+        }
+
+        $command = sprintf('php %s -r %s', $iniFlags, escapeshellarg($script));
 
         $output = shell_exec($command);
         $result = json_decode((string)$output, true);
 
         $this->assertIsArray($result);
         $this->assertEquals(['chgrp', 'chown'], $result['functions']);
-        $this->assertEquals(['FakeDisabledTestClass'], $result['classes']);
+        $this->assertEquals(PHP_VERSION_ID < 80500 ? ['FakeDisabledTestClass'] : [], $result['classes']);
     }
 
 }
