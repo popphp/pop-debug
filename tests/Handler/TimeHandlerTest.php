@@ -75,6 +75,25 @@ class TimeHandlerTest extends TestCase
         $this->assertFileExists(__DIR__ . '/../tmp/debug.log');
     }
 
+    public function testLogLimitExceededWithoutPriorStop()
+    {
+        $logFile = __DIR__ . '/../tmp/debug-limit-no-stop.log';
+        if (file_exists($logFile)) {
+            unlink($logFile);
+        }
+
+        $handler = new Handler\TimeHandler('time',
+            new Log\Logger(new Log\Writer\File($logFile)), ['level' => Log\Logger::WARNING, 'limit' => 1, 'context' => 'json']
+        );
+        sleep(2);
+        // No stop()/prepare() call before log() - log() must compute elapsed time itself
+        $handler->log();
+
+        $this->assertStringContainsString('has been exceeded', file_get_contents($logFile));
+
+        unlink($logFile);
+    }
+
     public function testLogException()
     {
         $this->expectException('Pop\Debug\Handler\Exception');

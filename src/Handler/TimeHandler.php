@@ -77,8 +77,8 @@ class TimeHandler extends AbstractHandler
         }
 
         $timeLimit   = $this->loggingParams['limit'] ?? null;
-        $elapsedTime = $this->getElapsed();
         $context     = $this->prepare();
+        $elapsedTime = $this->getElapsed();
 
         if ($timeLimit !== null) {
             if ($elapsedTime >= $timeLimit) {
